@@ -7,6 +7,7 @@ import { answerCommand } from './answerCommand.js';
 import { cancelCommand } from './cancelCommand.js';
 import { readyRunCommand } from './readyRunCommand.js';
 import { statusCommand } from './statusCommand.js';
+import { serverCommand, logsCommand, serviceCommand, deployCommand } from './opsCommand.js';
 
 // Возвращает строку или { text, reply_markup } для Telegram.
 // replyToText — текст сообщения, на которое ответил владелец (там есть ID задачи).
@@ -23,5 +24,9 @@ export async function handleCommand(text, replyToText = '') {
   if (cmd === '/cancel') return cancelCommand(args);
   if (cmd === '/ready' || cmd === '/run') return readyRunCommand(cmd, args);
   if (cmd === '/status') return statusCommand();
+  if (cmd === '/server') return serverCommand();
+  if (cmd === '/logs') return logsCommand(args);
+  if (cmd === '/service') return serviceCommand(args);
+  if (cmd === '/deploy') return deployCommand();
   return HELP;
 }

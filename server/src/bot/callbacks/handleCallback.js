@@ -4,9 +4,11 @@ import { acceptTask } from '../../services/runs/acceptTask.js';
 import { startTask } from '../../services/runs/startTask.js';
 import { decodeCallback } from '../callbackData.js';
 import { showDiff } from './showDiff.js';
+import { handleOpsCallback } from './opsCallback.js';
 
 // Нажатие кнопки под уведомлением. Возвращает строку для ответа владельцу.
 export async function handleCallback(data) {
+  if (String(data).startsWith('ops:')) return handleOpsCallback(data);
   const parsed = decodeCallback(data);
   if (!parsed) return 'Эта кнопка устарела.';
   if (!mongoose.isValidObjectId(parsed.id)) return 'Задача не найдена';

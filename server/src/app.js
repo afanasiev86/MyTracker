@@ -6,6 +6,7 @@ import statsRoutes from './routes/stats.js';
 import clientRoutes from './routes/clients.js';
 import storageRoutes from './routes/storage.js';
 import telegramRoutes from './routes/telegram.js';
+import opsRoutes from './routes/ops.js';
 import projectRoutes from './routes/projects.js';
 import { requireAuth } from './middleware/auth.js';
 import { requireOwner, requireClient } from './middleware/roles.js';
@@ -40,6 +41,7 @@ export function createApp() {
   app.use('/api/stats', requireAuth, requireOwner, statsRoutes);
   app.use('/api/storage', requireAuth, requireOwner, storageRoutes);
   app.use('/api/telegram', requireAuth, requireOwner, telegramRoutes);
+  app.use('/api/ops', requireAuth, requireOwner, opsRoutes);
   app.use('/api/access', requireAuth, requireOwner, accessRoutes);
   // Портал заказчика: только свои данные
   app.use('/api/portal', requireAuth, requireClient, portalRoutes);

@@ -6,6 +6,9 @@ import { notifyClientOfStatusChange } from './services/notify/client.js';
 import { registerBotHandlers, restartBot } from './bot/poller/botRunner.js';
 import { loadTelegramSettings } from './services/telegram/runtime.js';
 import { telegramEnabled } from './services/telegram/api.js';
+import { startOpsMonitor } from './services/ops/monitor.js';
+import { reportPendingNotice } from './services/ops/notice.js';
+import { resumeDeployReporting } from './services/ops/deploy.js';
 import { handleCommand } from './bot/commands/handleCommand.js';
 import { handleCallback } from './bot/callbacks/handleCallback.js';
 import { handleGuest } from './bot/guest.js';
@@ -40,4 +43,7 @@ createApp().listen(cfg.port, () => {
 registerBotHandlers({ handle: handleCommand, onCallback: handleCallback, onGuest: handleGuest });
 restartBot();
 startDigestScheduler();
+startOpsMonitor();
+void reportPendingNotice();
+void resumeDeployReporting();
 onTaskStatusChange(notifyClientOfStatusChange);
