@@ -21,11 +21,11 @@ describe('Projects', () => {
   });
 
   it('показывает проект со статусом, клиентом и счётчиками задач', async () => {
-    render(<Projects onUnauthorized={() => {}} />);
+    render(<Projects />);
 
     expect(await screen.findByText('Магазин')).toBeTruthy();
     expect(screen.getByText(/На паузе/)).toBeTruthy();
     expect(screen.getByText(/Иван/)).toBeTruthy();
-    expect(screen.getByText(/Задач: 3 \(открыто 2\)/)).toBeTruthy();
+    expect(screen.getByText(/Задач: 3, открыто 2/)).toBeTruthy();
   });
 });

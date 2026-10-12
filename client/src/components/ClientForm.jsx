@@ -52,7 +52,7 @@ export default function ClientForm({ client, onSaved, onCancel, onDelete }) {
 
   return (
     <form className="panel form" onSubmit={submit}>
-      <h2>{isEdit ? 'Клиент' : 'Новый клиент'}</h2>
+      <h2>{isEdit ? 'Редактирование клиента' : 'Новый клиент'}</h2>
 
       <div className="grid-2">
         <label>
@@ -95,12 +95,12 @@ export default function ClientForm({ client, onSaved, onCancel, onDelete }) {
 
       <div className="actions">
         <button type="submit" disabled={busy || !form.name.trim()}>
-          {isEdit ? 'Сохранить' : 'Создать'}
+          {busy ? 'Сохраняем…' : isEdit ? 'Сохранить' : 'Добавить клиента'}
         </button>
         <button type="button" className="ghost" onClick={onCancel}>Отмена</button>
-        {onDelete && <button type="button" className="danger" onClick={onDelete}>Удалить</button>}
+        {onDelete && <button type="button" className="danger" onClick={onDelete}>Удалить клиента</button>}
       </div>
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
     </form>
   );
 }

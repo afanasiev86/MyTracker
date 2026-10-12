@@ -72,7 +72,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
 
   return (
     <form className="panel form" onSubmit={submit}>
-      <h2>{isEdit ? 'Проект' : 'Новый проект'}</h2>
+      <h2>{isEdit ? 'Редактирование проекта' : 'Новый проект'}</h2>
 
       <div className="grid-2">
         <label>
@@ -80,16 +80,22 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
           <input value={form.name} onChange={set('name')} required />
         </label>
         <label>
-          Slug (папка репозитория и код проекта в задачах)
+          Код проекта
           <input
             value={form.slug}
             onChange={set('slug')}
             placeholder="shop-api"
             disabled={isEdit}
             required
+            aria-describedby="slug-hint"
           />
+          <span id="slug-hint" className="hint">
+            {isEdit
+              ? 'Код менять нельзя: по нему привязаны задачи.'
+              : 'Латиница, цифры и дефис. Должен совпадать с папкой репозитория на сервере.'}
+          </span>
           {form.slug && !slugOk && (
-            <span className="error">Только латиница, цифры и дефис</span>
+            <span className="error" role="alert">Пока не подходит: используйте латиницу, цифры и дефис.</span>
           )}
         </label>
         <label>
@@ -144,12 +150,12 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
 
       <div className="actions">
         <button type="submit" disabled={busy || !slugOk || !form.name.trim()}>
-          {isEdit ? 'Сохранить' : 'Создать'}
+          {busy ? 'Сохраняем…' : isEdit ? 'Сохранить' : 'Создать проект'}
         </button>
         <button type="button" className="ghost" onClick={onCancel}>Отмена</button>
-        {onDelete && <button type="button" className="danger" onClick={onDelete}>Удалить</button>}
+        {onDelete && <button type="button" className="danger" onClick={onDelete}>Удалить проект</button>}
       </div>
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
     </form>
   );
 }

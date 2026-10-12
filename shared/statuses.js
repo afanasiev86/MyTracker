@@ -7,7 +7,7 @@ export const STATUS_LABELS = {
   ready: 'Готово к работе',
   in_progress: 'В работе',
   review: 'На проверке',
-  done: 'Готово',
+  done: 'Принято',
   failed: 'Ошибка',
 };
 

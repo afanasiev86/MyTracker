@@ -27,6 +27,15 @@ export function initTelegramUi() {
   if (theme.button_text_color) root.setProperty('--accent-text', theme.button_text_color);
 }
 
+// Подтверждение действия. В Telegram — нативное окно, в браузере — window.confirm
+export function confirmAction(message) {
+  const wa = getWebApp();
+  if (wa?.showConfirm) {
+    return new Promise((resolve) => wa.showConfirm(message, (ok) => resolve(Boolean(ok))));
+  }
+  return Promise.resolve(window.confirm(message));
+}
+
 // Кнопка «Назад» Telegram: показывается, пока открыт экран внутри приложения
 export function setBackButton(onBack) {
   const bb = getWebApp()?.BackButton;

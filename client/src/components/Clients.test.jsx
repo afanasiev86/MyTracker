@@ -20,7 +20,7 @@ describe('Clients', () => {
   });
 
   it('показывает клиента, его проекты и затраты', async () => {
-    render(<Clients onUnauthorized={() => {}} />);
+    render(<Clients />);
 
     expect(await screen.findByText('Иван')).toBeTruthy();
     expect(screen.getByText('Магазин')).toBeTruthy();
@@ -30,8 +30,8 @@ describe('Clients', () => {
 
   it('показывает подсказку, если клиентов нет', async () => {
     vi.mocked(api.fetchClients).mockResolvedValue([]);
-    render(<Clients onUnauthorized={() => {}} />);
+    render(<Clients />);
 
-    expect(await screen.findByText('Клиентов пока нет.')).toBeTruthy();
+    expect(await screen.findByText(/Клиентов пока нет/)).toBeTruthy();
   });
 });

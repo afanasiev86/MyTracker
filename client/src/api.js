@@ -2,6 +2,9 @@
 
 const TOKEN_KEY = 'mytracker_token';
 
+// Событие для всего приложения: токен истёк или недействителен
+export const UNAUTHORIZED_EVENT = 'mytracker:unauthorized';
+
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
@@ -13,18 +16,36 @@ function authHeaders(extra = {}) {
   return headers;
 }
 
+function networkError() {
+  return new Error('Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.');
+}
+
+function httpError(status, message) {
+  const error = new Error(message || `Ошибка ${status}`);
+  error.status = status;
+  return error;
+}
+
 async function request(path, { method = 'GET', body } = {}) {
-  const res = await fetch(`/api${path}`, {
-    method,
-    headers: authHeaders(body ? { 'Content-Type': 'application/json' } : {}),
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`/api${path}`, {
+      method,
+      headers: authHeaders(body ? { 'Content-Type': 'application/json' } : {}),
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw networkError();
+  }
   if (res.status === 204) return null;
+
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const error = new Error(data.error || `Ошибка ${res.status}`);
-    error.status = res.status;
-    throw error;
+    // Вход по паролю и через Telegram обрабатывает 401 сам, остальные маршруты — нет
+    if (res.status === 401 && getToken() && !path.startsWith('/auth/')) {
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
+    throw httpError(res.status, data.error);
   }
   return data;
 }
@@ -36,7 +57,7 @@ export const loginWithTelegram = (initData) =>
   request('/auth/telegram', { method: 'POST', body: { initData } });
 
 // Задачи
-export const fetchTasks = (query = '') => request(`/tasks${query}`);
+export const fetchTasks = () => request('/tasks');
 export const getTask = (id) => request(`/tasks/${id}`);
 export const createTask = (task) => request('/tasks', { method: 'POST', body: task });
 export const updateTask = (id, patch) =>
@@ -46,19 +67,21 @@ export const addComment = (id, text) =>
 export const runTask = (id) => request(`/tasks/${id}/run`, { method: 'POST' });
 
 export async function fetchDiff(id) {
-  const res = await fetch(`/api/tasks/${id}/diff`, { headers: authHeaders() });
+  let res;
+  try {
+    res = await fetch(`/api/tasks/${id}/diff`, { headers: authHeaders() });
+  } catch {
+    throw networkError();
+  }
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    const error = new Error(data.error || `Ошибка ${res.status}`);
-    error.status = res.status;
-    throw error;
+    throw httpError(res.status, data.error);
   }
   return res.text();
 }
 
 // Проекты
 export const fetchProjects = () => request('/projects');
-export const getProject = (id) => request(`/projects/${id}`);
 export const createProject = (project) => request('/projects', { method: 'POST', body: project });
 export const updateProject = (id, patch) =>
   request(`/projects/${id}`, { method: 'PATCH', body: patch });

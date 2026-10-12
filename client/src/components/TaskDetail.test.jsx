@@ -29,8 +29,8 @@ describe('TaskDetail', () => {
     render(<TaskDetail id="abc" onChanged={() => {}} onClose={() => {}} />);
 
     expect(await screen.findByText('Запустить в Claude')).toBeTruthy();
-    expect(screen.getByText('→ Бэклог')).toBeTruthy();
-    expect(screen.queryByText('→ В работе')).toBeNull();
+    expect(screen.getByText('Вернуть в бэклог')).toBeTruthy();
+    expect(screen.queryByText(/В работе/)).toBeNull();
   });
 
   it('на проверке предлагает вернуть в работу и отметить готовой', async () => {
@@ -43,7 +43,7 @@ describe('TaskDetail', () => {
     render(<TaskDetail id="abc" onChanged={() => {}} onClose={() => {}} />);
 
     expect(await screen.findByText('Вернуть в работу')).toBeTruthy();
-    expect(screen.getByText('→ Готово')).toBeTruthy();
+    expect(screen.getByText('Принять результат')).toBeTruthy();
     expect(screen.getByText('Показать diff')).toBeTruthy();
   });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import Board from './Board.jsx';
 import * as api from '../api.js';
 
@@ -23,7 +23,7 @@ describe('Board', () => {
   });
 
   it('показывает стоимость задачи на карточке и сводку по проектам', async () => {
-    render(<Board onUnauthorized={() => {}} />);
+    render(<Board />);
 
     // $0.75 встречается дважды: в сводке и на карточке с двумя запусками
     const matches = await screen.findAllByText(/\$0\.75/);
@@ -32,21 +32,11 @@ describe('Board', () => {
   });
 
   it('показывает колонки по статусам и карточки в них', async () => {
-    render(<Board onUnauthorized={() => {}} />);
+    render(<Board />);
 
     expect(await screen.findByText('Фильтр по цене')).toBeTruthy();
     expect(screen.getByText('Экспорт CSV')).toBeTruthy();
     expect(screen.getByText('Готово к работе')).toBeTruthy();
     expect(screen.getByText('На проверке')).toBeTruthy();
-  });
-
-  it('вызывает onUnauthorized при 401', async () => {
-    const error = Object.assign(new Error('Нужна авторизация'), { status: 401 });
-    vi.mocked(api.fetchTasks).mockRejectedValue(error);
-    const onUnauthorized = vi.fn();
-
-    render(<Board onUnauthorized={onUnauthorized} />);
-
-    await waitFor(() => expect(onUnauthorized).toHaveBeenCalled());
   });
 });

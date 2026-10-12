@@ -7,10 +7,11 @@ import { sumRunCosts, formatUsd } from '../lib/cost.js';
 import TaskDetail from './TaskDetail.jsx';
 import NewTaskForm from './NewTaskForm.jsx';
 
-export default function Board({ onUnauthorized }) {
+export default function Board() {
   const [tasks, setTasks] = useState([]);
   const [costs, setCosts] = useState([]);
   const [error, setError] = useState('');
+  const [loaded, setLoaded] = useState(false);
   const [project, setProject] = useState('');
   const [search, setSearch] = useState('');
   // null | 'new' | id задачи
@@ -22,12 +23,11 @@ export default function Board({ onUnauthorized }) {
         .then(([taskList, costList]) => {
           setTasks(taskList);
           setCosts(costList);
+          setError('');
         })
-        .catch((err) => {
-          if (err.status === 401) return onUnauthorized();
-          return setError(err.message);
-        }),
-    [onUnauthorized],
+        .catch((err) => setError(err.message))
+        .finally(() => setLoaded(true)),
+    [],
   );
 
   useEffect(() => {
@@ -74,7 +74,13 @@ export default function Board({ onUnauthorized }) {
         </p>
       )}
 
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
+      {!loaded && <p className="muted">Загружаем задачи…</p>}
+      {loaded && tasks.length === 0 && !error && (
+        <p className="muted">
+          Задач пока нет. Нажмите «Новая задача», чтобы описать первую. Проект для неё должен быть создан во вкладке «Проекты».
+        </p>
+      )}
 
       {view === 'new' && (
         <NewTaskForm
@@ -110,7 +116,9 @@ export default function Board({ onUnauthorized }) {
                     onKeyDown={(e) => e.key === 'Enter' && setView(t._id)}
                   >
                     <strong>
-                      {t.priority === 'high' && <span className="prio-high">! </span>}
+                      {t.priority === 'high' && (
+                        <span className="prio-high" title={PRIORITY_LABELS.high}>Срочно · </span>
+                      )}
                       {t.title}
                     </strong>
                     <small>
@@ -118,9 +126,6 @@ export default function Board({ onUnauthorized }) {
                       {t.dueDate && ` · до ${new Date(t.dueDate).toLocaleDateString('ru-RU')}`}
                       {cost > 0 && <span className="cost-badge"> · {formatUsd(cost)}</span>}
                     </small>
-                    {t.priority !== 'normal' && (
-                      <small className="muted">Приоритет: {PRIORITY_LABELS[t.priority]}</small>
-                    )}
                   </article>
                 );
               })}
