@@ -8,10 +8,18 @@ beforeAll(() => {
 });
 
 describe('health', () => {
-  it('отвечает ok без авторизации', async () => {
+  it('публичная проверка отвечает без авторизации и только признаками работы', async () => {
     const res = await request(createApp()).get('/api/health');
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    // Без базы в тесте статус 503, но формат ответа одинаковый
+    expect([200, 503]).toContain(res.status);
+    expect(typeof res.body.ok).toBe('boolean');
+    expect(Object.keys(res.body.checks).sort()).toEqual(['claude', 'mongo', 'storage', 'telegram']);
+    for (const value of Object.values(res.body.checks)) expect(typeof value).toBe('boolean');
+  });
+
+  it('подробности доступны только владельцу с токеном', async () => {
+    const res = await request(createApp()).get('/api/health/details');
+    expect(res.status).toBe(401);
   });
 });
 

@@ -15,6 +15,7 @@ import Board from './components/Board.jsx';
 import Projects from './components/Projects.jsx';
 import Clients from './components/Clients.jsx';
 import Settings from './components/Settings.jsx';
+import Health from './components/Health.jsx';
 import Portal from './components/Portal.jsx';
 
 const SECTIONS = [
@@ -125,7 +126,7 @@ export default function App() {
       {section === 'board' && <Board />}
       {section === 'projects' && <Projects />}
       {section === 'clients' && <Clients />}
-      {section === 'settings' && <Settings />}
+      {section === 'settings' && <><Health /><Settings /></>}
     </div>
   );
 }

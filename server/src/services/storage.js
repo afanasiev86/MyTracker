@@ -98,6 +98,18 @@ export async function putObject(id, key, buffer, mime) {
   await s3.send(new PutObjectCommand({ Bucket: cfg.bucket, Key: key, Body: buffer, ContentType: mime }));
 }
 
+// Проверка доступности для мониторинга. Не настроен — не ошибка (вложения просто не используются).
+export async function probeProvider(id) {
+  if (!providerStatus(id).configured) return { configured: false, reachable: false };
+  const { s3, cfg } = client(id);
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: cfg.bucket }), { abortSignal: AbortSignal.timeout(5000) });
+    return { configured: true, reachable: true };
+  } catch (err) {
+    return { configured: true, reachable: false, error: err.name || 'ошибка' };
+  }
+}
+
 // Поток объекта: тело ответа S3 читается как Node-stream
 export async function getObjectStream(id, key) {
   const { s3, cfg } = client(id);

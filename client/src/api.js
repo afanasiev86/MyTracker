@@ -144,6 +144,9 @@ export async function fetchAttachmentUrl(id, attachmentId) {
 export const fetchStorage = () => request('/storage');
 export const saveStorage = (provider) => request('/storage', { method: 'PUT', body: { provider } });
 
+// Состояние сервисов и запусков (только владелец)
+export const fetchHealthDetails = () => request('/health/details');
+
 // Запросы доступа к порталу (владелец)
 export const fetchAccessRequests = () => request('/access');
 export const approveAccessRequest = (id, clientId) =>

@@ -10,6 +10,7 @@ import { requireAuth } from './middleware/auth.js';
 import { requireOwner, requireClient } from './middleware/roles.js';
 import portalRoutes from './routes/portal.js';
 import accessRoutes from './routes/access.js';
+import healthRoutes from './routes/health.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Попытки входа ограничены: 10 за 15 минут с одного адреса
@@ -28,7 +29,8 @@ export function createApp() {
   // CORS не нужен: клиент и API работают на одном домене (nginx или Vite proxy)
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/api/health', (_req, res) => res.json({ ok: true }));
+  // Здоровье: публичная проверка и подробности только для владельца
+  app.use('/api/health', healthRoutes);
   app.use('/api/auth', loginLimiter, authRoutes);
   // Владельческий API: заказчик сюда не попадает
   app.use('/api/tasks', requireAuth, requireOwner, taskRoutes);

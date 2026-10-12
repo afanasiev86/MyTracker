@@ -28,4 +28,4 @@
 - Модели: `server/src/models/AccessRequest.js`, `server/src/models/Client.js`.
 - API владельца для запросов: `server/src/routes/access.js`. API портала: `server/src/routes/portal.js`.
 - Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller.js:L30-68#startPolling`.
-- Интерфейс заказчика: `client/src/components/Portal.jsx:L8-54#Portal`. Выбор роли при входе: `client/src/App.jsx:L27-131#App`.
+- Интерфейс заказчика: `client/src/components/Portal.jsx:L8-54#Portal`. Выбор роли при входе: `client/src/App.jsx:L28-132#App`.

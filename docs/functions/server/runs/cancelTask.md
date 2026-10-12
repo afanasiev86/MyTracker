@@ -17,7 +17,7 @@
 
 ## Ошибки и граничные случаи
 - При успешной остановке статус не меняется здесь. Его ставит воркер, когда процесс завершится и увидит причину `cancelled`: `server/src/worker/runTask.js:L173@if (res.reason === 'cancelled')`.
-- Сигнал SIGTERM. Если процесс Claude его игнорирует, он продолжит работать. Эскалации до SIGKILL в проекте нет: это известное ограничение, см. `docs/functions/server/worker/stopRun.md:L18#Ошибки и граничные случаи`.
+- Сигнал SIGTERM. Если процесс Claude его игнорирует, через 10 секунд отправляется SIGKILL: см. `docs/functions/server/worker/stopRun.md:L13#Алгоритм`.
 
 ## Связи
 - Реестр процессов: `docs/functions/server/worker/stopRun.md:L3#Назначение`.

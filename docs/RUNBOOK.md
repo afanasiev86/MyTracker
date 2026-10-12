@@ -147,7 +147,7 @@ PASSWORD='пароль_из_шага_1' ./scripts/smoke.sh
 - [ ] Бэкап работает: `sudo /srv/mytracker/deploy/backup-mongo.sh` (появился файл в `/srv/backups/mytracker`)
 - [ ] Вложения копируются: `sudo /srv/mytracker/deploy/backup-minio.sh` (появились файлы в `/srv/backups/mytracker/minio`)
 - [ ] Архив читается: `sudo /srv/mytracker/deploy/restore-mongo.sh verify <файл из /srv/backups/mytracker>`. Рабочая база не трогается, в конце выводится число документов
-- [ ] Здоровье сервисов: `curl -s http://127.0.0.1:3001/api/health` (поля `mongo`, `storage`, `telegram`, `worker`)
+- [ ] Здоровье сервисов: `curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3001/api/health`. Ответ 200 — всё в норме, 503 — что-то не работает. Подробности (очередь, зависшие запуски) видны владельцу в «Настройках» → «Состояние» или в `/api/health/details` с токеном
 
 ### Восстановление после потери данных
 1. Остановите API: `sudo systemctl stop mytracker-api`.

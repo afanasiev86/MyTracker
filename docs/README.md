@@ -20,7 +20,7 @@
 
 | Задача | Файл с обзором | Ключевые функции |
 |---|---|---|
-| Статусы, создание, правка задач | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L5#Задачи`) | PATCH /:id (`docs/functions/server/routes/patchTask.md:L3#Назначение`), статусы (`docs/architecture/run-pipeline.md:L24#Состояния задачи`) |
+| Статусы, создание, правка задач | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L5#Задачи`) | PATCH /:id (`docs/functions/server/routes/patchTask.md:L3#Назначение`), статусы (`docs/architecture/run-pipeline.md:L27#Состояния задачи`) |
 | Запуск Claude, очередь, исходы | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`) | startTask (`docs/functions/server/runs/startTask.md:L3#Назначение`), runTask (`docs/functions/server/worker/runTask.md:L3#Назначение`) |
 | Вопросы от Claude и ответы | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L11#Вопросы от Claude`) | postQuestion (`docs/functions/server/routes/postQuestion.md:L3#Назначение`), answerTask (`docs/functions/server/runs/answerTask.md:L3#Назначение`) |
 | Отмена и таймаут | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L21#Отмена и таймаут`) | cancelTask (`docs/functions/server/runs/cancelTask.md:L3#Назначение`), stopRun (`docs/functions/server/worker/stopRun.md:L3#Назначение`) |
@@ -33,6 +33,7 @@
 | Mini App | features/telegram.md (`docs/features/telegram.md:L17#Mini App`) | verifyInitData (`docs/functions/server/telegram/verifyInitData.md:L3#Назначение`) |
 | Клиенты и проекты (CRM) | features/crm-and-auth.md (`docs/features/crm-and-auth.md:L3#Клиенты и проекты`) | маршруты в `server/src/routes/clients.js`, `server/src/routes/projects.js` |
 | Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L20#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
+| Здоровье сервисов и запусков | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`), раздел «Здоровье» | getChecks (`server/src/services/health.js:L65-82#getChecks`), getDetails (`server/src/services/health.js:L94-121#getDetails`), блок в интерфейсе `client/src/components/Health.jsx:L20-72#Health` |
 | Бэкапы и восстановление | `docs/RUNBOOK.md:L152#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-minio.sh:L35@docker run --rm` |
 | Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L64-307#TaskDetail` | главная кнопка Telegram: `client/src/lib/telegram.js:L55-69#setMainButton` |
 

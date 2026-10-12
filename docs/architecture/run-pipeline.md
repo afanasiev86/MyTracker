@@ -19,7 +19,10 @@
 Очередь только в памяти, по ключу проекта. Задачи одного репозитория идут по очереди. Детали: enqueue (`docs/functions/server/worker/enqueue.md:L3#Назначение`).
 
 ## Отмена и таймаут
-Оба случая отправляют SIGTERM через реестр процессов: `server/src/worker/processes.js:L22-34#stopRun`. Причина (`cancelled` или `timeout`) определяет исход. Известное ограничение: нет SIGKILL, см. stopRun (`docs/functions/server/worker/stopRun.md:L18#Ошибки и граничные случаи`).
+Оба случая отправляют SIGTERM через реестр процессов: `server/src/worker/processes.js:L27-39#stopRun`. Причина (`cancelled` или `timeout`) определяет исход. Если процесс не завершился за 10 секунд, идёт SIGKILL (`server/src/worker/processes.js:L2@KILL_AFTER_MS`), см. stopRun (`docs/functions/server/worker/stopRun.md:L13#Алгоритм`).
+
+## Здоровье
+Публичный `/api/health` отвечает 200 или 503 и показывает по каждому сервису (база, Claude Code, хранилище, Telegram) признак «в норме». Проверки кэшируются на 30 секунд: `server/src/services/health.js:L65-82#getChecks`. Подробности для владельца (очередь по проектам, запуски, зависшие задачи «в работе» без процесса) собирает `server/src/services/health.js:L94-121#getDetails` и показывает блок «Состояние» в «Настройках».
 
 ## Состояния задачи
 Таблица статусов и переходов: `shared/statuses.js:L24-32#TRANSITIONS`. Ручные переходы проверяет `server/src/routes/tasks.js:L90-117#PATCH /:id` (подробно (`docs/functions/server/routes/patchTask.md:L13#Алгоритм`)).

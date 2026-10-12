@@ -17,6 +17,11 @@ export function isRunning(taskId) {
   return running.has(String(taskId));
 }
 
+// ID задач, для которых сейчас работает процесс Claude
+export function runningTaskIds() {
+  return [...running.keys()];
+}
+
 // Останавливает процесс и запоминает причину ('cancelled' или 'timeout').
 // Возвращает false, если процесса уже нет.
 export function stopRun(taskId, reason) {

@@ -4,7 +4,7 @@
 Останавливает запущенный процесс Claude и запоминает причину: `cancelled` (вручную) или `timeout` (по времени).
 
 ## Где объявлено
-`server/src/worker/processes.js:L22-34#stopRun`
+`server/src/worker/processes.js:L27-39#stopRun`
 
 ## Вход и выход
 - Вход: `taskId`, `reason`.
@@ -12,8 +12,8 @@
 
 ## Алгоритм
 1. Находит запись в реестре: `server/src/worker/processes.js:L10@const entry = running.get(String(taskId));`.
-2. Сохраняет причину, чтобы воркер потом понял, почему процесс завершился: `server/src/worker/processes.js:L25@entry.reason = reason;`.
-3. Отправляет SIGTERM: `server/src/worker/processes.js:L26@entry.child.kill('SIGTERM');`.
+2. Сохраняет причину, чтобы воркер потом понял, почему процесс завершился: `server/src/worker/processes.js:L30@entry.reason = reason;`.
+3. Отправляет SIGTERM: `server/src/worker/processes.js:L31@entry.child.kill('SIGTERM');`.
 
 ## Ошибки и граничные случаи
 - Если процесс игнорирует SIGTERM, через 10 секунд отправляется SIGKILL: `server/src/worker/processes.js:L2@KILL_AFTER_MS`. Таймер снимается при завершении процесса (`unregisterRun`).
