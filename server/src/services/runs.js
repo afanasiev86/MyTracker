@@ -10,7 +10,7 @@ export async function startTask(task) {
   }
   task.status = 'in_progress';
   await task.save();
-  enqueue(task.project, () => runTask(task._id));
+  enqueue(task.project, () => runTask(task._id), { priority: task.priority });
   return { task };
 }
 
@@ -23,7 +23,7 @@ export async function answerTask(task, text) {
   task.pendingQuestion = '';
   task.status = 'in_progress';
   await task.save();
-  enqueue(task.project, () => runTask(task._id, { answer: text }));
+  enqueue(task.project, () => runTask(task._id, { answer: text }), { priority: task.priority });
   return { task };
 }
 

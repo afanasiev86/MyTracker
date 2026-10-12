@@ -14,7 +14,7 @@
 1. Проверяет статус: задача должна быть в `waiting`: `server/src/services/runs.js:L19@if (task.status !== 'waiting')`.
 2. Сохраняет ответ как комментарий, чтобы он остался в истории: `server/src/services/runs.js:L18-28#answerTask`.
 3. Очищает вопрос и переводит в «В работе»: `server/src/services/runs.js:L23@task.pendingQuestion = '';`.
-4. Ставит запуск в очередь с параметром `answer`, и воркер продолжит сессию `--resume`: `server/src/services/runs.js:L26@enqueue(task.project, () => runTask(task._id, { answer: text }));`.
+4. Ставит запуск в очередь с параметром `answer` и приоритетом задачи; воркер продолжит сессию `--resume`: `server/src/services/runs.js:L26@enqueue(task.project, () => runTask(task._id, { answer: text }), { priority: task.priority });`.
 
 ## Ошибки и граничные случаи
 - Если `sessionId` потерян, воркер не сможет продолжить сессию и передаст ответ вместе с задачей: см. `server/src/worker/runTask.js:L141@} else if (answer) {`.

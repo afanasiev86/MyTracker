@@ -4,7 +4,7 @@
 
 ## Этапы запуска
 1. Пользователь запускает задачу: API, бот или кнопка. Всё сходится в `server/src/services/runs.js:L7-15#startTask`.
-2. Задача ставится в очередь проекта `server/src/worker/queue.js:L5-15#enqueue`. Подробнее: enqueue (`docs/functions/server/worker/enqueue.md:L3#Назначение`).
+2. Задача ставится в очередь проекта `server/src/worker/queue.js:L14-25#enqueue`. Подробнее: enqueue (`docs/functions/server/worker/enqueue.md:L3#Назначение`).
 3. Воркер готовит рабочую копию prepareWorktree (`docs/functions/server/worker/prepareWorktree.md:L13#Алгоритм`).
 4. Запускается `claude` с инструментами из claudeTools (`docs/functions/server/worker/claudeTools.md:L13#Алгоритм`) через runClaude (`docs/functions/server/worker/runClaude.md:L13#Алгоритм`).
 5. По итогу выбирается исход (таблица ниже) и уведомление уходит в Telegram.

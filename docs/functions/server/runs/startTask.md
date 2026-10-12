@@ -13,7 +13,7 @@
 ## Алгоритм
 1. Проверяет, что статус допускает запуск (`ready`, `review`, `failed`): `server/src/services/runs.js:L8@if (!RUNNABLE_FROM.includes(task.status))`.
 2. Переводит задачу в «В работе» и сохраняет, чтобы интерфейс сразу показал статус: `server/src/services/runs.js:L11@task.status = 'in_progress';`.
-3. Ставит фактическую работу в очередь проекта: `server/src/services/runs.js:L13@enqueue(task.project, () => runTask(task._id));`.
+3. Ставит фактическую работу в очередь проекта с приоритетом задачи (срочные уходят вперёд): `server/src/services/runs.js:L13@enqueue(task.project, () => runTask(task._id), { priority: task.priority });`.
 4. Возвращает задачу без ожидания завершения, поэтому API отвечает быстро (`202`, см. `server/src/routes/tasks.js:L135-145#POST /:id/run`).
 
 ## Ошибки и граничные случаи
