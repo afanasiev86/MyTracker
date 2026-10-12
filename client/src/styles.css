@@ -133,3 +133,24 @@ button:disabled { opacity: 0.5; cursor: default; }
 button.ghost { background: transparent; color: var(--accent); border: 1px solid #cbd5e1; }
 
 .error { color: var(--danger); margin: 0; }
+.center { text-align: center; margin-top: 30vh; }
+button { background: var(--accent); color: var(--accent-text, #fff); }
+button.ghost { color: var(--accent); }
+
+/* Телефон и Mini App: колонки идут горизонтально, их можно листать пальцем */
+@media (max-width: 640px) {
+  .app { padding: 12px; }
+  .board {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+  .column {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+  }
+  .panel { padding: 12px; }
+  .toolbar { flex-wrap: wrap; }
+}

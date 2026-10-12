@@ -31,6 +31,9 @@ async function request(path, { method = 'GET', body } = {}) {
 export const login = (password) =>
   request('/auth/login', { method: 'POST', body: { password } });
 
+export const loginWithTelegram = (initData) =>
+  request('/auth/telegram', { method: 'POST', body: { initData } });
+
 export const fetchTasks = () => request('/tasks');
 export const getTask = (id) => request(`/tasks/${id}`);
 export const createTask = (task) => request('/tasks', { method: 'POST', body: task });

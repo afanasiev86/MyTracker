@@ -38,6 +38,10 @@ npm run dev
 
 Для запуска задач нужны репозитории проектов в `REPOS_DIR/<project>` с `origin/main`, установленный Claude Code и вход выполнен (`claude`, затем `/login`).
 
+## Telegram Mini App
+
+Тот же веб-интерфейс открывается внутри Telegram. Вход выполняется автоматически по подписи данных Telegram, пароль не нужен. Требования: HTTPS-домен и `TELEGRAM_MINIAPP_URL` в `server/.env`. Открыть можно кнопкой «Трекер» у бота или командой `/app`.
+
 ## Telegram-бот
 
 Заполните `TELEGRAM_BOT_TOKEN` (через @BotFather) и `TELEGRAM_OWNER_ID` (ваш числовой id). Команды:

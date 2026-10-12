@@ -16,9 +16,11 @@ export async function telegramApi(method, body) {
   return data.result;
 }
 
-export function sendTelegram(text) {
+// extra может содержать, например, reply_markup с кнопкой Mini App
+export function sendTelegram(text, extra = {}) {
   return telegramApi('sendMessage', {
     chat_id: process.env.TELEGRAM_OWNER_ID,
     text: text.slice(0, 4000),
+    ...extra,
   });
 }

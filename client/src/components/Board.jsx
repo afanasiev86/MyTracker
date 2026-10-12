@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchTasks } from '../api.js';
 import { TASK_STATUSES, STATUS_LABELS } from '../../../shared/statuses.js';
+import { setBackButton } from '../lib/telegram.js';
 import TaskDetail from './TaskDetail.jsx';
 import NewTaskForm from './NewTaskForm.jsx';
 
@@ -25,6 +26,12 @@ export default function Board({ onUnauthorized }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // В Telegram «Назад» закрывает открытую задачу или форму
+  useEffect(() => {
+    if (!view) return setBackButton(null);
+    return setBackButton(() => setView(null));
+  }, [view]);
 
   const projects = [...new Set(tasks.map((t) => t.project))].sort();
   const visible = project ? tasks.filter((t) => t.project === project) : tasks;

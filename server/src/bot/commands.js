@@ -9,7 +9,19 @@ const HELP = [
   '/ready <id>: перевести в «Готово к работе»',
   '/run <id>: запустить в Claude',
   '/status: активные задачи',
+  '/app: открыть трекер',
 ].join('\n');
+
+function appButton() {
+  const url = process.env.TELEGRAM_MINIAPP_URL;
+  if (!url) {
+    return 'Mini App не настроен: задайте TELEGRAM_MINIAPP_URL (HTTPS-адрес) и перезапустите сервер.';
+  }
+  return {
+    text: 'Трекер',
+    reply_markup: { inline_keyboard: [[{ text: 'Открыть трекер', web_app: { url } }]] },
+  };
+}
 
 export function parseCommand(text) {
   const [head = '', ...args] = text.trim().split(/\s+/);
@@ -21,9 +33,11 @@ async function findTask(id) {
   return Task.findById(id);
 }
 
-// Возвращает текст ответа для Telegram
+// Возвращает строку или { text, reply_markup } для Telegram
 export async function handleCommand(text) {
   const { cmd, args } = parseCommand(text);
+
+  if (cmd === '/app') return appButton();
 
   if (cmd === '/new') {
     const [project, ...words] = args;
