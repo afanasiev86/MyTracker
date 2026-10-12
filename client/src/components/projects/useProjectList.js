@@ -1,24 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
 import { fetchProjects } from '../../api.js';
+import { useResource } from '../../lib/useResource.js';
 
 // Список проектов со статистикой. load() перечитывает список с сервера.
 export function useProjectList() {
-  const [projects, setProjects] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState('');
-
-  const load = useCallback(
-    () =>
-      fetchProjects()
-        .then(setProjects)
-        .catch((err) => setError(err.message))
-        .finally(() => setLoaded(true)),
-    [],
-  );
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  return { projects, loaded, error, setError, load };
+  const { data, loaded, error, setError, load } = useResource(fetchProjects, []);
+  return { projects: data, loaded, error, setError, load };
 }

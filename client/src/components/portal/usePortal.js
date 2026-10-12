@@ -1,28 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
 import { fetchPortalMe, fetchPortalTasks } from '../../api.js';
+import { useResource } from '../../lib/useResource.js';
 
 // Имя заказчика и его задачи. load() перечитывает данные.
+const loadPortal = () =>
+  Promise.all([fetchPortalMe(), fetchPortalTasks()]).then(([me, list]) => ({
+    name: me.name,
+    tasks: list,
+  }));
+
 export function usePortal() {
-  const [name, setName] = useState('');
-  const [tasks, setTasks] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState('');
-
-  const load = useCallback(
-    () =>
-      Promise.all([fetchPortalMe(), fetchPortalTasks()])
-        .then(([me, list]) => {
-          setName(me.name);
-          setTasks(list);
-        })
-        .catch((err) => setError(err.message))
-        .finally(() => setLoaded(true)),
-    [],
-  );
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  return { name, tasks, loaded, error, load };
+  const { data, loaded, error, load } = useResource(loadPortal, { name: '', tasks: [] });
+  return { name: data.name, tasks: data.tasks, loaded, error, load };
 }

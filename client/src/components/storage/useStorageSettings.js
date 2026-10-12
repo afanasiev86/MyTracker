@@ -1,15 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { fetchStorage, saveStorage } from '../../api.js';
+import { useResource } from '../../lib/useResource.js';
 
 // Состояние выбора хранилища и сохранение выбранного провайдера
 export function useStorageSettings() {
-  const [state, setState] = useState(null);
-  const [error, setError] = useState('');
+  const { data: state, setData: setState, error, setError } = useResource(fetchStorage, null);
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    fetchStorage().then(setState).catch((err) => setError(err.message));
-  }, []);
 
   async function choose(provider) {
     setBusy(true);
