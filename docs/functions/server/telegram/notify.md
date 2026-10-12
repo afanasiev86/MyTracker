@@ -14,4 +14,4 @@
 2. Отправляет через `sendTelegram`, ошибку гасит и пишет в лог: `server/src/services/notify.js:L7@console.error('Telegram:'`.
 
 ## Связи
-- Используется воркером (`server/src/worker/runTask.js:L240@await notify(`) и дайджестом.
+- Используется воркером (`server/src/worker/runTask.js:L247@await notify(`) и дайджестом.

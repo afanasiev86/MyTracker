@@ -6,10 +6,10 @@
 Строка → событие: parseStreamLine (`docs/functions/server/progress/parseStreamLine.md:L3#Назначение`). Строка прогресса: progressFromEvent (`docs/functions/server/progress/progressFromEvent.md:L13#Алгоритм`). Разбиение на строки: LineSplitter (`docs/functions/server/progress/LineSplitter.md:L3#Назначение`).
 
 ## Запись прогресса
-Поле `progress` модели `server/src/models/Task.js:L32-54#taskSchema`. Записи идут по очереди, чтобы не перетереть финальный статус: `server/src/worker/runTask.js:L152@writes = writes.then`.
+Поле `progress` модели `server/src/models/Task.js:L32-54#taskSchema`. Записи идут по очереди, чтобы не перетереть финальный статус: `server/src/worker/runTask.js:L153@writes = writes.then`.
 
 ## Троттлинг
-Не чаще раза в 3 секунды: `server/src/worker/runTask.js:L44@PROGRESS_THROTTLE_MS`. Последнее сообщение доотправляется при завершении.
+Не чаще раза в 3 секунды: `server/src/worker/runTask.js:L45@PROGRESS_THROTTLE_MS`. Последнее сообщение доотправляется при завершении.
 
 ## Итоговое событие
 Результат, стоимость и `session_id` берутся из последнего события `result`: findResult (`docs/functions/server/progress/findResult.md:L13#Алгоритм`).

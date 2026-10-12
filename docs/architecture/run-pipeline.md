@@ -12,6 +12,8 @@
 ## Исходы запуска
 Порядок проверок важен: первое совпавшее условие определяет статус. Таблица со ссылками на строки: runTask (`docs/functions/server/worker/runTask.md:L13#Алгоритм`).
 
+**Автопроверка** (перед «На проверке»): после пуша воркер запускает `npm run test` и `npm run lint`, если они объявлены в `package.json` проекта. Зависимости ставятся один раз в рабочую копию. Результат пишется системным комментарием «Автопроверка: …», хвосты вывода — в лог запуска, а в уведомлении есть строка с итогом. Статус от результата не меняется: решение за владельцем. Код: `server/src/worker/verify.js:L49-63#runChecks`, вызов в `server/src/worker/runTask.js:L210@runChecks(wt)`. Тесты: `server/test/verify.test.js:L12@describe('автопроверка`.
+
 ## Рабочая копия
 Каждая задача получает ветку `task/<id>` и отдельный git worktree в `WORKTREES_DIR`. Продолжение после вопроса берёт ветку из origin: prepareWorktree (`docs/functions/server/worker/prepareWorktree.md:L13#Алгоритм`).
 

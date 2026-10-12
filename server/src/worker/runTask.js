@@ -12,6 +12,7 @@ import { registerRun, unregisterRun, stopRun } from './processes.js';
 import { progressFromEvent, parseStreamLine, findResult, LineSplitter } from './progress.js';
 import { reviewKeyboard } from '../bot/callbackData.js';
 import { materializeScreenshots, screenshotNote } from './screenshots.js';
+import { runChecks, formatChecks } from './verify.js';
 
 // Скрипт для вызовов API трекера (deploy/tracker-api.sh рядом с сервером)
 const TRACKER_CLI = fileURLToPath(new URL('../../../deploy/tracker-api.sh', import.meta.url));
@@ -205,7 +206,10 @@ export async function runTask(taskId, { answer = null } = {}) {
         outcome = { status: 'failed', summary: 'Claude не создал коммитов.', costUsd, log };
       } else {
         await git(wt, ['push', '-u', 'origin', branch]);
-        outcome = { status: 'review', summary: data?.result || 'Готово к проверке', costUsd, log };
+        // Автопроверка не меняет статус: владелец видит результат и решает сам
+        const checks = await runChecks(wt).catch((err) => [{ name: 'подготовка', ok: false, tail: err.message }]);
+        const checksLog = checks.map((c) => `\n=== ${c.name} ===\n${c.tail}`).join('');
+        outcome = { status: 'review', summary: data?.result || 'Готово к проверке', costUsd, log: log + checksLog, checks };
       }
     }
   } catch (err) {
@@ -227,6 +231,8 @@ export async function runTask(taskId, { answer = null } = {}) {
     costUsd: outcome.costUsd,
     log: outcome.log,
   });
+  const checksText = outcome.checks?.length ? formatChecks(outcome.checks) : '';
+  if (checksText) task.comments.push({ author: 'system', text: `Автопроверка: ${checksText}` });
   await task.save();
 
   await git(repo, ['worktree', 'remove', '--force', wt]).catch(() => {});
@@ -234,7 +240,8 @@ export async function runTask(taskId, { answer = null } = {}) {
   const title = outcome.status === 'waiting'
     ? `${task.project}: ${task.title}\nClaude ждёт ответа:\n${outcome.summary}\n\n` +
       `Ответьте ответом на это сообщение или командой /answer ${task._id} текст`
-    : `${task.project}: ${task.title}\nСтатус: ${STATUS_LABELS[task.status]}\n${outcome.summary.slice(0, 800)}`;
+    : `${task.project}: ${task.title}\nСтатус: ${STATUS_LABELS[task.status]}\n${outcome.summary.slice(0, 800)}` +
+      (checksText ? `\nАвтопроверка: ${checksText}` : '');
   // На проверку — с кнопками: diff, принять, вернуть в работу
   const extra = task.status === 'review' ? { reply_markup: reviewKeyboard(task._id) } : {};
   await notify(`${ICONS[task.status] ?? 'ℹ️'} ${title}\nID: ${task._id}`, extra);
