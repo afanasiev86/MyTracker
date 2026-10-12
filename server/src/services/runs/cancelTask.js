@@ -9,6 +9,8 @@ export async function cancelTask(task) {
     return { task, stopping: true };
   }
   task.status = 'failed';
+  task.queued = false;
+  task.queuedAnswer = '';
   task.comments.push({ author: 'system', text: 'Запуск отменён вручную.' });
   await task.save();
   return { task, stopping: false };

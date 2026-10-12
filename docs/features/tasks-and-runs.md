@@ -3,7 +3,7 @@
 Для изменения этой области начинай с этого файла, затем открой ссылки.
 
 ## Задачи
-Поля и статусы: `server/src/models/Task.js:L33-57#taskSchema`. Список статусов и переходы: `shared/statuses.js:L24-32#TRANSITIONS`. Создание и правка: `server/src/routes/tasks/patchTask.js:L6-16#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L14#Алгоритм`)).
+Поля и статусы: `server/src/models/Task.js:L33-61#taskSchema`. Список статусов и переходы: `shared/statuses.js:L24-32#TRANSITIONS`. Создание и правка: `server/src/routes/tasks/patchTask.js:L6-16#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L14#Алгоритм`)).
 
 **Тип задачи** (`kind`: баг, фича, рефакторинг, без типа). Выставляется выбором шаблона или полем «Тип задачи» в форме, значения в `shared/taskKinds.js`. Claude получает тип из `GET /tasks/:id` и выбирает порядок работы по разделу «Типы задач» в `.claude/skills/implement-task/SKILL.md`. В промпт запуска тип не передаётся: аргумент команды используется для ID.
 

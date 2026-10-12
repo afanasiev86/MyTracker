@@ -51,6 +51,10 @@ const taskSchema = new mongoose.Schema({
   pendingQuestion: { type: String, default: '' },
   // Текущий шаг запуска, пока задача в работе (обновляется воркером)
   progress: { type: String, default: '' },
+  // Запуск ждёт своей очереди и ещё не начал выполняться. После перезапуска его ставим обратно.
+  queued: { type: Boolean, default: false },
+  // Ответ владельца, который ждёт запуска в очереди
+  queuedAnswer: { type: String, default: '' },
   attachments: { type: [attachmentSchema], default: [] },
   runs: { type: [runSchema], default: [] },
   comments: { type: [commentSchema], default: [] },

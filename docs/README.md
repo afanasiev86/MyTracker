@@ -49,7 +49,7 @@
 - Дайджест: buildDigest (`docs/functions/server/digest/buildDigest.md:L3#Назначение`), moscowParts (`docs/functions/server/digest/moscowParts.md:L3#Назначение`), startDigestScheduler (`docs/functions/server/digest/startDigestScheduler.md:L3#Назначение`)
 
 ## Известные проблемы (проверено по коду)
-- Очередь запусков и реестр процессов в памяти: после перезапуска сервера теряются (задачи помечаются ошибкой при старте).
+- Реестр процессов в памяти: после перезапуска запущенный процесс Claude не виден. Выполнявшиеся запуски помечаются ошибкой. Ждавшие в очереди возвращаются (см. `docs/architecture/run-pipeline.md:L20#Очередь`).
 - Поток `stream-json` и итоговое событие `result` не проверены на реальном запуске `claude`.
 - Вложения: см. [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).
 

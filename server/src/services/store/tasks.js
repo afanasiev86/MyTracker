@@ -25,6 +25,22 @@ export function addTaskComment(id, comment) {
   return Task.findByIdAndUpdate(id, { $push: { comments: comment } }, { new: true }).lean();
 }
 
+// Задачи, у которых запуск отмечен как выполняемый (нужно при восстановлении после перезапуска)
+export function listInProgressTasks() {
+  return Task.find({ status: 'in_progress' });
+}
+
+// Запуск, прерванный перезапуском сервера: ставим ошибку без хуков сохранения (уведомлений не шлём, как и раньше)
+export function failInterruptedRun(id, comment) {
+  return Task.updateOne(
+    { _id: id },
+    {
+      $set: { status: 'failed', queued: false, queuedAnswer: '' },
+      $push: { comments: comment },
+    },
+  );
+}
+
 export function taskExistsInProject(slug) {
   return Task.exists({ project: slug });
 }

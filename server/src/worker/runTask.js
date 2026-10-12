@@ -19,6 +19,12 @@ export async function runTask(taskId, { answer = null } = {}) {
   const cfg = workerConfig();
   const task = await Task.findById(taskId);
   if (!task || task.status !== 'in_progress') return;
+  // Запуск взят из очереди: в базе он больше не ждёт
+  if (task.queued) {
+    task.queued = false;
+    task.queuedAnswer = '';
+    await task.save();
+  }
 
   const branch = `task/${task._id}`;
   const repo = path.join(cfg.reposDir, task.project);

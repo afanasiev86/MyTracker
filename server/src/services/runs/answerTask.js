@@ -1,5 +1,4 @@
-import { enqueue } from '../../worker/queue.js';
-import { runTask } from '../../worker/runTask.js';
+import { enqueueRun } from './enqueueRun.js';
 
 // Ответ владельца на вопрос Claude: продолжаем ту же сессию
 export async function answerTask(task, text) {
@@ -9,7 +8,9 @@ export async function answerTask(task, text) {
   task.comments.push({ author: 'owner', text: `Ответ: ${text}` });
   task.pendingQuestion = '';
   task.status = 'in_progress';
+  task.queued = true;
+  task.queuedAnswer = text;
   await task.save();
-  enqueue(task.project, () => runTask(task._id, { answer: text }), { priority: task.priority });
+  enqueueRun(task, text);
   return { task };
 }

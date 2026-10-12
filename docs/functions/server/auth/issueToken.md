@@ -16,7 +16,7 @@
 
 ## Ошибки и граничные случаи
 - Если `JWT_SECRET` не задан, `jwt.sign` выбросит ошибку. Сервер при старте этого не проверяет, поэтому ошибка появится при первом входе. Это место для будущей проверки конфигурации.
-- Срок воркера задаётся вызовом с `'2h'`: `server/src/worker/runTask.js:L39@TRACKER_TOKEN: await issueToken('worker', '2h')`.
+- Срок воркера задаётся вызовом с `'2h'`: `server/src/worker/runTask.js:L45@TRACKER_TOKEN: await issueToken('worker', '2h')`.
 - Функция стала асинхронной, потому что читает версию из базы. Все вызывающие должны ставить `await` — тесты это проверяют: `server/test/crm.db.test.js:L18@issueToken('owner')`.
 
 ## Связи

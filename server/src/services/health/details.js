@@ -10,11 +10,11 @@ export async function getDetails() {
   const checks = await getChecks();
   const running = runningTaskIds();
   const [inProgress, waitingForAnswer] = await Promise.all([
-    Task.find({ status: 'in_progress' }).select('_id').lean(),
+    Task.find({ status: 'in_progress' }).select('_id queued').lean(),
     Task.countDocuments({ status: 'waiting' }),
   ]);
-  // Задача «в работе», для которой нет процесса, — сессия потеряна (например, после перезапуска)
-  const stale = inProgress.filter((t) => !running.includes(String(t._id))).length;
+  // Задача «в работе», которая не ждёт в очереди и не имеет процесса, — сессия потеряна (например, после перезапуска)
+  const stale = inProgress.filter((t) => !t.queued && !running.includes(String(t._id))).length;
   return {
     checks,
     process: {

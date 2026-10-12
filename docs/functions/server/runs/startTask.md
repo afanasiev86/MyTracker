@@ -4,16 +4,16 @@
 Единая точка запуска задачи в Claude. Её вызывают и API (`POST /api/tasks/:id/run`), и бот (`/run`), и кнопка «Вернуть в работу» под уведомлением.
 
 ## Где объявлено
-`server/src/services/runs/startTask.js:L6-14#startTask`
+`server/src/services/runs/startTask.js:L5-15#startTask`
 
 ## Вход и выход
 - Вход: `task` — документ Mongoose задачи.
 - Выход: `{ task }` при успехе или `{ error }` с текстом, если запуск недоступен.
 
 ## Алгоритм
-1. Проверяет, что статус допускает запуск (`ready`, `review`, `failed`): `server/src/services/runs/startTask.js:L7@if (!RUNNABLE_FROM.includes(task.status))`.
-2. Переводит задачу в «В работе» и сохраняет, чтобы интерфейс сразу показал статус: `server/src/services/runs/startTask.js:L10@task.status = 'in_progress';`.
-3. Ставит фактическую работу в очередь проекта с приоритетом задачи (срочные уходят вперёд): `server/src/services/runs/startTask.js:L12@enqueue(task.project, () => runTask(task._id), { priority: task.priority });`.
+1. Проверяет, что статус допускает запуск (`ready`, `review`, `failed`): `server/src/services/runs/startTask.js:L6@if (!RUNNABLE_FROM.includes(task.status))`.
+2. Переводит задачу в «В работе» и сохраняет, чтобы интерфейс сразу показал статус: `server/src/services/runs/startTask.js:L9@task.status = 'in_progress';`.
+3. Ставит фактическую работу в очередь проекта с приоритетом задачи (срочные уходят вперёд): `server/src/services/runs/startTask.js:L13@enqueueRun(task);`.
 4. Возвращает задачу без ожидания завершения, поэтому API отвечает быстро (`202`, см. `server/src/routes/tasks/runTaskRoute.js:L5-15#runTaskRoute`).
 
 ## Ошибки и граничные случаи
