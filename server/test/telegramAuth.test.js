@@ -52,3 +52,12 @@ describe('verifyInitData', () => {
     expect(verifyInitData('hash=zz', BOT_TOKEN, NOW).ok).toBe(false);
   });
 });
+
+describe('verifyInitData: некорректный пользователь', () => {
+  it('отклоняет подписанные данные с битым JSON в user', () => {
+    const initData = signInitData({ auth_date: String(NOW - 60), user: '{не json' });
+    const result = verifyInitData(initData, BOT_TOKEN, NOW);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('некорректные данные пользователя');
+  });
+});

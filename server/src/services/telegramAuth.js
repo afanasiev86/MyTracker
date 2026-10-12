@@ -29,6 +29,10 @@ export function verifyInitData(initData, botToken, nowSec = Math.floor(Date.now(
     return { ok: false, reason: 'данные устарели, откройте приложение заново' };
   }
 
-  const user = params.get('user') ? JSON.parse(params.get('user')) : null;
-  return { ok: true, user };
+  try {
+    const user = params.get('user') ? JSON.parse(params.get('user')) : null;
+    return { ok: true, user };
+  } catch {
+    return { ok: false, reason: 'некорректные данные пользователя' };
+  }
 }

@@ -12,11 +12,13 @@ import Login from './components/Login.jsx';
 import Board from './components/Board.jsx';
 import Projects from './components/Projects.jsx';
 import Clients from './components/Clients.jsx';
+import Settings from './components/Settings.jsx';
 
 const SECTIONS = [
   { id: 'board', title: 'Задачи' },
   { id: 'projects', title: 'Проекты' },
   { id: 'clients', title: 'Клиенты' },
+  { id: 'settings', title: 'Настройки' },
 ];
 
 export default function App() {
@@ -104,6 +106,7 @@ export default function App() {
       {section === 'board' && <Board />}
       {section === 'projects' && <Projects />}
       {section === 'clients' && <Clients />}
+      {section === 'settings' && <Settings />}
     </div>
   );
 }

@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { z } from 'zod';
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
 import { startTask, answerTask, cancelTask } from '../services/runs.js';
 import { taskDiff } from '../services/diff.js';
+import { ALLOWED_TYPES, MAX_ATTACHMENT_BYTES, saveAttachment, attachmentStream } from '../services/attachments.js';
 import { TASK_STATUSES, canTransition } from '../../../shared/statuses.js';
 import { PRIORITIES } from '../../../shared/crm.js';
 
@@ -196,6 +197,40 @@ router.get('/:id/diff', async (req, res, next) => {
     if (!task.branch) return res.status(404).json({ error: 'Ветка ещё не создана' });
 
     return res.type('text/plain').send(await taskDiff(task));
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
+// Загрузка вложения: тело запроса — сам файл, его тип в Content-Type
+router.post(
+  '/:id/attachments',
+  express.raw({ type: Object.keys(ALLOWED_TYPES), limit: MAX_ATTACHMENT_BYTES }),
+  async (req, res, next) => {
+    try {
+      const task = await Task.findById(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+      if (!Buffer.isBuffer(req.body)) return res.status(415).json({ error: 'Можно прикреплять только картинки' });
+      const name = req.get('X-File-Name') ? decodeURIComponent(req.get('X-File-Name')) : '';
+      const attachment = await saveAttachment(task, req.body, req.get('Content-Type'), name);
+      return res.status(201).json(attachment.toObject());
+    } catch (err) {
+      return next(err);
+    }
+  },
+);
+
+// Отдача вложения: файл читается из MinIO и проходит через API (бакет приватный)
+router.get('/:id/attachments/:attachmentId', async (req, res, next) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+    const file = await attachmentStream(task, req.params.attachmentId);
+    if (!file) return res.status(404).json({ error: 'Вложение не найдено' });
+    res.type(file.mime);
+    file.stream.on('error', next);
+    return file.stream.pipe(res);
   } catch (err) {
     return next(err);
   }

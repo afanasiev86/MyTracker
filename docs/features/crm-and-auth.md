@@ -8,3 +8,6 @@ requireAuth (`docs/functions/server/auth/requireAuth.md:L13#Алгоритм`), 
 
 ## Ошибки API
 Единый формат `{ error }`: errorHandler (`docs/functions/server/http/errorHandler.md:L13#Алгоритм`). Сборка приложения: createApp (`docs/functions/server/http/createApp.md:L13#Алгоритм`).
+
+## Хранилище вложений
+Выбор MinIO или S3 — вкладка «Настройки». Состояние: `server/src/services/storage.js:L43-45#listProviders`, смена: `server/src/services/storage.js:L53-60#setActiveProvider`. Подробно о вложениях: [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).

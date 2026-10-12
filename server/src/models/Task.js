@@ -16,6 +16,17 @@ const commentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 }, { _id: false });
 
+// Метаданные вложения (сам файл лежит на диске, см. services/attachments.js)
+const attachmentSchema = new mongoose.Schema({
+  fileName: { type: String, required: true },
+  // Где лежит файл: minio или s3
+  provider: { type: String, default: 'minio' },
+  name: { type: String, default: 'screenshot' },
+  mime: { type: String, required: true },
+  size: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+
 const taskSchema = new mongoose.Schema({
   // slug проекта, см. модель Project
   project: { type: String, required: true, trim: true },
@@ -35,6 +46,7 @@ const taskSchema = new mongoose.Schema({
   pendingQuestion: { type: String, default: '' },
   // Текущий шаг запуска, пока задача в работе (обновляется воркером)
   progress: { type: String, default: '' },
+  attachments: { type: [attachmentSchema], default: [] },
   runs: { type: [runSchema], default: [] },
   comments: { type: [commentSchema], default: [] },
 }, { timestamps: true });

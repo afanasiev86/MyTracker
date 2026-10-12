@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { canTransition, allowedTargets, RUNNABLE_FROM, TASK_STATUSES } from '../../shared/statuses.js';
 import { registerRun, unregisterRun, stopRun, isRunning } from '../src/worker/processes.js';
 import { parseCommand } from '../src/bot/commands.js';
@@ -75,5 +76,30 @@ describe('реестр процессов', () => {
     expect(signals).toEqual(['SIGTERM']);
     expect(unregisterRun('t1').reason).toBe('timeout');
     expect(isRunning('t1')).toBe(false);
+  });
+});
+
+describe('остановка процесса', () => {
+  it('добивает процесс SIGKILL, если он не завершился после SIGTERM', () => {
+    jest.useFakeTimers();
+    const signals = [];
+    registerRun('stubborn', { exitCode: null, signalCode: null, kill: (s) => signals.push(s) });
+    stopRun('stubborn', 'timeout');
+    expect(signals).toEqual(['SIGTERM']);
+    jest.advanceTimersByTime(10 * 1000);
+    expect(signals).toEqual(['SIGTERM', 'SIGKILL']);
+    unregisterRun('stubborn');
+    jest.useRealTimers();
+  });
+
+  it('не добивает процесс, который уже завершился', () => {
+    jest.useFakeTimers();
+    const signals = [];
+    registerRun('quiet', { exitCode: 0, signalCode: null, kill: (s) => signals.push(s) });
+    stopRun('quiet', 'cancelled');
+    jest.advanceTimersByTime(10 * 1000);
+    unregisterRun('quiet');
+    expect(signals).toEqual(['SIGTERM']);
+    jest.useRealTimers();
   });
 });

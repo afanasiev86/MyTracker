@@ -4,6 +4,7 @@ import authRoutes from './routes/auth.js';
 import taskRoutes from './routes/tasks.js';
 import statsRoutes from './routes/stats.js';
 import clientRoutes from './routes/clients.js';
+import storageRoutes from './routes/storage.js';
 import projectRoutes from './routes/projects.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -30,6 +31,7 @@ export function createApp() {
   app.use('/api/projects', requireAuth, projectRoutes);
   app.use('/api/clients', requireAuth, clientRoutes);
   app.use('/api/stats', requireAuth, statsRoutes);
+  app.use('/api/storage', requireAuth, storageRoutes);
 
   app.use((_req, res) => res.status(404).json({ error: 'Не найдено' }));
   app.use(errorHandler);

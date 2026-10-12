@@ -4,7 +4,7 @@
 Проверяет подпись `initData` от Telegram Mini App. Без неё любой мог бы назваться владельцем.
 
 ## Где объявлено
-`server/src/services/telegramAuth.js:L7-34#verifyInitData`
+`server/src/services/telegramAuth.js:L7-38#verifyInitData`
 
 ## Вход и выход
 - Вход: `initData`, `botToken`, `nowSec` (для тестов). Выход: `{ ok, user }` или `{ ok: false, reason }`.
@@ -17,7 +17,7 @@
 5. Данные старше 24 часов отвергаются: `server/src/services/telegramAuth.js:L5@MAX_AGE_SEC`.
 
 ## Ошибки и граничные случаи
-- Некорректный JSON в поле `user` выбросит ошибку: `server/src/services/telegramAuth.js:L32@JSON.parse(params.get('user'))`. Маршрут передаст её в обработчик ошибок и вернёт 500. Это можно сделать аккуратнее (400), но подпись уже проверена, поэтому риск низкий.
+- Некорректный JSON в поле `user` теперь даёт отказ `некорректные данные пользователя`, а не 500: `server/src/services/telegramAuth.js:L36@некорректные данные пользователя`. Маршрут отвечает 401.
 
 ## Связи
 - Маршрут: `server/src/routes/auth.js:L25-39#POST /telegram`. Подход: `docs/architecture/auth-tokens.md:L8#Вход через Telegram`.

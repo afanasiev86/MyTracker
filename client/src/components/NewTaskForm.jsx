@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createTask, fetchProjects } from '../api.js';
 import { PRIORITIES, PRIORITY_LABELS } from '../../../shared/crm.js';
+import { TASK_TEMPLATES, applyTemplate } from '../lib/templates.js';
 
 const EMPTY = {
   project: '', title: '', goal: '', acceptance: '', outOfScope: '',
@@ -82,6 +83,19 @@ export default function NewTaskForm({ onCreated, onCancel }) {
         </label>
       </div>
 
+      <label>
+        Шаблон (заполнит пустые поля)
+        <select
+          defaultValue=""
+          onChange={(e) => {
+            if (e.target.value) setForm((f) => applyTemplate(f, e.target.value));
+            e.target.value = '';
+          }}
+        >
+          <option value="">Без шаблона</option>
+          {Object.entries(TASK_TEMPLATES).map(([key, t]) => <option key={key} value={key}>{t.label}</option>)}
+        </select>
+      </label>
       <label>
         Цель
         <textarea value={form.goal} onChange={set('goal')} rows={2} />

@@ -15,6 +15,7 @@ import {
 } from '../../../shared/statuses.js';
 import { sumRunCosts, formatUsd } from '../lib/cost.js';
 import { setMainButton, haptic } from '../lib/telegram.js';
+import { uploadAttachment, fetchAttachmentUrl } from '../api.js';
 
 // Подписи действий описывают, что произойдёт, а не новый статус
 const ACTION_LABELS = {
@@ -24,6 +25,29 @@ const ACTION_LABELS = {
 };
 
 const PROGRESS_POLL_MS = 4000;
+
+// Миниатюра вложения. Картинка грузится с токеном и освобождается при уходе со страницы.
+function AttachmentThumb({ taskId, attachment }) {
+  const [src, setSrc] = useState('');
+  useEffect(() => {
+    let url = '';
+    let alive = true;
+    fetchAttachmentUrl(taskId, attachment._id)
+      .then((objectUrl) => {
+        url = objectUrl;
+        if (alive) setSrc(objectUrl);
+        else URL.revokeObjectURL(objectUrl);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [taskId, attachment._id]);
+  return src
+    ? <a href={src} target="_blank" rel="noreferrer"><img className="thumb" src={src} alt={attachment.name} /></a>
+    : <span className="muted">{attachment.name}</span>;
+}
 
 // Главная кнопка Telegram: одно самое полезное действие для текущего статуса
 function mainLabel(task) {
@@ -194,6 +218,26 @@ export default function TaskDetail({ id, onChanged, onClose }) {
           ? <pre className="diff">{diff}</pre>
           : <p className="muted">В ветке пока нет изменений относительно основной.</p>
       )}
+
+      <h3>Скриншоты</h3>
+      {task.attachments?.length > 0 && (
+        <div className="thumbs">
+          {task.attachments.map((a) => <AttachmentThumb key={a._id} taskId={id} attachment={a} />)}
+        </div>
+      )}
+      <label className="upload">
+        Прикрепить картинку (PNG, JPEG, GIF, WebP до 5 МБ)
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          disabled={busy}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) perform(() => uploadAttachment(id, file));
+          }}
+        />
+      </label>
 
       <h3>Запуски</h3>
       {task.runs.length === 0 ? (

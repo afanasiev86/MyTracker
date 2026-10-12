@@ -239,3 +239,10 @@ button.ghost { color: var(--accent); }
   .panel { padding: 12px; }
   .toolbar { flex-wrap: wrap; }
 }
+
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.thumb { max-width: 160px; max-height: 120px; border-radius: 6px; border: 1px solid var(--muted); }
+.upload { display: block; margin: 8px 0; }
+.radio-list { border: 0; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
+.radio-row { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: center; }
+.radio-row .muted { grid-column: 2; font-size: 13px; }
