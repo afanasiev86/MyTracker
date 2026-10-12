@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { z } from 'zod';
 
 // Настройки из переменных окружения. Читаются при каждом вызове, а не один раз при загрузке модуля:
@@ -31,6 +32,7 @@ const schema = z.object({
   CLAUDE_BIN: optional,
   TRACKER_API_URL: optional,
   RUN_TIMEOUT_MIN: optional,
+  OPS_APP_DIR: optional,
 });
 
 // Разбирает окружение в именованные настройки. Значения по умолчанию задаются здесь же.
@@ -62,6 +64,10 @@ export function readConfig(env = process.env) {
       accessKey: raw.S3_ACCESS_KEY,
       secretKey: raw.S3_SECRET_KEY,
       bucket: raw.S3_BUCKET,
+    },
+    ops: {
+      // Папка установки трекера на сервере: из неё работают docker compose, деплой и служебные файлы .ops/
+      appDir: raw.OPS_APP_DIR || path.resolve(process.cwd(), '..'),
     },
     worker: {
       reposDir: raw.REPOS_DIR,
