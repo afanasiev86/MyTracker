@@ -11,12 +11,12 @@
 Закрыть доступ можно в карточке клиента: `server/src/services/access/revokePortal.js:L4-11#revokePortal`. Токены заказчика после этого перестают открывать портал, потому что доступ проверяется на каждом запросе: `server/src/services/access/isPortalOpen.js:L4-7#isPortalOpen`.
 
 ## Что видит заказчик
-Функция, которая формирует данные для заказчика: `server/src/services/portal.js:L10-25#toClientTask`.
+Функция, которая формирует данные для заказчика: `server/src/services/portal/toClientTask.js:L4-19#toClientTask`.
 - Название, цель, критерии приёмки, срок, статус в понятной формулировке (`shared/statuses.js:L49-57#CLIENT_STATUS_LABELS`).
 - Комментарии заказчика и комментарии владельца, отмеченные «Показать заказчику в портале».
 - Не видно: запуски, стоимость, diff, логи, прогресс, ветка, системные комментарии, черновики (`backlog`).
 
-Заказчик видит только задачи своих проектов: `server/src/services/portal.js:L32-40#clientTasks`. Комментарий к чужой задаче отвечает 404: `server/src/services/portal.js:L43-57#addClientComment`.
+Заказчик видит только задачи своих проектов: `server/src/services/portal/clientTasks.js:L6-14#clientTasks`. Комментарий к чужой задаче отвечает 404: `server/src/services/portal/addClientComment.js:L9-23#addClientComment`.
 
 ## Уведомления о статусе
 Когда видимая заказчику подпись статуса меняется (например, «На проверке» или «Принято»), заказчику приходит сообщение в Telegram с названием задачи и проекта. Черновики и переходы без смены подписи не отправляются.
@@ -34,5 +34,5 @@
 ## Где что лежит
 - Модели: `server/src/models/AccessRequest.js`, `server/src/models/Client.js`.
 - API владельца для запросов: `server/src/routes/access.js`. API портала: `server/src/routes/portal.js`.
-- Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller.js:L30-68#startPolling`.
+- Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller/startPolling.js:L7-45#startPolling`.
 - Интерфейс заказчика: `client/src/components/Portal.jsx:L8-54#Portal`. Выбор роли при входе: `client/src/App.jsx:L28-132#App`.

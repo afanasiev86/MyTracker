@@ -4,18 +4,18 @@
 Отправляет дайджест один раз в день в 09:00 по Москве. Проверяет время раз в минуту.
 
 ## Где объявлено
-`server/src/services/digestScheduler.js:L21-42#startDigestScheduler`
+`server/src/services/digestScheduler/startDigestScheduler.js:L11-32#startDigestScheduler`
 
 ## Вход и выход
 - Вход: `now`, `intervalMs` (для тестов). Выход: таймер или `null`, если Telegram не настроен.
 
 ## Алгоритм
-1. Без Telegram планировщик не запускается: `server/src/services/digestScheduler.js:L22@if (!telegramEnabled()) return null;`.
-2. Каждую минуту проверяет час по Москве: `server/src/services/digestScheduler.js:L27@if (hour !== DIGEST_HOUR) return;`.
-3. Сверяет день с сохранённым в базе: `server/src/services/digestScheduler.js:L30@if (await lastDigestDay() === day) return;`. Состояние хранится в `Settings` (поле `digestDay`), поэтому перезапуск не даёт повтора.
-4. Запоминает день до отправки: `server/src/services/digestScheduler.js:L31@await saveDigestDay(day);`.
-5. Собирает задачи и отправляет, если есть что сообщить: `server/src/services/digestScheduler.js:L34@const text = buildDigest(tasks, current);`.
-6. Таймер не держит процесс: `server/src/services/digestScheduler.js:L40@timer.unref();`.
+1. Без Telegram планировщик не запускается: `server/src/services/digestScheduler/startDigestScheduler.js:L12@if (!telegramEnabled()) return null;`.
+2. Каждую минуту проверяет час по Москве: `server/src/services/digestScheduler/startDigestScheduler.js:L17@if (hour !== DIGEST_HOUR) return;`.
+3. Сверяет день с сохранённым в базе: `server/src/services/digestScheduler/startDigestScheduler.js:L20@if (await lastDigestDay() === day) return;`. Состояние хранится в `Settings` (поле `digestDay`), поэтому перезапуск не даёт повтора.
+4. Запоминает день до отправки: `server/src/services/digestScheduler/startDigestScheduler.js:L21@await saveDigestDay(day);`.
+5. Собирает задачи и отправляет, если есть что сообщить: `server/src/services/digestScheduler/startDigestScheduler.js:L24@const text = buildDigest(tasks, current);`.
+6. Таймер не держит процесс: `server/src/services/digestScheduler/startDigestScheduler.js:L30@timer.unref();`.
 
 ## Ограничения
 - Если сервер запущен после 09:00, дайджест за этот день не отправится. Это осознанный выбор: не присылать сводку с опозданием.

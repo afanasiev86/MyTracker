@@ -4,17 +4,17 @@
 Передаёт ответ владельца на вопрос Claude и продолжает ту же сессию. Ответ можно дать из трекера, из Mini App или ответом на сообщение в Telegram.
 
 ## Где объявлено
-`server/src/services/runs.js:L18-28#answerTask`
+`server/src/services/runs/answerTask.js:L5-15#answerTask`
 
 ## Вход и выход
 - Вход: `task` (документ задачи), `text` (ответ).
 - Выход: `{ task }` или `{ error }`, если задача не ждёт ответа.
 
 ## Алгоритм
-1. Проверяет статус: задача должна быть в `waiting`: `server/src/services/runs.js:L19@if (task.status !== 'waiting')`.
-2. Сохраняет ответ как комментарий, чтобы он остался в истории: `server/src/services/runs.js:L18-28#answerTask`.
-3. Очищает вопрос и переводит в «В работе»: `server/src/services/runs.js:L23@task.pendingQuestion = '';`.
-4. Ставит запуск в очередь с параметром `answer` и приоритетом задачи; воркер продолжит сессию `--resume`: `server/src/services/runs.js:L26@enqueue(task.project, () => runTask(task._id, { answer: text }), { priority: task.priority });`.
+1. Проверяет статус: задача должна быть в `waiting`: `server/src/services/runs/answerTask.js:L6@if (task.status !== 'waiting')`.
+2. Сохраняет ответ как комментарий, чтобы он остался в истории: `server/src/services/runs/answerTask.js:L5-15#answerTask`.
+3. Очищает вопрос и переводит в «В работе»: `server/src/services/runs/answerTask.js:L10@task.pendingQuestion = '';`.
+4. Ставит запуск в очередь с параметром `answer` и приоритетом задачи; воркер продолжит сессию `--resume`: `server/src/services/runs/answerTask.js:L13@enqueue(task.project, () => runTask(task._id, { answer: text }), { priority: task.priority });`.
 
 ## Ошибки и граничные случаи
 - Если `sessionId` потерян, воркер не сможет продолжить сессию и передаст ответ вместе с задачей: см. `server/src/worker/launchArgs.js:L15@if (answer) {`.
