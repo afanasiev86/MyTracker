@@ -1,33 +1,10 @@
 import { useEffect, useState } from 'react';
 import { createProject, updateProject, fetchClients } from '../api.js';
-import {
-  PROJECT_STATUSES,
-  PROJECT_STATUS_LABELS,
-  CURRENCIES,
-  SLUG_PATTERN,
-} from '../../../shared/crm.js';
-
-function toForm(project) {
-  if (!project) {
-    return {
-      slug: '', name: '', client: '', description: '', status: 'active',
-      repoUrl: '', defaultBranch: 'main', deadline: '',
-      priceAmount: 0, priceCurrency: 'RUB',
-    };
-  }
-  return {
-    slug: project.slug,
-    name: project.name,
-    client: project.client?._id || project.client || '',
-    description: project.description || '',
-    status: project.status,
-    repoUrl: project.repoUrl || '',
-    defaultBranch: project.defaultBranch || 'main',
-    deadline: project.deadline ? project.deadline.slice(0, 10) : '',
-    priceAmount: project.price?.amount ?? 0,
-    priceCurrency: project.price?.currency || 'RUB',
-  };
-}
+import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, SLUG_PATTERN } from '../../../shared/crm.js';
+import { toForm } from './project/toForm.js';
+import { buildProjectBody } from './project/buildProjectBody.js';
+import SlugField from './project/SlugField.jsx';
+import PriceField from './project/PriceField.jsx';
 
 export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
   const [form, setForm] = useState(() => toForm(project));
@@ -48,17 +25,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
     e.preventDefault();
     setBusy(true);
     setError('');
-    const body = {
-      slug: form.slug.trim().toLowerCase(),
-      name: form.name.trim(),
-      client: form.client || null,
-      description: form.description.trim(),
-      status: form.status,
-      repoUrl: form.repoUrl.trim(),
-      defaultBranch: form.defaultBranch.trim() || 'main',
-      deadline: form.deadline || null,
-      price: { amount: Number(form.priceAmount) || 0, currency: form.priceCurrency },
-    };
+    const body = buildProjectBody(form);
     try {
       if (isEdit) await updateProject(project._id, body);
       else await createProject(body);
@@ -79,25 +46,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
           Название
           <input value={form.name} onChange={set('name')} required />
         </label>
-        <label>
-          Код проекта
-          <input
-            value={form.slug}
-            onChange={set('slug')}
-            placeholder="shop-api"
-            disabled={isEdit}
-            required
-            aria-describedby="slug-hint"
-          />
-          <span id="slug-hint" className="hint">
-            {isEdit
-              ? 'Код менять нельзя: по нему привязаны задачи.'
-              : 'Латиница, цифры и дефис. Должен совпадать с папкой репозитория на сервере.'}
-          </span>
-          {form.slug && !slugOk && (
-            <span className="error" role="alert">Пока не подходит: используйте латиницу, цифры и дефис.</span>
-          )}
-        </label>
+        <SlugField value={form.slug} onChange={set('slug')} isEdit={isEdit} valid={slugOk} />
         <label>
           Клиент
           <select value={form.client} onChange={set('client')}>
@@ -127,20 +76,12 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
           Срок сдачи
           <input type="date" value={form.deadline} onChange={set('deadline')} />
         </label>
-        <label>
-          Сумма по проекту
-          <div className="inline">
-            <input
-              type="number"
-              min="0"
-              value={form.priceAmount}
-              onChange={set('priceAmount')}
-            />
-            <select value={form.priceCurrency} onChange={set('priceCurrency')}>
-              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-        </label>
+        <PriceField
+          amount={form.priceAmount}
+          currency={form.priceCurrency}
+          onAmount={set('priceAmount')}
+          onCurrency={set('priceCurrency')}
+        />
       </div>
 
       <label>
