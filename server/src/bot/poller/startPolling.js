@@ -3,22 +3,29 @@ import { sendTelegramTo } from '../../services/telegram/send.js';
 import { setMenuButton } from './setMenuButton.js';
 import { deliver } from './deliver.js';
 import { handleButton } from './handleButton.js';
-import { getConfig } from '../../config.js';
+import { getTelegramConfig } from '../../services/telegram/runtime.js';
 
-// Long polling: бот отвечает только владельцу (TELEGRAM_OWNER_ID)
-export async function startPolling(handle, onCallback = async () => 'Кнопка не поддерживается', onGuest = async () => null) {
+// Long polling: бот отвечает только владельцу (ID владельца из настроек Telegram).
+// isCurrent возвращает false, когда запущен новый цикл (токен сменили или бота отключили): старый цикл тогда выходит.
+export async function startPolling(
+  handle,
+  onCallback = async () => 'Кнопка не поддерживается',
+  onGuest = async () => null,
+  isCurrent = () => true,
+) {
   if (!telegramEnabled()) {
-    console.log('Telegram не настроен (TELEGRAM_BOT_TOKEN, TELEGRAM_OWNER_ID), бот не запущен');
+    console.log('Telegram не настроен (токен и ID владельца задаются в настройках), бот не запущен');
     return;
   }
 
   await setMenuButton();
 
   let offset = 0;
-  for (;;) {
+  while (isCurrent()) {
     try {
       const updates = await telegramApi('getUpdates', { offset, timeout: 25 });
       for (const update of updates) {
+        if (!isCurrent()) return;
         offset = update.update_id + 1;
 
         if (update.callback_query) {
@@ -28,7 +35,7 @@ export async function startPolling(handle, onCallback = async () => 'Кнопк�
 
         const msg = update.message;
         if (!msg?.text) continue;
-        if (String(msg.from?.id) !== String(getConfig().telegram.ownerId)) {
+        if (String(msg.from?.id) !== String(getTelegramConfig().ownerId)) {
           // Не владелец: запрос доступа к порталу (см. services/access)
           const guestReply = await onGuest(msg).catch(() => null);
           if (guestReply) await sendTelegramTo(msg.chat.id, guestReply);

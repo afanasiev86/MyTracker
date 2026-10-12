@@ -7,10 +7,10 @@
 `server/src/services/digestScheduler/startDigestScheduler.js:L12-33#startDigestScheduler`
 
 ## Вход и выход
-- Вход: `now`, `intervalMs` (для тестов). Выход: таймер или `null`, если Telegram не настроен.
+- Вход: `now`, `intervalMs` (для тестов). Выход: таймер.
 
 ## Алгоритм
-1. Без Telegram планировщик не запускается: `server/src/services/digestScheduler/startDigestScheduler.js:L13@if (!telegramEnabled()) return null;`.
+1. Таймер запускается всегда, а Telegram проверяется на каждом тике: `server/src/services/digestScheduler/startDigestScheduler.js:L15@if (!telegramEnabled()) return;`. Так бот, подключённый в настройках уже после старта сервера, получает дайджест без перезапуска.
 2. Каждую минуту проверяет час по Москве: `server/src/services/digestScheduler/startDigestScheduler.js:L18@if (hour !== DIGEST_HOUR) return;`.
 3. Сверяет день с сохранённым в базе: `server/src/services/digestScheduler/startDigestScheduler.js:L21@if (await lastDigestDay() === day) return;`. Состояние хранится в `Settings` (поле `digestDay`), поэтому перезапуск не даёт повтора.
 4. Запоминает день до отправки: `server/src/services/digestScheduler/startDigestScheduler.js:L22@await saveDigestDay(day);`.

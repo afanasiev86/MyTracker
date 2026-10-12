@@ -1,13 +1,13 @@
-import { getConfig } from '../../config.js';
+import { getTelegramConfig } from './runtime.js';
 // Минимальный клиент Telegram Bot API без внешних зависимостей
 
 export function telegramEnabled() {
-  return Boolean(getConfig().telegram.botToken && getConfig().telegram.ownerId);
+  return Boolean(getTelegramConfig().botToken && getTelegramConfig().ownerId);
 }
 
 // Один вызов метода Bot API. Ошибка Telegram превращается в исключение с описанием.
 export async function telegramApi(method, body) {
-  const url = `https://api.telegram.org/bot${getConfig().telegram.botToken}/${method}`;
+  const url = `https://api.telegram.org/bot${getTelegramConfig().botToken}/${method}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -8,7 +8,7 @@
 Правила: `server/src/services/tasks/askQuestion.js:L6-14#askQuestion`.
 
 ## Вход и выход
-- Вход: `{ text }` по схеме `textSchema` (`server/src/routes/tasks/schemas.js:L27-27#textSchema`).
+- Вход: `{ text }` по схеме `textSchema` (`server/src/routes/tasks/schemas.js:L28-28#textSchema`).
 - Выход: `201 { ok: true }`; `404` если задачи нет; `409`, если задача не в работе.
 
 ## Алгоритм
@@ -22,5 +22,5 @@
 - Если Claude задал вопрос, а потом упал, `pendingQuestion` очищается в `server/src/worker/runTask.js:L92@if (outcome.status !== 'waiting') task.pendingQuestion = ''`.
 
 ## Связи
-- Поток вопросов: `docs/features/tasks-and-runs.md:L13#Вопросы от Claude`.
+- Поток вопросов: `docs/features/tasks-and-runs.md:L27#Вопросы от Claude`.
 - Ответ владельца: `docs/functions/server/runs/answerTask.md:L3#Назначение`.

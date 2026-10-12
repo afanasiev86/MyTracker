@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Alert, Button, Card, Divider, Flex, Form, Input, List, Tag, Typography } from 'antd';
 import { fetchPortalMe, fetchPortalTasks, postPortalComment } from '../api.js';
+import Loading from './Loading.jsx';
+import Field from './Field.jsx';
 
 // Подписи авторов комментариев для заказчика
 const AUTHORS = { client: 'Вы', owner: 'Исполнитель' };
@@ -27,8 +30,8 @@ export default function Portal() {
     load();
   }, [load]);
 
-  if (!loaded) return <p className="muted">Загружаем ваши задачи…</p>;
-  if (error) return <p className="error" role="alert">{error}</p>;
+  if (!loaded) return <Loading text="Загружаем ваши задачи…" />;
+  if (error) return <Alert type="error" showIcon message={error} />;
 
   // Группируем по проектам, сохраняя порядок от нового к старому
   const byProject = new Map();
@@ -39,14 +42,16 @@ export default function Portal() {
 
   return (
     <section>
-      <h2>Здравствуйте{name ? `, ${name}` : ''}</h2>
-      {tasks.length === 0 && <p className="muted">Задач пока нет. Они появятся здесь, когда исполнитель начнёт работу.</p>}
+      <Typography.Title level={4}>Здравствуйте{name ? `, ${name}` : ''}</Typography.Title>
+      {tasks.length === 0 && (
+        <Alert type="info" showIcon message="Задач пока нет. Они появятся здесь, когда исполнитель начнёт работу." />
+      )}
       {[...byProject.entries()].map(([project, items]) => (
         <div key={project}>
-          <h3>{project}</h3>
-          <div className="list">
+          <Divider orientation="left">{project}</Divider>
+          <Flex vertical gap={8}>
             {items.map((t) => <PortalTask key={t.id} task={t} onChanged={load} />)}
-          </div>
+          </Flex>
         </div>
       ))}
     </section>
@@ -58,8 +63,7 @@ function PortalTask({ task, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  async function send(e) {
-    e.preventDefault();
+  async function send() {
     if (!text.trim()) return;
     setBusy(true);
     setError('');
@@ -75,37 +79,44 @@ function PortalTask({ task, onChanged }) {
   }
 
   return (
-    <article className="row-card">
-      <div>
-        <strong>{task.title}</strong>
-        <span className="badge">{task.statusLabel}</span>
-      </div>
-      {task.goal && <p>{task.goal}</p>}
+    <Card
+      size="small"
+      title={<Typography.Text strong>{task.title}</Typography.Text>}
+      extra={<Tag color="blue">{task.statusLabel}</Tag>}
+    >
+      {task.goal && <Typography.Paragraph>{task.goal}</Typography.Paragraph>}
       {task.acceptance.length > 0 && (
         <ul>
           {task.acceptance.map((item, i) => <li key={i}>{item}</li>)}
         </ul>
       )}
-      {task.dueDate && <p className="muted">Срок: {new Date(task.dueDate).toLocaleDateString('ru-RU')}</p>}
-
-      {task.comments.length > 0 && (
-        <ul className="comments">
-          {task.comments.map((c, i) => (
-            <li key={i}>
-              <span className="muted">{AUTHORS[c.author]}: </span>{c.text}
-            </li>
-          ))}
-        </ul>
+      {task.dueDate && (
+        <Typography.Paragraph type="secondary">
+          Срок: {new Date(task.dueDate).toLocaleDateString('ru-RU')}
+        </Typography.Paragraph>
       )}
 
-      <form className="comment-form" onSubmit={send}>
-        <label className="full">
-          Ваш комментарий
-          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} />
-        </label>
-        <button type="submit" disabled={busy || !text.trim()}>Отправить</button>
-      </form>
-      {error && <p className="error" role="alert">{error}</p>}
-    </article>
+      {task.comments.length > 0 && (
+        <List
+          size="small"
+          dataSource={task.comments}
+          renderItem={(c) => (
+            <List.Item>
+              <span>
+                <Typography.Text type="secondary">{AUTHORS[c.author]}: </Typography.Text>{c.text}
+              </span>
+            </List.Item>
+          )}
+        />
+      )}
+
+      <Form layout="vertical" onFinish={send} style={{ marginTop: 12 }}>
+        <Field label="Ваш комментарий">
+          <Input.TextArea value={text} onChange={(e) => setText(e.target.value)} rows={2} />
+        </Field>
+        <Button type="primary" htmlType="submit" loading={busy} disabled={!text.trim()}>Отправить</Button>
+      </Form>
+      {error && <Alert type="error" showIcon message={error} style={{ marginTop: 12 }} />}
+    </Card>
   );
 }

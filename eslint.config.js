@@ -3,6 +3,8 @@ import globals from 'globals';
 import react from 'eslint-plugin-react';
 
 export default [
+  // Копия из kanban_only без изменений: содержит директиву для правила react-hooks, которого в проекте нет
+  { ignores: ['client/src/kanban/hooks/useFlipDrag.js'] },
   js.configs.recommended,
   {
     files: ['**/*.js', '**/*.jsx'],

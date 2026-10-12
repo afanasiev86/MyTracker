@@ -10,9 +10,9 @@ const CHECK_EVERY_MS = 60 * 1000;
 
 // Раз в минуту проверяем московское время. В 09:xx отправляем дайджест один раз за день.
 export function startDigestScheduler({ now = () => new Date(), intervalMs = CHECK_EVERY_MS } = {}) {
-  if (!telegramEnabled()) return null;
-
+  // Telegram можно подключить в настройках уже после запуска, поэтому проверяем его на каждом тике
   const timer = setInterval(async () => {
+    if (!telegramEnabled()) return;
     const current = now();
     const { day, hour } = moscowParts(current);
     if (hour !== DIGEST_HOUR) return;

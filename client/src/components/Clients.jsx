@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { Outlet, useMatch, useNavigate } from 'react-router-dom';
+import { Alert, Button, Flex } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { deleteClient, revokeClientPortal } from '../api.js';
 import { confirmAction } from '../lib/telegram/confirm.js';
-import ClientForm from './ClientForm.jsx';
 import AccessRequests from './AccessRequests.jsx';
+import Loading from './Loading.jsx';
 import ClientCard from './clients/ClientCard.jsx';
 import { useClients } from './clients/useClients.js';
 
@@ -11,11 +14,11 @@ export { formatRate } from './clients/formatRate.js';
 export default function Clients() {
   const { clients, loaded, error, setError, load } = useClients();
   const [notice, setNotice] = useState('');
-  // null | 'new' | объект клиента
-  const [editing, setEditing] = useState(null);
+  const navigate = useNavigate();
+  const formOpen = Boolean(useMatch('/clients/:view'));
 
   function saved(message) {
-    setEditing(null);
+    navigate('/clients');
     setNotice(message);
     load();
   }
@@ -39,7 +42,7 @@ export default function Clients() {
     setError('');
     try {
       await deleteClient(client._id);
-      setEditing(null);
+      navigate('/clients');
       setNotice(`Клиент «${client.name}» удалён`);
       load();
     } catch (err) {
@@ -50,39 +53,34 @@ export default function Clients() {
 
   return (
     <>
-      <div className="toolbar">
-        <button onClick={() => { setNotice(''); setEditing('new'); }}>Новый клиент</button>
-      </div>
+      <Flex gap={8} style={{ marginBottom: 12 }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => { setNotice(''); navigate('/clients/new'); }}>
+          Новый клиент
+        </Button>
+      </Flex>
 
       <AccessRequests onChanged={load} />
 
-      {notice && !editing && <p className="notice">{notice}</p>}
-      {error && <p className="error" role="alert">{error}</p>}
+      {notice && !formOpen && <Alert type="success" showIcon message={notice} closable onClose={() => setNotice('')} style={{ marginBottom: 12 }} />}
+      {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 12 }} />}
 
-      {editing && (
-        <ClientForm
-          client={editing === 'new' ? null : editing}
-          onSaved={() => saved(editing === 'new' ? 'Клиент добавлен' : 'Изменения сохранены')}
-          onCancel={() => setEditing(null)}
-          onDelete={editing === 'new' ? null : () => remove(editing)}
-        />
-      )}
+      <Outlet context={{ clients, loaded, saved, remove }} />
 
-      {!loaded && <p className="muted">Загружаем клиентов…</p>}
+      {!loaded && <Loading text="Загружаем клиентов…" />}
       {loaded && clients.length === 0 && (
-        <p className="muted">Клиентов пока нет. Добавьте клиента и привяжите к нему проекты.</p>
+        <Alert type="info" showIcon message="Клиентов пока нет. Добавьте клиента и привяжите к нему проекты." />
       )}
 
-      <div className="list">
+      <Flex vertical gap={8}>
         {clients.map((c) => (
           <ClientCard
             key={c._id}
             client={c}
-            onOpen={(client) => { setNotice(''); setEditing(client); }}
+            onOpen={(client) => { setNotice(''); navigate(`/clients/${client._id}`); }}
             onClosePortal={closePortal}
           />
         ))}
-      </div>
+      </Flex>
     </>
   );
 }

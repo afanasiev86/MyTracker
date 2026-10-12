@@ -1,7 +1,7 @@
-// Разделы владельца: вкладки верхнего меню
+// Разделы владельца: вкладки верхнего меню, path — адрес раздела
 export const SECTIONS = [
-  { id: 'board', title: 'Задачи' },
-  { id: 'projects', title: 'Проекты' },
-  { id: 'clients', title: 'Клиенты' },
-  { id: 'settings', title: 'Настройки' },
+  { path: '/tasks', title: 'Задачи' },
+  { path: '/projects', title: 'Проекты' },
+  { path: '/clients', title: 'Клиенты' },
+  { path: '/settings', title: 'Настройки' },
 ];

@@ -1,3 +1,4 @@
+import { Alert, Card } from 'antd';
 import { useAccessRequests } from './access/useAccessRequests.js';
 import AccessRow from './access/AccessRow.jsx';
 
@@ -22,12 +23,11 @@ export default function AccessRequests({ onChanged }) {
   const free = clients.filter((c) => !c.telegramId);
 
   return (
-    <section className="panel" aria-label="Запросы доступа">
-      <h3>Запросы доступа к порталу</h3>
+    <Card size="small" title="Запросы доступа к порталу" aria-label="Запросы доступа" style={{ marginBottom: 12 }}>
       {requests.map((r) => (
         <AccessRow key={r._id} request={r} clients={free} onAct={act} />
       ))}
-      {error && <p className="error" role="alert">{error}</p>}
-    </section>
+      {error && <Alert type="error" showIcon message={error} style={{ marginTop: 8 }} />}
+    </Card>
   );
 }

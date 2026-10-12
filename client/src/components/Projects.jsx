@@ -1,18 +1,21 @@
 import { useState } from 'react';
+import { Outlet, useMatch, useNavigate } from 'react-router-dom';
+import { Alert, Button, Flex } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { deleteProject } from '../api.js';
 import { confirmAction } from '../lib/telegram/confirm.js';
-import ProjectForm from './ProjectForm.jsx';
+import Loading from './Loading.jsx';
 import ProjectCard from './projects/ProjectCard.jsx';
 import { useProjectList } from './projects/useProjectList.js';
 
 export default function Projects() {
   const { projects, loaded, error, setError, load } = useProjectList();
   const [notice, setNotice] = useState('');
-  // null | 'new' | объект проекта для редактирования
-  const [editing, setEditing] = useState(null);
+  const navigate = useNavigate();
+  const formOpen = Boolean(useMatch('/projects/:view'));
 
   function saved(message) {
-    setEditing(null);
+    navigate('/projects');
     setNotice(message);
     load();
   }
@@ -23,7 +26,7 @@ export default function Projects() {
     setError('');
     try {
       await deleteProject(project._id);
-      setEditing(null);
+      navigate('/projects');
       setNotice(`Проект «${project.name}» удалён`);
       load();
     } catch (err) {
@@ -33,38 +36,35 @@ export default function Projects() {
 
   return (
     <>
-      <div className="toolbar">
-        <button onClick={() => { setNotice(''); setEditing('new'); }}>Новый проект</button>
-      </div>
+      <Flex gap={8} style={{ marginBottom: 12 }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => { setNotice(''); navigate('/projects/new'); }}>
+          Новый проект
+        </Button>
+      </Flex>
 
-      {notice && !editing && <p className="notice">{notice}</p>}
-      {error && <p className="error" role="alert">{error}</p>}
+      {notice && !formOpen && <Alert type="success" showIcon message={notice} closable onClose={() => setNotice('')} style={{ marginBottom: 12 }} />}
+      {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 12 }} />}
 
-      {editing && (
-        <ProjectForm
-          project={editing === 'new' ? null : editing}
-          onSaved={() => saved(editing === 'new' ? 'Проект создан' : 'Изменения сохранены')}
-          onCancel={() => setEditing(null)}
-          onDelete={editing === 'new' ? null : () => remove(editing)}
+      <Outlet context={{ projects, loaded, saved, remove }} />
+
+      {!loaded && <Loading text="Загружаем проекты…" />}
+      {loaded && projects.length === 0 && (
+        <Alert
+          type="info"
+          showIcon
+          message="Проектов пока нет. Проект нужен, чтобы создавать задачи: он задаёт slug и папку репозитория."
         />
       )}
 
-      {!loaded && <p className="muted">Загружаем проекты…</p>}
-      {loaded && projects.length === 0 && (
-        <p className="muted">
-          Проектов пока нет. Проект нужен, чтобы создавать задачи: он задаёт slug и папку репозитория.
-        </p>
-      )}
-
-      <div className="list">
+      <Flex vertical gap={8}>
         {projects.map((p) => (
           <ProjectCard
             key={p._id}
             project={p}
-            onOpen={(project) => { setNotice(''); setEditing(project); }}
+            onOpen={(project) => { setNotice(''); navigate(`/projects/${project._id}`); }}
           />
         ))}
-      </div>
+      </Flex>
     </>
   );
 }

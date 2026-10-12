@@ -23,4 +23,4 @@
 ## Связи
 - Маршрут: ``server/src/routes/tasks/answerRoute.js:L6-17#answerRoute``.
 - Воркер: `docs/functions/server/worker/runTask.md:L3#Назначение`.
-- Поток вопросов: `docs/features/tasks-and-runs.md:L13#Вопросы от Claude`.
+- Поток вопросов: `docs/features/tasks-and-runs.md:L27#Вопросы от Claude`.

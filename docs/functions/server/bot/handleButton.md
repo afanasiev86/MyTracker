@@ -11,7 +11,7 @@
 - Выход: нет, результат отправляется в чат.
 
 ## Алгоритм
-1. Чужие нажатия игнорируются: `server/src/bot/poller/handleButton.js:L7@if (String(query.from?.id) !== String(getConfig().telegram.ownerId)) return;`.
+1. Чужие нажатия игнорируются: `server/src/bot/poller/handleButton.js:L7@if (String(query.from?.id) !== String(getTelegramConfig().ownerId)) return;`.
 2. Подтверждение нажатия: `server/src/bot/poller/handleButton.js:L8@answerCallbackQuery`.
 3. Вызов обработчика `handleCallback` и отправка ответа: `server/src/bot/poller/handleButton.js:L9@const reply = await onCallback(query.data)`.
 

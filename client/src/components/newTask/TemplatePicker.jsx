@@ -1,20 +1,17 @@
+import { Select } from 'antd';
 import { TASK_TEMPLATES } from '../../lib/templates/catalog.js';
+import Field from '../Field.jsx';
 
-// Шаблон заполняет пустые поля формы. Выбор сбрасывается сразу, чтобы можно было взять тот же шаблон снова.
+// Шаблон заполняет пустые поля формы. Значение всегда пустое, чтобы можно было взять тот же шаблон снова.
 export default function TemplatePicker({ onPick }) {
   return (
-    <label>
-      Шаблон (заполнит пустые поля)
-      <select
-        defaultValue=""
-        onChange={(e) => {
-          if (e.target.value) onPick(e.target.value);
-          e.target.value = '';
-        }}
-      >
-        <option value="">Без шаблона</option>
-        {Object.entries(TASK_TEMPLATES).map(([key, t]) => <option key={key} value={key}>{t.label}</option>)}
-      </select>
-    </label>
+    <Field label="Шаблон (заполнит пустые поля)">
+      <Select
+        value={null}
+        placeholder="Без шаблона"
+        onChange={onPick}
+        options={Object.entries(TASK_TEMPLATES).map(([key, t]) => ({ value: key, label: t.label }))}
+      />
+    </Field>
   );
 }

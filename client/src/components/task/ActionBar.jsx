@@ -1,3 +1,5 @@
+import { Button, Flex } from 'antd';
+import { CaretRightOutlined, CheckOutlined, CodeOutlined, StopOutlined } from '@ant-design/icons';
 import { STATUS_LABELS, RUNNABLE_FROM, allowedTargets } from '../../../../shared/statuses.js';
 
 // Подписи действий описывают, что произойдёт, а не новый статус
@@ -7,33 +9,48 @@ const ACTION_LABELS = {
   done: 'Принять результат',
 };
 
-// Кнопки действий над задачей: отмена, запуск, переходы статуса, diff
+// Кнопки действий над задачей: главное действие сверху, остальные под ним
 export default function ActionBar({ task, busy, diffShown, onCancel, onRun, onTransition, onToggleDiff }) {
   const targets = allowedTargets(task.status);
   const canRun = RUNNABLE_FROM.includes(task.status);
   const runLabel = task.status === 'review' ? 'Вернуть в работу' : 'Запустить в Claude';
+  // Принять результат важнее запуска только на проверке, там главное действие — приёмка
+  const acceptIsPrimary = task.status === 'review';
   return (
-    <div className="actions">
+    <Flex vertical gap={8}>
       {task.status === 'in_progress' && (
-        <button className="danger" disabled={busy} onClick={onCancel}>
+        <Button danger block icon={<StopOutlined />} disabled={busy} onClick={onCancel}>
           Отменить запуск
-        </button>
+        </Button>
       )}
       {canRun && (
-        <button disabled={busy} onClick={onRun}>
+        <Button
+          block
+          type={acceptIsPrimary ? 'default' : 'primary'}
+          icon={<CaretRightOutlined />}
+          disabled={busy}
+          onClick={onRun}
+        >
           {runLabel}
-        </button>
+        </Button>
       )}
       {targets.map((status) => (
-        <button key={status} className="ghost" disabled={busy} onClick={() => onTransition(status)}>
+        <Button
+          key={status}
+          block
+          type={status === 'done' ? 'primary' : 'default'}
+          icon={status === 'done' ? <CheckOutlined /> : undefined}
+          disabled={busy}
+          onClick={() => onTransition(status)}
+        >
           {ACTION_LABELS[status] || STATUS_LABELS[status]}
-        </button>
+        </Button>
       ))}
       {task.branch && (
-        <button className="ghost" onClick={onToggleDiff}>
+        <Button block type="text" icon={<CodeOutlined />} onClick={onToggleDiff}>
           {diffShown ? 'Скрыть diff' : 'Показать diff'}
-        </button>
+        </Button>
       )}
-    </div>
+    </Flex>
   );
 }

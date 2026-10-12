@@ -1,16 +1,18 @@
+import { Alert, Select } from 'antd';
+import Field from '../Field.jsx';
+
 // Выбор проекта, либо подсказка, если проектов ещё нет
 export default function ProjectField({ projects, value, onChange }) {
   if (projects.length === 0) {
-    return <p className="muted">Сначала создайте проект на вкладке «Проекты».</p>;
+    return <Alert type="info" showIcon message="Сначала создайте проект на вкладке «Проекты»." style={{ marginBottom: 16 }} />;
   }
   return (
-    <label>
-      Проект
-      <select value={value} onChange={onChange} required>
-        {projects.map((p) => (
-          <option key={p._id} value={p.slug}>{p.name}</option>
-        ))}
-      </select>
-    </label>
+    <Field label="Проект" required>
+      <Select
+        value={value}
+        onChange={onChange}
+        options={projects.map((p) => ({ value: p.slug, label: p.name }))}
+      />
+    </Field>
   );
 }

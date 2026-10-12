@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Alert, Badge, Tabs } from 'antd';
 import {
   getTask,
   updateTask,
@@ -9,24 +10,25 @@ import {
   fetchDiff,
   uploadAttachment,
 } from '../api.js';
-import { RUNNABLE_FROM, STATUS_LABELS } from '../../../shared/statuses.js';
-import { KIND_LABELS } from '../../../shared/taskKinds.js';
+import { RUNNABLE_FROM } from '../../../shared/statuses.js';
 import { setMainButton } from '../lib/telegram/mainButton.js';
 import { haptic } from '../lib/telegram/haptic.js';
 import { mainLabel } from '../lib/mainButton.js';
 import TaskSpec from './task/TaskSpec.jsx';
 import ProgressBlock from './task/ProgressBlock.jsx';
 import QuestionBlock from './task/QuestionBlock.jsx';
-import ActionBar from './task/ActionBar.jsx';
+import TaskHeader from './task/TaskHeader.jsx';
+import TaskSidebar from './task/TaskSidebar.jsx';
 import DiffView from './task/DiffView.jsx';
 import AttachmentsSection from './task/AttachmentsSection.jsx';
 import RunsSection from './task/RunsSection.jsx';
 import CommentsSection from './task/CommentsSection.jsx';
+import Loading from './Loading.jsx';
 
 const PROGRESS_POLL_MS = 4000;
 
 // Карточка задачи: состояние и действия. Отдельные блоки лежат в components/task/.
-export default function TaskDetail({ id, onChanged, onClose }) {
+export default function TaskDetail({ id, onChanged }) {
   const [task, setTask] = useState(null);
   const [error, setError] = useState('');
   const [diff, setDiff] = useState(null);
@@ -94,48 +96,65 @@ export default function TaskDetail({ id, onChanged, onClose }) {
   }
 
   if (!task) {
-    return <section className="panel">{error || 'Загрузка…'}</section>;
+    return error ? <Alert type="error" showIcon message={error} /> : <Loading text="Загрузка…" />;
   }
 
   // Ответ и комментарий: возвращают true при успехе, чтобы блок очистил поле
   const answerAndReload = (text) => perform(() => answerTask(id, text));
   const addCommentAndReload = (text, visible) => perform(() => addComment(id, text, visible));
 
+  const withCount = (label, count) => (
+    <span>{label} {count > 0 && <Badge count={count} color="#8c8c8c" size="small" />}</span>
+  );
+  const tabs = [
+    {
+      key: 'comments',
+      label: withCount('Комментарии', task.comments.length),
+      children: <CommentsSection comments={task.comments} busy={busy} onAdd={addCommentAndReload} />,
+    },
+    { key: 'runs', label: withCount('Запуски', task.runs.length), children: <RunsSection runs={task.runs} /> },
+    {
+      key: 'files',
+      label: withCount('Скриншоты', task.attachments?.length ?? 0),
+      children: (
+        <AttachmentsSection
+          taskId={id}
+          attachments={task.attachments}
+          busy={busy}
+          onUpload={(file) => perform(() => uploadAttachment(id, file))}
+        />
+      ),
+    },
+  ];
+
   return (
-    <section className="panel" aria-live="polite">
-      <header className="panel-head">
-        <div>
-          <h2>{task.title}</h2>
-          <p className="muted">{task.project} · {STATUS_LABELS[task.status]} · {KIND_LABELS[task.kind] ?? KIND_LABELS.other}</p>
+    <div aria-live="polite">
+      <TaskHeader task={task} />
+
+      <div className="task-layout">
+        <TaskSidebar
+          task={task}
+          actionProps={{
+            busy,
+            diffShown: diff !== null,
+            onCancel: () => perform(() => cancelTask(id)),
+            onRun: () => perform(() => runTask(id)),
+            onTransition: (status) => perform(() => updateTask(id, { status })),
+            onToggleDiff: toggleDiff,
+          }}
+        />
+
+        <div className="task-main">
+          {task.status === 'in_progress' && <ProgressBlock task={task} />}
+          {task.status === 'waiting' && <QuestionBlock task={task} busy={busy} onAnswer={answerAndReload} />}
+          {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
+
+          <TaskSpec task={task} />
+          {diff !== null && <DiffView diff={diff} />}
+
+          <Tabs defaultActiveKey="comments" items={tabs} />
         </div>
-        <button className="ghost" onClick={onClose}>Закрыть</button>
-      </header>
-
-      <TaskSpec task={task} />
-      {task.status === 'in_progress' && <ProgressBlock task={task} />}
-      {task.status === 'waiting' && <QuestionBlock task={task} busy={busy} onAnswer={answerAndReload} />}
-
-      <ActionBar
-        task={task}
-        busy={busy}
-        diffShown={diff !== null}
-        onCancel={() => perform(() => cancelTask(id))}
-        onRun={() => perform(() => runTask(id))}
-        onTransition={(status) => perform(() => updateTask(id, { status }))}
-        onToggleDiff={toggleDiff}
-      />
-
-      {error && <p className="error" role="alert">{error}</p>}
-      {diff !== null && <DiffView diff={diff} />}
-
-      <AttachmentsSection
-        taskId={id}
-        attachments={task.attachments}
-        busy={busy}
-        onUpload={(file) => perform(() => uploadAttachment(id, file))}
-      />
-      <RunsSection runs={task.runs} />
-      <CommentsSection comments={task.comments} busy={busy} onAdd={addCommentAndReload} />
-    </section>
+      </div>
+    </div>
   );
 }

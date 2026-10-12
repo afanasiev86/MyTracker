@@ -1,30 +1,51 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { Button, Layout, Space } from 'antd';
+import { LogoutOutlined } from '@ant-design/icons';
 import Board from '../components/Board.jsx';
 import Projects from '../components/Projects.jsx';
 import Clients from '../components/Clients.jsx';
 import Settings from '../components/Settings.jsx';
 import Health from '../components/Health.jsx';
+import TelegramSettings from '../components/TelegramSettings.jsx';
+import { NewTaskRoute, TaskRoute } from '../components/board/TaskRoutes.jsx';
+import ProjectRoute from '../components/projects/ProjectRoute.jsx';
+import ClientRoute from '../components/clients/ClientRoute.jsx';
 import AppHeader from './AppHeader.jsx';
 import SectionTabs from './SectionTabs.jsx';
 
-// Экран владельца: шапка, вкладки и выбранный раздел
-export default function OwnerView({ section, onSection, inTelegram, onLogout, onLogoutEverywhere }) {
+// Экран владельца: шапка, вкладки и маршруты разделов. Формы и карточки открываются вложенными адресами.
+export default function OwnerView({ inTelegram, onLogout, onLogoutEverywhere }) {
   return (
-    <div className="app">
-      <AppHeader>
-        {!inTelegram && (
-          <div className="topbar-actions">
-            <button className="ghost" onClick={onLogout}>Выйти</button>
-            <button className="ghost" onClick={onLogoutEverywhere}>Выйти на всех устройствах</button>
-          </div>
-        )}
-      </AppHeader>
+    <Layout className="app-layout">
+      <Layout.Content className="app-content">
+        <AppHeader>
+          {!inTelegram && (
+            <Space wrap>
+              <Button icon={<LogoutOutlined />} onClick={onLogout}>Выйти</Button>
+              <Button onClick={onLogoutEverywhere}>Выйти на всех устройствах</Button>
+            </Space>
+          )}
+        </AppHeader>
 
-      <SectionTabs section={section} onSelect={onSection} />
+        <SectionTabs />
 
-      {section === 'board' && <Board />}
-      {section === 'projects' && <Projects />}
-      {section === 'clients' && <Clients />}
-      {section === 'settings' && <><Health /><Settings /></>}
-    </div>
+        <Routes>
+          <Route path="/tasks" element={<Board />}>
+            <Route path="new" element={<NewTaskRoute />} />
+            <Route path=":id" element={<TaskRoute />} />
+          </Route>
+          <Route path="/projects" element={<Projects />}>
+            <Route path="new" element={<ProjectRoute />} />
+            <Route path=":id" element={<ProjectRoute />} />
+          </Route>
+          <Route path="/clients" element={<Clients />}>
+            <Route path="new" element={<ClientRoute />} />
+            <Route path=":id" element={<ClientRoute />} />
+          </Route>
+          <Route path="/settings" element={<><Health /><TelegramSettings /><Settings /></>} />
+          <Route path="*" element={<Navigate to="/tasks" replace />} />
+        </Routes>
+      </Layout.Content>
+    </Layout>
   );
 }

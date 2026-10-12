@@ -21,6 +21,7 @@ export const createSchema = z.object({
 export const updateSchema = createSchema.partial().extend({
   status: z.enum(TASK_STATUSES).optional(),
   branch: z.string().optional(),
+  order: z.number().finite().optional(),
 });
 
 export const commentSchema = z.object({ text: z.string().min(1), visibleToClient: z.boolean().optional() });

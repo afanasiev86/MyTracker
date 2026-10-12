@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { getToken, clearToken, revokeAllSessions, getRole, setRole } from './api.js';
 import { getInitData } from './lib/telegram/webApp.js';
 import { confirmAction } from './lib/telegram/confirm.js';
@@ -12,8 +13,8 @@ export default function App() {
   const [authed, setAuthed] = useState(Boolean(getToken()));
   const [tgError, setTgError] = useState('');
   const [notice, setNotice] = useState('');
-  const [section, setSection] = useState('board');
   const [role, setRoleState] = useState(getRole());
+  const location = useLocation();
   const inTelegram = Boolean(getInitData());
 
   const signIn = (userRole) => {
@@ -34,13 +35,28 @@ export default function App() {
 
   if (!authed) {
     return (
-      <SignInGate
-        inTelegram={inTelegram}
-        tgError={tgError}
-        notice={notice}
-        onSuccess={() => { setRole('owner'); signIn('owner'); }}
-      />
+      <Routes>
+        <Route
+          path="/login"
+          element={(
+            <SignInGate
+              inTelegram={inTelegram}
+              tgError={tgError}
+              notice={notice}
+              onSuccess={() => { setRole('owner'); signIn('owner'); }}
+            />
+          )}
+        />
+        <Route
+          path="*"
+          element={<Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />}
+        />
+      </Routes>
     );
+  }
+
+  if (location.pathname === '/login') {
+    return <Navigate to={location.state?.from ?? '/'} replace />;
   }
 
   const logout = () => {
@@ -61,13 +77,16 @@ export default function App() {
   };
 
   if (role === 'client') {
-    return <ClientView inTelegram={inTelegram} onLogout={logout} />;
+    return (
+      <Routes>
+        <Route path="/portal" element={<ClientView inTelegram={inTelegram} onLogout={logout} />} />
+        <Route path="*" element={<Navigate to="/portal" replace />} />
+      </Routes>
+    );
   }
 
   return (
     <OwnerView
-      section={section}
-      onSection={setSection}
       inTelegram={inTelegram}
       onLogout={logout}
       onLogoutEverywhere={logoutEverywhere}

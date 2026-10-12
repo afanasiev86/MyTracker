@@ -1,3 +1,4 @@
+import { Flex, Tag, Typography } from 'antd';
 import { formatUsd } from '../../lib/cost.js';
 import { totalCostOf } from './filterTasks.js';
 
@@ -5,11 +6,11 @@ import { totalCostOf } from './filterTasks.js';
 export default function CostSummary({ costs }) {
   if (costs.length === 0) return null;
   return (
-    <p className="cost-summary">
-      Всего: <b>{formatUsd(totalCostOf(costs))}</b>
+    <Flex wrap align="center" gap={4} style={{ marginBottom: 12 }}>
+      <Typography.Text>Всего: <b>{formatUsd(totalCostOf(costs))}</b></Typography.Text>
       {costs.map((c) => (
-        <span key={c.project}> · {c.project}: {formatUsd(c.costUsd)}</span>
+        <Tag key={c.project} bordered={false}>{c.project}: {formatUsd(c.costUsd)}</Tag>
       ))}
-    </p>
+    </Flex>
   );
 }

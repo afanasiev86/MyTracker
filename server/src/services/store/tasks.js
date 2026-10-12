@@ -1,4 +1,5 @@
 import Task from '../../models/Task.js';
+import { sortByOrder } from '../../../../shared/taskOrder.js';
 
 // Доступ к задачам в базе. Маршруты и сервисы работают с задачами только через эти функции.
 export function findTask(id) {
@@ -9,8 +10,10 @@ export function findTaskLean(id) {
   return Task.findById(id).lean();
 }
 
-export function listTasks(filter) {
-  return Task.find(filter).sort({ updatedAt: -1 }).select('-runs.log').lean();
+// Новее выше, затем ручная сортировка с доски (sort в JS стабилен, порядок по updatedAt остаётся для равных)
+export async function listTasks(filter) {
+  const tasks = await Task.find(filter).sort({ updatedAt: -1 }).select('-runs.log').lean();
+  return sortByOrder(tasks);
 }
 
 export function listProjectTasks(slug) {

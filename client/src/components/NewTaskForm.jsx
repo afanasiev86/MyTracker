@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Alert, Button, Flex, Form } from 'antd';
 import { createTask } from '../api.js';
+import { fieldSetter } from '../lib/fieldValue.js';
 import { applyTemplate } from '../lib/templates/applyTemplate.js';
 import { EMPTY_TASK_FORM } from './newTask/emptyForm.js';
 import { buildTaskBody } from './newTask/buildTaskBody.js';
@@ -15,10 +17,9 @@ export default function NewTaskForm({ onCreated, onCancel }) {
   const [busy, setBusy] = useState(false);
   const projects = useProjects(setForm, setError);
 
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const set = fieldSetter(setForm);
 
-  async function submit(e) {
-    e.preventDefault();
+  async function submit() {
     setBusy(true);
     setError('');
     try {
@@ -32,14 +33,8 @@ export default function NewTaskForm({ onCreated, onCancel }) {
   }
 
   return (
-    <form className="panel form" onSubmit={submit}>
-      <h2>Новая задача</h2>
-
-      <ProjectField
-        projects={projects}
-        value={form.project}
-        onChange={set('project')}
-      />
+    <Form layout="vertical" onFinish={submit}>
+      <ProjectField projects={projects} value={form.project} onChange={set('project')} />
 
       <BasicFields form={form} set={set} />
 
@@ -47,16 +42,13 @@ export default function NewTaskForm({ onCreated, onCancel }) {
 
       <DetailFields form={form} set={set} />
 
-      <div className="actions">
-        <button
-          type="submit"
-          disabled={busy || !form.project || !form.title.trim()}
-        >
+      <Flex gap={8}>
+        <Button type="primary" htmlType="submit" loading={busy} disabled={!form.project || !form.title.trim()}>
           Создать
-        </button>
-        <button type="button" className="ghost" onClick={onCancel}>Отмена</button>
-      </div>
-      {error && <p className="error">{error}</p>}
-    </form>
+        </Button>
+        <Button onClick={onCancel}>Отмена</Button>
+      </Flex>
+      {error && <Alert type="error" showIcon message={error} style={{ marginTop: 16 }} />}
+    </Form>
   );
 }

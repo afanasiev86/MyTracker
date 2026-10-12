@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { setBackButton } from '../../lib/telegram/backButton.js';
 
-// В Telegram «Назад» закрывает открытую задачу или форму (сбрасывает view в null)
-export function useBackButton(view, setView) {
+// В Telegram «Назад» закрывает открытую задачу или форму
+export function useBackButton(open, onBack) {
   useEffect(() => {
-    if (!view) return setBackButton(null);
-    return setBackButton(() => setView(null));
-  }, [view, setView]);
+    if (!open) return setBackButton(null);
+    return setBackButton(onBack);
+  }, [open, onBack]);
 }

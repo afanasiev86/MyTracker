@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button, Flex, Select, Typography } from 'antd';
 import { approveAccessRequest, rejectAccessRequest } from '../../api.js';
 
 // Один запрос: выбор клиента, подтверждение или отклонение
@@ -7,26 +8,28 @@ export default function AccessRow({ request, clients, onAct }) {
   const who = `${request.name}${request.username ? ` ${request.username}` : ''}`;
 
   return (
-    <div className="access-row">
+    <Flex vertical gap={6} style={{ padding: '8px 0' }}>
       <div>
-        <strong>{who}</strong>
-        <span className="muted"> · запрос {new Date(request.createdAt).toLocaleString('ru-RU')}</span>
+        <Typography.Text strong>{who}</Typography.Text>
+        <Typography.Text type="secondary"> · запрос {new Date(request.createdAt).toLocaleString('ru-RU')}</Typography.Text>
       </div>
-      <div className="actions">
-        <select value={clientId} onChange={(e) => setClientId(e.target.value)} aria-label="Клиент">
-          <option value="">Выберите клиента</option>
-          {clients.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
-        </select>
-        <button
+      <Flex wrap gap={8}>
+        <Select
+          value={clientId}
+          onChange={setClientId}
+          aria-label="Клиент"
+          style={{ minWidth: 200 }}
+          options={[{ value: '', label: 'Выберите клиента' }, ...clients.map((c) => ({ value: c._id, label: c.name }))]}
+        />
+        <Button
+          type="primary"
           disabled={!clientId}
           onClick={() => onAct(() => approveAccessRequest(request._id, clientId))}
         >
           Подтвердить
-        </button>
-        <button className="ghost" onClick={() => onAct(() => rejectAccessRequest(request._id))}>
-          Отклонить
-        </button>
-      </div>
-    </div>
+        </Button>
+        <Button onClick={() => onAct(() => rejectAccessRequest(request._id))}>Отклонить</Button>
+      </Flex>
+    </Flex>
   );
 }

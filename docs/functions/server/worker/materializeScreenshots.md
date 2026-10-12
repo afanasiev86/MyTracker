@@ -22,4 +22,4 @@
 
 ## Связи
 - Подсказка Claude: `server/src/worker/screenshots/screenshotNote.js:L2-5#screenshotNote`.
-- Вложения: `docs/features/tasks-and-runs.md:L25#Вложения`.
+- Вложения: `docs/features/tasks-and-runs.md:L39#Вложения`.

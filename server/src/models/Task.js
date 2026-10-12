@@ -43,6 +43,8 @@ const taskSchema = new mongoose.Schema({
   // Тип задачи: выбирает инструкции для Claude (см. skill implement-task)
   kind: { type: String, enum: TASK_KINDS, default: 'other' },
   dueDate: { type: Date, default: null },
+  // Ручная позиция на доске (меньше — выше). Не задана — порядок по updatedAt, см. shared/taskOrder.js
+  order: { type: Number, default: undefined },
   tags: { type: [String], default: [] },
   branch: { type: String, default: '' },
   // Сессия Claude Code, которую продолжаем после ответа на вопрос

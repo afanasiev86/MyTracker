@@ -3,7 +3,7 @@
 ## Стек
 - Node 20+, ESM (`"type": "module"`) в server и client
 - Сервер: Express 4, Mongoose, jsonwebtoken, zod для валидации входа
-- Клиент: React 18, Vite, обычный CSS (`client/src/styles.css`)
+- Клиент: React 18, Vite, Ant Design 5 (`antd`), react-router-dom. Свой CSS только для доски и мелочей (`client/src/styles.css`)
 - Тесты сервера: Jest + Supertest (`server/test/`)
 - Пакеты: npm workspaces. Не добавляйте yarn/pnpm lock-файлы.
 

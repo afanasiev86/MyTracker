@@ -1,7 +1,7 @@
-import { getConfig } from '../../config.js';
+import { getTelegramConfig } from '../../services/telegram/runtime.js';
 // Кнопка открытия Mini App. Без HTTPS-адреса в окружении сообщаем, что её нет.
 export function appButton() {
-  const url = getConfig().telegram.miniAppUrl;
+  const url = getTelegramConfig().miniAppUrl;
   if (!url) {
     return 'Mini App не настроен: задайте TELEGRAM_MINIAPP_URL (HTTPS-адрес) и перезапустите сервер.';
   }
