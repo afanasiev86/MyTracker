@@ -15,4 +15,4 @@
 verifyToken (`docs/functions/server/auth/verifyToken.md:L13#Алгоритм`) сверяет подпись, срок и версию. Middleware requireAuth (`docs/functions/server/auth/requireAuth.md:L13#Алгоритм`) отвечает 401.
 
 ## Отзыв токенов
-Версия хранится в коллекции `Settings`, кэш в памяти процесса. revokeAllTokens (`docs/functions/server/auth/revokeAllTokens.md:L13#Алгоритм`) увеличивает версию, и все токены перестают работать. Кнопка в интерфейсе: `client/src/App.jsx:L76@logoutEverywhere`.
+Версия хранится в коллекции `Settings`, кэш в памяти процесса. revokeAllTokens (`docs/functions/server/auth/revokeAllTokens.md:L13#Алгоритм`) увеличивает версию, и все токены перестают работать. Кнопка в интерфейсе: `client/src/App.jsx:L51@logoutEverywhere`.

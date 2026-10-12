@@ -1,29 +1,19 @@
-import { useEffect, useState } from 'react';
-import { createTask, fetchProjects } from '../api.js';
-import { PRIORITIES, PRIORITY_LABELS } from '../../../shared/crm.js';
-import { TASK_TEMPLATES, applyTemplate } from '../lib/templates.js';
-import { TASK_KINDS, KIND_LABELS } from '../../../shared/taskKinds.js';
-
-const EMPTY = {
-  project: '', title: '', goal: '', acceptance: '', outOfScope: '',
-  context: '', priority: 'normal', dueDate: '',
-};
+import { useState } from 'react';
+import { createTask } from '../api.js';
+import { applyTemplate } from '../lib/templates.js';
+import { EMPTY_TASK_FORM } from './newTask/emptyForm.js';
+import { buildTaskBody } from './newTask/buildTaskBody.js';
+import { useProjects } from './newTask/useProjects.js';
+import ProjectField from './newTask/ProjectField.jsx';
+import BasicFields from './newTask/BasicFields.jsx';
+import TemplatePicker from './newTask/TemplatePicker.jsx';
+import DetailFields from './newTask/DetailFields.jsx';
 
 export default function NewTaskForm({ onCreated, onCancel }) {
-  const [form, setForm] = useState(EMPTY);
-  const [projects, setProjects] = useState([]);
+  const [form, setForm] = useState(EMPTY_TASK_FORM);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    fetchProjects()
-      .then((list) => {
-        setProjects(list);
-        const active = list.find((p) => p.status === 'active');
-        if (active) setForm((f) => ({ ...f, project: f.project || active.slug }));
-      })
-      .catch((err) => setError(err.message));
-  }, []);
+  const projects = useProjects(setForm, setError);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -32,17 +22,7 @@ export default function NewTaskForm({ onCreated, onCancel }) {
     setBusy(true);
     setError('');
     try {
-      const task = await createTask({
-        project: form.project,
-        title: form.title.trim(),
-        goal: form.goal.trim(),
-        acceptance: form.acceptance.split('\n').map((s) => s.trim()).filter(Boolean),
-        outOfScope: form.outOfScope.trim(),
-        context: form.context.trim(),
-        priority: form.priority,
-        kind: form.kind || 'other',
-        dueDate: form.dueDate || null,
-      });
+      const task = await createTask(buildTaskBody(form));
       onCreated(task);
     } catch (err) {
       setError(err.message);
@@ -55,71 +35,17 @@ export default function NewTaskForm({ onCreated, onCancel }) {
     <form className="panel form" onSubmit={submit}>
       <h2>Новая задача</h2>
 
-      {projects.length === 0 ? (
-        <p className="muted">Сначала создайте проект на вкладке «Проекты».</p>
-      ) : (
-        <label>
-          Проект
-          <select value={form.project} onChange={set('project')} required>
-            {projects.map((p) => (
-              <option key={p._id} value={p.slug}>{p.name}</option>
-            ))}
-          </select>
-        </label>
-      )}
+      <ProjectField
+        projects={projects}
+        value={form.project}
+        onChange={set('project')}
+      />
 
-      <div className="grid-2">
-        <label>
-          Заголовок
-          <input value={form.title} onChange={set('title')} required />
-        </label>
-        <label>
-          Приоритет
-          <select value={form.priority} onChange={set('priority')}>
-            {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>)}
-          </select>
-        </label>
-        <label>
-          Срок
-          <input type="date" value={form.dueDate} onChange={set('dueDate')} />
-        </label>
-      </div>
+      <BasicFields form={form} set={set} />
 
-      <label>
-        Шаблон (заполнит пустые поля)
-        <select
-          defaultValue=""
-          onChange={(e) => {
-            if (e.target.value) setForm((f) => applyTemplate(f, e.target.value));
-            e.target.value = '';
-          }}
-        >
-          <option value="">Без шаблона</option>
-          {Object.entries(TASK_TEMPLATES).map(([key, t]) => <option key={key} value={key}>{t.label}</option>)}
-        </select>
-      </label>
-      <label>
-        Тип задачи
-        <select value={form.kind || 'other'} onChange={set('kind')}>
-          {TASK_KINDS.map((k) => <option key={k} value={k}>{KIND_LABELS[k]}</option>)}
-        </select>
-      </label>
-      <label>
-        Цель
-        <textarea value={form.goal} onChange={set('goal')} rows={2} />
-      </label>
-      <label>
-        Критерии приёмки (по одному в строке)
-        <textarea value={form.acceptance} onChange={set('acceptance')} rows={4} />
-      </label>
-      <label>
-        Что не трогать
-        <textarea value={form.outOfScope} onChange={set('outOfScope')} rows={2} />
-      </label>
-      <label>
-        Контекст (ссылки, эндпоинты, макеты)
-        <textarea value={form.context} onChange={set('context')} rows={2} />
-      </label>
+      <TemplatePicker onPick={(key) => setForm((f) => applyTemplate(f, key))} />
+
+      <DetailFields form={form} set={set} />
 
       <div className="actions">
         <button

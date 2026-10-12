@@ -1,37 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
-import { fetchClients, deleteClient, revokeClientPortal } from '../api.js';
-import { formatUsd } from '../lib/cost.js';
+import { useState } from 'react';
+import { deleteClient, revokeClientPortal } from '../api.js';
 import { confirmAction } from '../lib/telegram.js';
 import ClientForm from './ClientForm.jsx';
 import AccessRequests from './AccessRequests.jsx';
+import ClientCard from './clients/ClientCard.jsx';
+import { useClients } from './clients/useClients.js';
 
-// Ставка с единицей измерения: «2000 RUB в час» или «150000 RUB за проект»
-export function formatRate(rate) {
-  if (!rate) return 'Ставка не задана';
-  const amount = `${rate.amount} ${rate.currency}`;
-  return rate.kind === 'hourly' ? `${amount} в час` : `${amount} за проект`;
-}
+export { formatRate } from './clients/formatRate.js';
 
 export default function Clients() {
-  const [clients, setClients] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState('');
+  const { clients, loaded, error, setError, load } = useClients();
   const [notice, setNotice] = useState('');
   // null | 'new' | объект клиента
   const [editing, setEditing] = useState(null);
-
-  const load = useCallback(
-    () =>
-      fetchClients()
-        .then(setClients)
-        .catch((err) => setError(err.message))
-        .finally(() => setLoaded(true)),
-    [],
-  );
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   function saved(message) {
     setEditing(null);
@@ -94,38 +75,12 @@ export default function Clients() {
 
       <div className="list">
         {clients.map((c) => (
-          <article
+          <ClientCard
             key={c._id}
-            className="row-card"
-            role="button"
-            tabIndex={0}
-            onClick={() => { setNotice(''); setEditing(c); }}
-            onKeyDown={(e) => e.key === 'Enter' && setEditing(c)}
-          >
-            <div>
-              <strong>{c.name}</strong>
-              {c.company && <span className="muted"> · {c.company}</span>}
-            </div>
-            <div className="muted">
-              {formatRate(c.rate)} · проектов: {c.projects.length} · затраты на Claude {formatUsd(c.costUsd)}
-            </div>
-            {c.projects.length > 0 && (
-              <div className="muted">{c.projects.map((p) => p.name).join(', ')}</div>
-            )}
-            {c.telegramId ? (
-              <div className="portal-row">
-                <span className="badge">Портал открыт</span>
-                <button
-                  className="ghost"
-                  onClick={(e) => { e.stopPropagation(); closePortal(c); }}
-                >
-                  Закрыть доступ
-                </button>
-              </div>
-            ) : (
-              <div className="muted">Портал не подключён: подтвердите запрос выше</div>
-            )}
-          </article>
+            client={c}
+            onOpen={(client) => { setNotice(''); setEditing(client); }}
+            onClosePortal={closePortal}
+          />
         ))}
       </div>
     </>
