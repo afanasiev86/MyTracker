@@ -6,10 +6,7 @@ import { normalize } from './helpers.js';
 export async function patchTask(req, res, next) {
   try {
     const patch = normalize(updateSchema.parse(req.body));
-    const result = await applyPatch(req.params.id, patch);
-    if (result.notFound) return res.status(404).json({ error: 'Задача не найдена' });
-    if (result.error) return res.status(409).json({ error: result.error });
-    return res.json(result.task);
+    return res.json(await applyPatch(req.params.id, patch));
   } catch (err) {
     return next(err);
   }

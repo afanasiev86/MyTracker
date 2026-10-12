@@ -7,9 +7,7 @@ export async function deleteProject(req, res, next) {
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({ error: 'Некорректный ID' });
     }
-    const result = await removeProject(req.params.id);
-    if (result.notFound) return res.status(404).json({ error: 'Проект не найден' });
-    if (result.conflict) return res.status(409).json({ error: result.conflict });
+    await removeProject(req.params.id);
     return res.status(204).end();
   } catch (err) {
     return next(err);

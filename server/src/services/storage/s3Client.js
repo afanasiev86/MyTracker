@@ -1,5 +1,6 @@
 import { S3Client, HeadBucketCommand, CreateBucketCommand } from '@aws-sdk/client-s3';
 import { PROVIDERS, providerConfig, isConfigured } from './providers.js';
+import { domainError } from '../errors.js';
 
 // Клиент создаётся один раз на провайдера
 const clients = new Map();
@@ -7,7 +8,7 @@ export function s3For(id) {
   if (!clients.has(id)) {
     const cfg = providerConfig(id);
     if (!isConfigured(cfg)) {
-      throw Object.assign(new Error(`${PROVIDERS[id].label} не настроен`), { status: 503 });
+      throw domainError('unavailable', `${PROVIDERS[id].label} не настроен`);
     }
     clients.set(id, {
       cfg,

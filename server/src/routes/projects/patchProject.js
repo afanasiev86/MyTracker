@@ -6,10 +6,7 @@ import { normalize } from './helpers.js';
 export async function patchProject(req, res, next) {
   try {
     const patch = normalize(projectSchema.partial().parse(req.body));
-    const result = await updateProject(req.params.id, patch);
-    if (result.notFound) return res.status(404).json({ error: 'Проект не найден' });
-    if (result.conflict) return res.status(409).json({ error: result.conflict });
-    return res.json(result.project);
+    return res.json(await updateProject(req.params.id, patch));
   } catch (err) {
     return next(err);
   }

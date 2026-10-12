@@ -4,8 +4,8 @@
 Сохраняет вопрос, который Claude задал во время работы. Так вопрос попадает в трекер и в Telegram, а воркер после завершения процесса переводит задачу в «Нужен ответ».
 
 ## Где объявлено
-Маршрут: `server/src/routes/tasks/questionRoute.js:L5-15#questionRoute`.
-Правила: `server/src/services/tasks/askQuestion.js:L5-14#askQuestion`.
+Маршрут: `server/src/routes/tasks/questionRoute.js:L5-13#questionRoute`.
+Правила: `server/src/services/tasks/askQuestion.js:L6-14#askQuestion`.
 
 ## Вход и выход
 - Вход: `{ text }` по схеме `textSchema` (`server/src/routes/tasks/schemas.js:L27-27#textSchema`).
@@ -13,8 +13,8 @@
 
 ## Алгоритм
 1. Проверяет текст в маршруте: `server/src/routes/tasks/questionRoute.js:L7@const { text } = textSchema.parse(req.body);`.
-2. Разрешает вопрос только в статусе «В работе»: `server/src/services/tasks/askQuestion.js:L9@Вопрос можно задать только во время работы`.
-3. Записывает `pendingQuestion` и сохраняет: `server/src/services/tasks/askQuestion.js:L11@task.pendingQuestion = text;`.
+2. Разрешает вопрос только в статусе «В работе»: `server/src/services/tasks/askQuestion.js:L10@Вопрос можно задать только во время работы`.
+3. Записывает `pendingQuestion` и сохраняет: `server/src/services/tasks/askQuestion.js:L12@task.pendingQuestion = text;`.
 
 ## Ошибки и граничные случаи
 - Вызывается самим Claude через `deploy/tracker-api.sh` по инструкции из skill `implement-task`: `.claude/skills/implement-task/SKILL.md`.

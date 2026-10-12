@@ -1,4 +1,10 @@
+import { DomainError, STATUS_BY_CODE } from '../services/errors.js';
+
+// Единая точка, где ошибки превращаются в HTTP-ответы: { error: "сообщение" } с нужным статусом
 export function errorHandler(err, _req, res, _next) {
+  if (err instanceof DomainError) {
+    return res.status(STATUS_BY_CODE[err.code] ?? 400).json({ error: err.message });
+  }
   if (err.name === 'ZodError') {
     const message = err.issues[0]?.message || 'Некорректные данные';
     return res.status(400).json({ error: message, details: err.issues });

@@ -1,5 +1,6 @@
 import Project from '../../models/Project.js';
 import { taskExistsInProject } from './tasks.js';
+import { domainError } from '../errors.js';
 
 // Доступ к проектам в базе
 export function findProject(id) {
@@ -31,24 +32,24 @@ export function projectsOfClientExist(clientId) {
 }
 
 // Изменение проекта. Slug нельзя менять, если по нему уже есть задачи: они привязаны к нему.
+// Ошибки — DomainError (404, 409).
 export async function updateProject(id, patch) {
   const current = await Project.findById(id);
-  if (!current) return { notFound: true };
+  if (!current) throw domainError('not_found', 'Проект не найден');
   if (patch.slug && patch.slug !== current.slug && await taskExistsInProject(current.slug)) {
-    return { conflict: 'Нельзя переименовать slug: в проекте есть задачи' };
+    throw domainError('conflict', 'Нельзя переименовать slug: в проекте есть задачи');
   }
   Object.assign(current, patch);
   await current.save();
-  return { project: current.toObject() };
+  return current.toObject();
 }
 
-// Удаление только пустого проекта
+// Удаление только пустого проекта. Ошибки — DomainError (404, 409).
 export async function deleteProject(id) {
   const project = await Project.findById(id);
-  if (!project) return { notFound: true };
+  if (!project) throw domainError('not_found', 'Проект не найден');
   if (await taskExistsInProject(project.slug)) {
-    return { conflict: 'В проекте есть задачи, удалить нельзя' };
+    throw domainError('conflict', 'В проекте есть задачи, удалить нельзя');
   }
   await project.deleteOne();
-  return { ok: true };
 }
