@@ -20,6 +20,6 @@
 - После отзыва нужно войти заново везде. Именно это описано в подтверждении в интерфейсе: `client/src/App.jsx:L28-132#App`.
 
 ## Связи
-- Вызывается из `server/src/routes/auth.js:L52-59#POST /revoke`.
+- Вызывается из `server/src/routes/auth/revokeSessions.js:L4-11#revokeSessions`.
 - Клиентская сторона: ``client/src/api/auth.js:L10-10#revokeAllSessions``.
 - Подход: `docs/architecture/auth-tokens.md:L17#Отзыв токенов`.

@@ -3,10 +3,10 @@
 Кратко: вход по паролю или через подпись Telegram Mini App, JWT с версией, отзыв через смену версии в базе.
 
 ## Вход по паролю
-Сравнение за постоянное время: checkPassword (`docs/functions/server/auth/checkPassword.md:L13#Алгоритм`). Выдача токена: issueToken (`docs/functions/server/auth/issueToken.md:L3#Назначение`). Маршрут: `server/src/routes/auth.js:L13-23#POST /login`. Лимит попыток: `server/src/app.js:L17-23#loginLimiter`.
+Сравнение за постоянное время: checkPassword (`docs/functions/server/auth/checkPassword.md:L13#Алгоритм`). Выдача токена: issueToken (`docs/functions/server/auth/issueToken.md:L3#Назначение`). Маршрут: `server/src/routes/auth/login.js:L5-15#login`. Лимит попыток: `server/src/app.js:L17-23#loginLimiter`.
 
 ## Вход через Telegram
-Подпись `initData` проверяет `server/src/services/telegramAuth.js:L7-38#verifyInitData`. Маршрут `server/src/routes/auth.js:L26-49#POST /telegram` дополнительно сверяет id с `TELEGRAM_OWNER_ID`.
+Подпись `initData` проверяет `server/src/services/telegramAuth.js:L7-38#verifyInitData`. Маршрут `server/src/routes/auth/telegramLogin.js:L8-31#telegramLogin` дополнительно сверяет id с `TELEGRAM_OWNER_ID`.
 
 ## Выпуск токенов
 Токен содержит `sub` и `tv` (версия). Срок: 30 дней для владельца, 2 часа для воркера (`server/src/worker/runTask.js:L39@TRACKER_TOKEN`).
