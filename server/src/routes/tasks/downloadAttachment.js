@@ -1,10 +1,10 @@
-import Task from '../../models/Task.js';
+import { findTask } from '../../services/store/tasks.js';
 import { attachmentStream } from '../../services/attachments.js';
 
 // GET /api/tasks/:id/attachments/:attachmentId — файл из хранилища проходит через API (бакет приватный)
 export async function downloadAttachment(req, res, next) {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await findTask(req.params.id);
     if (!task) return res.status(404).json({ error: 'Задача не найдена' });
     const file = await attachmentStream(task, req.params.attachmentId);
     if (!file) return res.status(404).json({ error: 'Вложение не найдено' });

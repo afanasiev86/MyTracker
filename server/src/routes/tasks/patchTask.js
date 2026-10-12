@@ -1,33 +1,15 @@
-import Task from '../../models/Task.js';
-import { canTransition } from '../../../../shared/statuses.js';
+import { patchTask as applyPatch } from '../../services/tasks/patchTask.js';
 import { updateSchema } from './schemas.js';
-import { normalize, assertProjectExists } from './helpers.js';
+import { normalize } from './helpers.js';
 
-// PATCH /api/tasks/:id — правка полей и ручной переход статуса
+// PATCH /api/tasks/:id — правка полей и ручной переход статуса (правила в services/tasks/patchTask.js)
 export async function patchTask(req, res, next) {
   try {
     const patch = normalize(updateSchema.parse(req.body));
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-
-    if (patch.project && patch.project !== task.project) {
-      await assertProjectExists(patch.project);
-    }
-
-    if (patch.status && patch.status !== task.status) {
-      if (patch.status === 'in_progress') {
-        return res.status(409).json({ error: 'Статус «В работе» ставится только запуском задачи' });
-      }
-      if (!canTransition(task.status, patch.status)) {
-        return res.status(409).json({
-          error: `Нельзя перевести из «${task.status}» в «${patch.status}»`,
-        });
-      }
-    }
-
-    Object.assign(task, patch);
-    await task.save();
-    return res.json(task.toObject());
+    const result = await applyPatch(req.params.id, patch);
+    if (result.notFound) return res.status(404).json({ error: 'Задача не найдена' });
+    if (result.error) return res.status(409).json({ error: result.error });
+    return res.json(result.task);
   } catch (err) {
     return next(err);
   }

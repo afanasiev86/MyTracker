@@ -1,6 +1,6 @@
 import { issueToken } from '../../services/auth.js';
 import { verifyInitData } from '../../services/telegramAuth.js';
-import Client from '../../models/Client.js';
+import { findClientByTelegramId } from '../../services/store/index.js';
 import { telegramSchema } from './schemas.js';
 import { getConfig } from '../../config.js';
 
@@ -17,7 +17,7 @@ export async function telegramLogin(req, res, next) {
     if (telegramId === String(getConfig().telegram.ownerId)) {
       return res.json({ token: await issueToken('owner'), role: 'owner' });
     }
-    const client = await Client.findOne({ telegramId }).select('_id portalApproved').lean();
+    const client = await findClientByTelegramId(telegramId);
     if (client && !client.portalApproved) {
       return res.status(403).json({ error: 'Доступ ещё не подтверждён исполнителем' });
     }

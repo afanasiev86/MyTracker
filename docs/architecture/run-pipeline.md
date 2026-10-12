@@ -27,4 +27,4 @@
 Публичный `/api/health` отвечает 200 или 503 и показывает по каждому сервису (база, Claude Code, хранилище, Telegram) признак «в норме». Проверки кэшируются на 30 секунд: `server/src/services/health/getChecks.js:L11-28#getChecks`. Подробности для владельца (очередь по проектам, запуски, зависшие задачи «в работе» без процесса) собирает `server/src/services/health/details.js:L9-36#getDetails` и показывает блок «Состояние» в «Настройках».
 
 ## Состояния задачи
-Таблица статусов и переходов: `shared/statuses.js:L24-32#TRANSITIONS`. Ручные переходы проверяет `server/src/routes/tasks/patchTask.js:L7-34#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L13#Алгоритм`)).
+Таблица статусов и переходов: `shared/statuses.js:L24-32#TRANSITIONS`. Ручные переходы проверяет `server/src/routes/tasks/patchTask.js:L6-16#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L14#Алгоритм`)).
