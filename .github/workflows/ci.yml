@@ -32,3 +32,7 @@ jobs:
 
       - name: Build client
         run: npm run build
+
+      # Ссылки на строки в docs/ должны совпадать с кодом. Если код поменяли, а docs:build не запустили, CI упадёт.
+      - name: Docs references
+        run: npm run docs:check
