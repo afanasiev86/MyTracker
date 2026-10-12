@@ -3,10 +3,19 @@ import { getToken, clearToken, setToken, loginWithTelegram } from './api.js';
 import { getInitData, initTelegramUi } from './lib/telegram.js';
 import Login from './components/Login.jsx';
 import Board from './components/Board.jsx';
+import Projects from './components/Projects.jsx';
+import Clients from './components/Clients.jsx';
+
+const SECTIONS = [
+  { id: 'board', title: 'Задачи' },
+  { id: 'projects', title: 'Проекты' },
+  { id: 'clients', title: 'Клиенты' },
+];
 
 export default function App() {
   const [authed, setAuthed] = useState(Boolean(getToken()));
   const [tgError, setTgError] = useState('');
+  const [section, setSection] = useState('board');
   const inTelegram = Boolean(getInitData());
 
   useEffect(() => {
@@ -33,13 +42,30 @@ export default function App() {
     setAuthed(false);
   };
 
+  const onUnauthorized = logout;
+
   return (
     <div className="app">
       <header className="topbar">
         <h1>MyTracker</h1>
         {!inTelegram && <button className="ghost" onClick={logout}>Выйти</button>}
       </header>
-      <Board onUnauthorized={logout} />
+
+      <nav className="tabs">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.id}
+            className={section === s.id ? 'tab active' : 'tab'}
+            onClick={() => setSection(s.id)}
+          >
+            {s.title}
+          </button>
+        ))}
+      </nav>
+
+      {section === 'board' && <Board onUnauthorized={onUnauthorized} />}
+      {section === 'projects' && <Projects onUnauthorized={onUnauthorized} />}
+      {section === 'clients' && <Clients onUnauthorized={onUnauthorized} />}
     </div>
   );
 }

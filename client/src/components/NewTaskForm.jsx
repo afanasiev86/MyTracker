@@ -1,12 +1,27 @@
-import { useState } from 'react';
-import { createTask } from '../api.js';
+import { useEffect, useState } from 'react';
+import { createTask, fetchProjects } from '../api.js';
+import { PRIORITIES, PRIORITY_LABELS } from '../../../shared/crm.js';
 
-const EMPTY = { project: '', title: '', goal: '', acceptance: '', outOfScope: '', context: '' };
+const EMPTY = {
+  project: '', title: '', goal: '', acceptance: '', outOfScope: '',
+  context: '', priority: 'normal', dueDate: '',
+};
 
 export default function NewTaskForm({ onCreated, onCancel }) {
   const [form, setForm] = useState(EMPTY);
+  const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    fetchProjects()
+      .then((list) => {
+        setProjects(list);
+        const active = list.find((p) => p.status === 'active');
+        if (active) setForm((f) => ({ ...f, project: f.project || active.slug }));
+      })
+      .catch((err) => setError(err.message));
+  }, []);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -16,12 +31,14 @@ export default function NewTaskForm({ onCreated, onCancel }) {
     setError('');
     try {
       const task = await createTask({
-        project: form.project.trim(),
+        project: form.project,
         title: form.title.trim(),
         goal: form.goal.trim(),
         acceptance: form.acceptance.split('\n').map((s) => s.trim()).filter(Boolean),
         outOfScope: form.outOfScope.trim(),
         context: form.context.trim(),
+        priority: form.priority,
+        dueDate: form.dueDate || null,
       });
       onCreated(task);
     } catch (err) {
@@ -34,14 +51,37 @@ export default function NewTaskForm({ onCreated, onCancel }) {
   return (
     <form className="panel form" onSubmit={submit}>
       <h2>Новая задача</h2>
-      <label>
-        Проект
-        <input value={form.project} onChange={set('project')} placeholder="shop" required />
-      </label>
-      <label>
-        Заголовок
-        <input value={form.title} onChange={set('title')} required />
-      </label>
+
+      {projects.length === 0 ? (
+        <p className="muted">Сначала создайте проект на вкладке «Проекты».</p>
+      ) : (
+        <label>
+          Проект
+          <select value={form.project} onChange={set('project')} required>
+            {projects.map((p) => (
+              <option key={p._id} value={p.slug}>{p.name}</option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      <div className="grid-2">
+        <label>
+          Заголовок
+          <input value={form.title} onChange={set('title')} required />
+        </label>
+        <label>
+          Приоритет
+          <select value={form.priority} onChange={set('priority')}>
+            {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>)}
+          </select>
+        </label>
+        <label>
+          Срок
+          <input type="date" value={form.dueDate} onChange={set('dueDate')} />
+        </label>
+      </div>
+
       <label>
         Цель
         <textarea value={form.goal} onChange={set('goal')} rows={2} />
@@ -58,8 +98,12 @@ export default function NewTaskForm({ onCreated, onCancel }) {
         Контекст (ссылки, эндпоинты, макеты)
         <textarea value={form.context} onChange={set('context')} rows={2} />
       </label>
+
       <div className="actions">
-        <button type="submit" disabled={busy || !form.project.trim() || !form.title.trim()}>
+        <button
+          type="submit"
+          disabled={busy || !form.project || !form.title.trim()}
+        >
           Создать
         </button>
         <button type="button" className="ghost" onClick={onCancel}>Отмена</button>

@@ -2,11 +2,15 @@ import path from 'node:path';
 import { Router } from 'express';
 import { z } from 'zod';
 import Task from '../models/Task.js';
+import Project from '../models/Project.js';
 import { startTask } from '../services/runs.js';
 import { git } from '../worker/git.js';
 import { TASK_STATUSES, canTransition } from '../../../shared/statuses.js';
+import { PRIORITIES } from '../../../shared/crm.js';
 
 const router = Router();
+
+const dateField = z.string().nullable().optional();
 
 const createSchema = z.object({
   project: z.string().min(1),
@@ -15,6 +19,9 @@ const createSchema = z.object({
   acceptance: z.array(z.string()).optional(),
   context: z.string().optional(),
   outOfScope: z.string().optional(),
+  priority: z.enum(PRIORITIES).optional(),
+  dueDate: dateField,
+  tags: z.array(z.string()).optional(),
 });
 
 const updateSchema = createSchema.partial().extend({
@@ -24,11 +31,30 @@ const updateSchema = createSchema.partial().extend({
 
 const commentSchema = z.object({ text: z.string().min(1) });
 
+function normalize(data) {
+  const out = { ...data };
+  if (out.dueDate !== undefined) out.dueDate = out.dueDate ? new Date(out.dueDate) : null;
+  return out;
+}
+
+async function assertProjectExists(slug) {
+  if (!(await Project.exists({ slug }))) {
+    const error = new Error(`Проект «${slug}» не найден. Сначала создайте его в CRM.`);
+    error.status = 400;
+    throw error;
+  }
+}
+
+function escapeRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 router.get('/', async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.project) filter.project = req.query.project;
     if (req.query.status) filter.status = req.query.status;
+    if (req.query.q) filter.title = { $regex: escapeRegex(String(req.query.q)), $options: 'i' };
     const tasks = await Task.find(filter)
       .sort({ updatedAt: -1 })
       .select('-runs.log')
@@ -41,7 +67,9 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const task = await Task.create(createSchema.parse(req.body));
+    const data = normalize(createSchema.parse(req.body));
+    await assertProjectExists(data.project);
+    const task = await Task.create(data);
     res.status(201).json(task);
   } catch (err) {
     next(err);
@@ -60,9 +88,13 @@ router.get('/:id', async (req, res, next) => {
 
 router.patch('/:id', async (req, res, next) => {
   try {
-    const patch = updateSchema.parse(req.body);
+    const patch = normalize(updateSchema.parse(req.body));
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+
+    if (patch.project && patch.project !== task.project) {
+      await assertProjectExists(patch.project);
+    }
 
     if (patch.status && patch.status !== task.status) {
       if (patch.status === 'in_progress') {

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Task from '../models/Task.js';
+import Project from '../models/Project.js';
 import { canTransition, STATUS_LABELS } from '../../../shared/statuses.js';
 import { startTask } from '../services/runs.js';
 
@@ -43,6 +44,9 @@ export async function handleCommand(text) {
     const [project, ...words] = args;
     const title = words.join(' ');
     if (!project || !title) return 'Формат: /new <проект> <заголовок>';
+    if (!(await Project.exists({ slug: project }))) {
+      return `Проект «${project}» не найден. Создайте его в CRM или проверьте slug.`;
+    }
     const task = await Task.create({ project, title });
     return `Создана задача ${task._id}\n${project}: ${title}`;
   }

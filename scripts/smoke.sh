@@ -44,8 +44,16 @@ check "без токена список закрыт" "401" "$(code "$API/tasks"
 
 check "неверный пароль отклоняется" "401" "$(code -X POST "$API/auth/login" -H 'Content-Type: application/json' -d '{"password":"wrong-wrong"}')"
 
+# Тестовый проект: задачи нельзя создать в несуществующем проекте, поэтому создаём его (409 значит, что он уже есть)
+PROJECT_CODE=$(code -X POST "$API/projects" -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"slug":"smoke-test","name":"Smoke test"}')
+if [[ "$PROJECT_CODE" != "201" && "$PROJECT_CODE" != "409" ]]; then
+  echo "FAIL  создание тестового проекта: HTTP $PROJECT_CODE"
+  FAIL=$((FAIL + 1))
+fi
+
 CREATE_BODY=$(curl -s -X POST "$API/tasks" -H "$AUTH" -H 'Content-Type: application/json' \
-  -d '{"project":"smoke","title":"Smoke test, можно удалить","acceptance":["проверка"]}')
+  -d '{"project":"smoke-test","title":"Smoke test, можно удалить","acceptance":["проверка"]}')
 TASK_ID=$(echo "$CREATE_BODY" | json_field _id)
 if [[ -z "$TASK_ID" ]]; then
   echo "FAIL  создание задачи: $CREATE_BODY"

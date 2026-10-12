@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchTasks, fetchCosts } from '../api.js';
 import { TASK_STATUSES, STATUS_LABELS } from '../../../shared/statuses.js';
+import { PRIORITY_LABELS } from '../../../shared/crm.js';
 import { setBackButton } from '../lib/telegram.js';
 import { sumRunCosts, formatUsd } from '../lib/cost.js';
 import TaskDetail from './TaskDetail.jsx';
@@ -11,6 +12,7 @@ export default function Board({ onUnauthorized }) {
   const [costs, setCosts] = useState([]);
   const [error, setError] = useState('');
   const [project, setProject] = useState('');
+  const [search, setSearch] = useState('');
   // null | 'new' | id задачи
   const [view, setView] = useState(null);
 
@@ -39,7 +41,10 @@ export default function Board({ onUnauthorized }) {
   }, [view]);
 
   const projects = [...new Set(tasks.map((t) => t.project))].sort();
-  const visible = project ? tasks.filter((t) => t.project === project) : tasks;
+  const query = search.trim().toLowerCase();
+  const visible = tasks
+    .filter((t) => !project || t.project === project)
+    .filter((t) => !query || t.title.toLowerCase().includes(query));
   const totalCost = costs.reduce((sum, c) => sum + c.costUsd, 0);
 
   return (
@@ -51,6 +56,12 @@ export default function Board({ onUnauthorized }) {
             <option key={p} value={p}>{p}</option>
           ))}
         </select>
+        <input
+          type="search"
+          placeholder="Поиск по названию"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <button onClick={() => setView('new')}>Новая задача</button>
       </div>
 
@@ -98,11 +109,18 @@ export default function Board({ onUnauthorized }) {
                     onClick={() => setView(t._id)}
                     onKeyDown={(e) => e.key === 'Enter' && setView(t._id)}
                   >
-                    <strong>{t.title}</strong>
+                    <strong>
+                      {t.priority === 'high' && <span className="prio-high">! </span>}
+                      {t.title}
+                    </strong>
                     <small>
                       {t.project}
+                      {t.dueDate && ` · до ${new Date(t.dueDate).toLocaleDateString('ru-RU')}`}
                       {cost > 0 && <span className="cost-badge"> · {formatUsd(cost)}</span>}
                     </small>
+                    {t.priority !== 'normal' && (
+                      <small className="muted">Приоритет: {PRIORITY_LABELS[t.priority]}</small>
+                    )}
                   </article>
                 );
               })}
