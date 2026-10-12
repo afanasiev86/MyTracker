@@ -10,6 +10,11 @@ describe('шаблоны задач', () => {
     expect(out.acceptance.split('\n')).toHaveLength(3);
   });
 
+  it('шаблон выставляет тип задачи', () => {
+    expect(applyTemplate(EMPTY, 'refactor').kind).toBe('refactor');
+    expect(applyTemplate({ ...EMPTY, kind: 'feature' }, 'bug').kind).toBe('bug');
+  });
+
   it('не перезаписывает уже написанный текст', () => {
     const out = applyTemplate({ ...EMPTY, goal: 'Своя цель' }, 'feature');
     expect(out.goal).toBe('Своя цель');

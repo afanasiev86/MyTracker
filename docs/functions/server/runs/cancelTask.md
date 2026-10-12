@@ -16,9 +16,9 @@
 3. Если процесса нет, ставит «Ошибку» и системный комментарий: `server/src/services/runs.js:L39@Запуск отменён вручную.`.
 
 ## Ошибки и граничные случаи
-- При успешной остановке статус не меняется здесь. Его ставит воркер, когда процесс завершится и увидит причину `cancelled`: `server/src/worker/runTask.js:L174@if (res.reason === 'cancelled')`.
+- При успешной остановке статус не меняется здесь. Его ставит воркер, когда процесс завершится и увидит причину `cancelled`: `server/src/worker/runTask.js:L175@if (res.reason === 'cancelled')`.
 - Сигнал SIGTERM. Если процесс Claude его игнорирует, через 10 секунд отправляется SIGKILL: см. `docs/functions/server/worker/stopRun.md:L13#Алгоритм`.
 
 ## Связи
 - Реестр процессов: `docs/functions/server/worker/stopRun.md:L3#Назначение`.
-- Маршрут: ``server/src/routes/tasks.js:L180-190#POST /:id/cancel``.
+- Маршрут: ``server/src/routes/tasks.js:L182-192#POST /:id/cancel``.

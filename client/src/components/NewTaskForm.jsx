@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createTask, fetchProjects } from '../api.js';
 import { PRIORITIES, PRIORITY_LABELS } from '../../../shared/crm.js';
 import { TASK_TEMPLATES, applyTemplate } from '../lib/templates.js';
+import { TASK_KINDS, KIND_LABELS } from '../../../shared/taskKinds.js';
 
 const EMPTY = {
   project: '', title: '', goal: '', acceptance: '', outOfScope: '',
@@ -39,6 +40,7 @@ export default function NewTaskForm({ onCreated, onCancel }) {
         outOfScope: form.outOfScope.trim(),
         context: form.context.trim(),
         priority: form.priority,
+        kind: form.kind || 'other',
         dueDate: form.dueDate || null,
       });
       onCreated(task);
@@ -94,6 +96,12 @@ export default function NewTaskForm({ onCreated, onCancel }) {
         >
           <option value="">Без шаблона</option>
           {Object.entries(TASK_TEMPLATES).map(([key, t]) => <option key={key} value={key}>{t.label}</option>)}
+        </select>
+      </label>
+      <label>
+        Тип задачи
+        <select value={form.kind || 'other'} onChange={set('kind')}>
+          {TASK_KINDS.map((k) => <option key={k} value={k}>{KIND_LABELS[k]}</option>)}
         </select>
       </label>
       <label>

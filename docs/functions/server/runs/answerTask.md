@@ -21,6 +21,6 @@
 - Два ответа подряд: после первого статус уже `in_progress`, поэтому второй вернёт ошибку «Задача сейчас не ждёт ответа». Это защита от дубля.
 
 ## Связи
-- Маршрут: ``server/src/routes/tasks.js:L166-177#POST /:id/answer``.
+- Маршрут: ``server/src/routes/tasks.js:L168-179#POST /:id/answer``.
 - Воркер: `docs/functions/server/worker/runTask.md:L3#Назначение`.
-- Поток вопросов: `docs/features/tasks-and-runs.md:L11#Вопросы от Claude`.
+- Поток вопросов: `docs/features/tasks-and-runs.md:L13#Вопросы от Claude`.

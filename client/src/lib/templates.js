@@ -41,6 +41,8 @@ export function applyTemplate(form, key) {
   if (!template) return form;
   return {
     ...form,
+    // Шаблон задаёт и тип задачи: от него зависят инструкции для Claude
+    kind: key,
     goal: form.goal || template.goal,
     acceptance: form.acceptance || template.acceptance.join('\n'),
     outOfScope: form.outOfScope || template.outOfScope,

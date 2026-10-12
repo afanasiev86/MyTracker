@@ -14,6 +14,7 @@ import {
   allowedTargets,
 } from '../../../shared/statuses.js';
 import { sumRunCosts, formatUsd } from '../lib/cost.js';
+import { KIND_LABELS } from '../../../shared/taskKinds.js';
 import { setMainButton, haptic } from '../lib/telegram.js';
 import { uploadAttachment, fetchAttachmentUrl } from '../api.js';
 
@@ -140,7 +141,7 @@ export default function TaskDetail({ id, onChanged, onClose }) {
       <header className="panel-head">
         <div>
           <h2>{task.title}</h2>
-          <p className="muted">{task.project} · {STATUS_LABELS[task.status]}</p>
+          <p className="muted">{task.project} · {STATUS_LABELS[task.status]} · {KIND_LABELS[task.kind] ?? KIND_LABELS.other}</p>
         </div>
         <button className="ghost" onClick={onClose}>Закрыть</button>
       </header>

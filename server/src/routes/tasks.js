@@ -7,6 +7,7 @@ import { taskDiff } from '../services/diff.js';
 import { ALLOWED_TYPES, MAX_ATTACHMENT_BYTES, saveAttachment, attachmentStream } from '../services/attachments.js';
 import { TASK_STATUSES, canTransition } from '../../../shared/statuses.js';
 import { PRIORITIES } from '../../../shared/crm.js';
+import { TASK_KINDS } from '../../../shared/taskKinds.js';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ const createSchema = z.object({
   context: z.string().optional(),
   outOfScope: z.string().optional(),
   priority: z.enum(PRIORITIES).optional(),
+  kind: z.enum(TASK_KINDS).optional(),
   dueDate: dateField,
   tags: z.array(z.string()).optional(),
 });

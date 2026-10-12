@@ -144,6 +144,7 @@ export async function runTask(taskId, { answer = null } = {}) {
       args = ['-p', `/implement-task ${task._id}\n\nОтвет владельца на ваш вопрос: ${answer}${screenshotNote(screenshots)}`,
         '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     } else {
+      // Тип задачи (поле kind) skill берёт из GET /tasks/:id и выбирает инструкции (раздел «Типы задач»)
       args = ['-p', `/implement-task ${task._id}${screenshotNote(screenshots)}`, '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     }
 

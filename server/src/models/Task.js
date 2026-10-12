@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { TASK_STATUSES } from '../../../shared/statuses.js';
 import { PRIORITIES } from '../../../shared/crm.js';
+import { TASK_KINDS } from '../../../shared/taskKinds.js';
 
 const runSchema = new mongoose.Schema({
   startedAt: Date,
@@ -39,6 +40,8 @@ const taskSchema = new mongoose.Schema({
   outOfScope: { type: String, default: '' },
   status: { type: String, enum: TASK_STATUSES, default: 'backlog' },
   priority: { type: String, enum: PRIORITIES, default: 'normal' },
+  // Тип задачи: выбирает инструкции для Claude (см. skill implement-task)
+  kind: { type: String, enum: TASK_KINDS, default: 'other' },
   dueDate: { type: Date, default: null },
   tags: { type: [String], default: [] },
   branch: { type: String, default: '' },
