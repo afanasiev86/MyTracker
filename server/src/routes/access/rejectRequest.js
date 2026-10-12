@@ -1,4 +1,4 @@
-import { rejectAccessRequest } from '../../services/access.js';
+import { rejectAccessRequest } from '../../services/access/rejectRequest.js';
 
 // POST /api/access/:id/reject
 export async function rejectRequest(req, res, next) {

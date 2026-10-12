@@ -1,4 +1,4 @@
-import { stopRun } from '../../worker/processes.js';
+import { stopRun } from '../../worker/processes/stopRun.js';
 
 // Отмена запуска. Если процесса уже нет (например, сервер перезапускали), сразу ставим ошибку.
 export async function cancelTask(task) {

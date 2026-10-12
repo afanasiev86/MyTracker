@@ -1,4 +1,4 @@
-import { toClientTask } from '../src/services/portal.js';
+import { toClientTask } from '../src/services/portal/toClientTask.js';
 import { requireOwner, requireClient } from '../src/middleware/roles.js';
 import { CLIENT_STATUS_LABELS, TASK_STATUSES } from '../../shared/statuses.js';
 

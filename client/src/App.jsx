@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getToken, clearToken, revokeAllSessions, getRole, setRole } from './api.js';
-import { getInitData, confirmAction } from './lib/telegram.js';
+import { getInitData } from './lib/telegram/webApp.js';
+import { confirmAction } from './lib/telegram/confirm.js';
 import { useExpiredSession } from './app/useExpiredSession.js';
 import { useTelegramLogin } from './app/useTelegramLogin.js';
 import SignInGate from './app/SignInGate.jsx';

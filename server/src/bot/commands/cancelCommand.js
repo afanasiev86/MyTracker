@@ -1,4 +1,4 @@
-import { cancelTask } from '../../services/runs.js';
+import { cancelTask } from '../../services/runs/cancelTask.js';
 import { findTask } from './findTask.js';
 
 // /cancel <id>: остановить запуск, который идёт

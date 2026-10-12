@@ -35,7 +35,7 @@
 | Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L22#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
 | Здоровье сервисов и запусков | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`), раздел «Здоровье» | getChecks (`server/src/services/health/getChecks.js:L11-28#getChecks`), getDetails (`server/src/services/health/details.js:L9-36#getDetails`), блок в интерфейсе `client/src/components/Health.jsx:L7-33#Health` |
 | Бэкапы и восстановление | `docs/RUNBOOK.md:L152#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-minio.sh:L35@docker run --rm` |
-| Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L28-140#TaskDetail` | главная кнопка Telegram: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton` |
+| Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L29-141#TaskDetail` | главная кнопка Telegram: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton` |
 
 ## Функции (детально, по одной на файл)
 - Авторизация: checkPassword (`docs/functions/server/auth/checkPassword.md:L3#Назначение`), issueToken (`docs/functions/server/auth/issueToken.md:L3#Назначение`), currentTokenVersion (`docs/functions/server/auth/currentTokenVersion.md:L3#Назначение`), verifyToken (`docs/functions/server/auth/verifyToken.md:L3#Назначение`), revokeAllTokens (`docs/functions/server/auth/revokeAllTokens.md:L3#Назначение`), requireAuth (`docs/functions/server/auth/requireAuth.md:L3#Назначение`)

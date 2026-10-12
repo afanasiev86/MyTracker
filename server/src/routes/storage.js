@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { listProviders, getActiveProvider, setActiveProvider, PROVIDERS } from '../services/storage.js';
+import { listProviders, PROVIDERS } from '../services/storage/providers.js';
+import { getActiveProvider, setActiveProvider } from '../services/storage/selection.js';
 
 const router = Router();
 

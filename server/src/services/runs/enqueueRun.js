@@ -1,4 +1,4 @@
-import { enqueue } from '../../worker/queue.js';
+import { enqueue } from '../../worker/queue/enqueue.js';
 import { runTask } from '../../worker/runTask.js';
 
 // Ставит запуск в очередь проекта с приоритетом задачи. Очередь в памяти, поэтому состояние

@@ -1,4 +1,4 @@
-import { telegramApi, telegramEnabled } from '../telegram.js';
+import { telegramApi, telegramEnabled } from '../telegram/api.js';
 import { withTimeout } from './withTimeout.js';
 
 export async function telegramCheck() {

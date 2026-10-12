@@ -1,4 +1,4 @@
-import { getObjectStream } from '../storage.js';
+import { getObjectStream } from '../storage/objects.js';
 import { MAX_SCREENSHOTS_PER_RUN } from './config.js';
 
 // Файлы вложений целиком, для воркера (он кладёт их в рабочую копию). Лимит на число файлов.

@@ -1,6 +1,7 @@
 import express from 'express';
 import { findTask } from '../../services/store/tasks.js';
-import { ALLOWED_TYPES, MAX_ATTACHMENT_BYTES, saveAttachment } from '../../services/attachments.js';
+import { ALLOWED_TYPES, MAX_ATTACHMENT_BYTES } from '../../services/attachments/config.js';
+import { saveAttachment } from '../../services/attachments/saveAttachment.js';
 
 // Тело запроса читается как сырой файл: разрешённые типы и предел размера задают middleware
 export const attachmentBody = express.raw({ type: Object.keys(ALLOWED_TYPES), limit: MAX_ATTACHMENT_BYTES });

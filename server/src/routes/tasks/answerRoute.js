@@ -1,5 +1,5 @@
 import { findTask } from '../../services/store/tasks.js';
-import { answerTask } from '../../services/runs.js';
+import { answerTask } from '../../services/runs/answerTask.js';
 import { textSchema } from './schemas.js';
 
 // POST /api/tasks/:id/answer — ответ владельца на вопрос Claude, продолжает ту же сессию

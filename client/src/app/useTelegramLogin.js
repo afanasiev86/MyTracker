@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { loginWithTelegram, setToken, setRole } from '../api.js';
-import { getInitData, initTelegramUi } from '../lib/telegram.js';
+import { getInitData } from '../lib/telegram/webApp.js';
+import { initTelegramUi } from '../lib/telegram/ui.js';
 
 // Открыто внутри Telegram: входим по подписи initData, пароль не нужен.
 // Запускается один раз при открытии приложения.

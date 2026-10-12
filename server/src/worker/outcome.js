@@ -1,7 +1,7 @@
 import { git } from './git.js';
 import { isLimitError } from './limits.js';
 import { countNewCommits } from './worktree.js';
-import { runChecks } from './verify.js';
+import { runChecks } from './verify/runChecks.js';
 
 // Итог запуска по результату claude. Порядок условий важен: первое совпавшее определяет статус.
 // Возвращает { status, summary, costUsd, log, checks? }.

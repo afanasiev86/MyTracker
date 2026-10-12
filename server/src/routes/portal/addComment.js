@@ -1,4 +1,4 @@
-import { addClientComment } from '../../services/portal.js';
+import { addClientComment } from '../../services/portal/addClientComment.js';
 import { commentSchema } from './schemas.js';
 
 // POST /api/portal/tasks/:id/comments — комментарий заказчика к задаче

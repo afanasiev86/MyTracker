@@ -1,6 +1,10 @@
 import { spawn } from 'node:child_process';
-import { registerRun, unregisterRun, stopRun } from './processes.js';
-import { progressFromEvent, parseStreamLine, LineSplitter } from './progress.js';
+import { registerRun } from './processes/registerRun.js';
+import { unregisterRun } from './processes/unregisterRun.js';
+import { stopRun } from './processes/stopRun.js';
+import { progressFromEvent } from './progress/progressFromEvent.js';
+import { parseStreamLine } from './progress/parseStreamLine.js';
+import { LineSplitter } from './progress/LineSplitter.js';
 
 // Не чаще раза в PROGRESS_THROTTLE_MS пишем прогресс в базу
 const PROGRESS_THROTTLE_MS = 3000;

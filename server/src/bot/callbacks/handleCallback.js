@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Task from '../../models/Task.js';
-import { acceptTask, startTask } from '../../services/runs.js';
+import { acceptTask } from '../../services/runs/acceptTask.js';
+import { startTask } from '../../services/runs/startTask.js';
 import { decodeCallback } from '../callbackData.js';
 import { showDiff } from './showDiff.js';
 

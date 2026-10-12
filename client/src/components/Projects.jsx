@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { deleteProject } from '../api.js';
-import { confirmAction } from '../lib/telegram.js';
+import { confirmAction } from '../lib/telegram/confirm.js';
 import ProjectForm from './ProjectForm.jsx';
 import ProjectCard from './projects/ProjectCard.jsx';
 import { useProjectList } from './projects/useProjectList.js';

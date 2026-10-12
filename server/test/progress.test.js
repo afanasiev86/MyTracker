@@ -1,4 +1,7 @@
-import { progressFromEvent, parseStreamLine, findResult, LineSplitter } from '../src/worker/progress.js';
+import { progressFromEvent } from '../src/worker/progress/progressFromEvent.js';
+import { parseStreamLine } from '../src/worker/progress/parseStreamLine.js';
+import { findResult } from '../src/worker/progress/findResult.js';
+import { LineSplitter } from '../src/worker/progress/LineSplitter.js';
 
 describe('прогресс запуска', () => {
   it('берёт описание вызова инструмента', () => {

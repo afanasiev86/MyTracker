@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { checkPassword } from '../src/services/auth.js';
+import { checkPassword } from '../src/services/auth/password.js';
 
 beforeAll(() => {
   process.env.JWT_SECRET = 'test-secret';

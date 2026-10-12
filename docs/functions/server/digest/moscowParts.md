@@ -14,4 +14,4 @@
 2. Собирает части в объект и формирует день: `server/src/services/digest/moscowParts.js:L14-20#moscowParts`.
 
 ## Связи
-- Используется `buildDigest` и планировщиком. Проверка: `server/test/bot.test.js:L27@день по Москве`.
+- Используется `buildDigest` и планировщиком. Проверка: `server/test/bot.test.js:L28@день по Москве`.

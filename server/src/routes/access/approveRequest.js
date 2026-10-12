@@ -1,4 +1,4 @@
-import { approveAccessRequest } from '../../services/access.js';
+import { approveAccessRequest } from '../../services/access/approveRequest.js';
 import { approveSchema } from './schemas.js';
 
 // POST /api/access/:id/approve

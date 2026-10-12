@@ -1,4 +1,4 @@
-import { withTimeout } from '../src/services/health.js';
+import { withTimeout } from '../src/services/health/withTimeout.js';
 
 describe('withTimeout', () => {
   it('возвращает результат, если сервис ответил вовремя', async () => {

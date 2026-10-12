@@ -1,6 +1,6 @@
 import Client from '../../models/Client.js';
 import AccessRequest from '../../models/AccessRequest.js';
-import { notify } from '../notify.js';
+import { notify } from '../notify/owner.js';
 import { getConfig } from '../../config.js';
 
 // Запрос доступа от человека, который написал боту /start. Повторный /start обновляет запрос.

@@ -1,4 +1,5 @@
-import { sendTelegram, telegramEnabled } from '../telegram.js';
+import { sendTelegram } from '../telegram/send.js';
+import { telegramEnabled } from '../telegram/api.js';
 
 // Уведомления владельцу. Ошибки не ломают основной процесс, поэтому только логируются.
 // extra — дополнительные поля Telegram, например reply_markup с кнопками.

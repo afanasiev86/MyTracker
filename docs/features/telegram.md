@@ -15,4 +15,4 @@ handleCallback (`docs/functions/server/bot/handleCallback.md:L13#Алгорит�
 buildDigest (`docs/functions/server/digest/buildDigest.md:L12#Алгоритм`), расписание startDigestScheduler (`docs/functions/server/digest/startDigestScheduler.md:L12#Алгоритм`).
 
 ## Mini App
-Вход: verifyInitData (`docs/functions/server/telegram/verifyInitData.md:L12#Алгоритм`) и `server/src/routes/auth/telegramLogin.js:L9-32#telegramLogin`. Интерфейс: `client/src/App.jsx:L10-75#App`.
+Вход: verifyInitData (`docs/functions/server/telegram/verifyInitData.md:L12#Алгоритм`) и `server/src/routes/auth/telegramLogin.js:L9-32#telegramLogin`. Интерфейс: `client/src/App.jsx:L11-76#App`.

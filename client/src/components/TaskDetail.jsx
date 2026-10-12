@@ -11,7 +11,8 @@ import {
 } from '../api.js';
 import { RUNNABLE_FROM, STATUS_LABELS } from '../../../shared/statuses.js';
 import { KIND_LABELS } from '../../../shared/taskKinds.js';
-import { setMainButton, haptic } from '../lib/telegram.js';
+import { setMainButton } from '../lib/telegram/mainButton.js';
+import { haptic } from '../lib/telegram/haptic.js';
 import { mainLabel } from '../lib/mainButton.js';
 import TaskSpec from './task/TaskSpec.jsx';
 import ProgressBlock from './task/ProgressBlock.jsx';

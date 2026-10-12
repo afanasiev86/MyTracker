@@ -1,4 +1,4 @@
-import { shouldNotifyClient, clientStatusMessage } from '../src/services/clientNotify.js';
+import { shouldNotifyClient, clientStatusMessage } from '../src/services/notify/client.js';
 
 describe('уведомления заказчику о смене статуса', () => {
   it('сообщает о переходе видимого статуса', () => {

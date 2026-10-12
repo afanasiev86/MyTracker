@@ -1,4 +1,4 @@
-import { getObjectStream } from '../storage.js';
+import { getObjectStream } from '../storage/objects.js';
 
 // Поток файла для отдачи клиенту, или null, если вложения нет в задаче
 export async function attachmentStream(task, attachmentId) {

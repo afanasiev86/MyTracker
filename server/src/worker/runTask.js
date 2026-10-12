@@ -1,10 +1,10 @@
 import path from 'node:path';
 import Task from '../models/Task.js';
-import { issueToken } from '../services/auth.js';
+import { issueToken } from '../services/auth/tokens.js';
 import { git } from './git.js';
-import { materializeScreenshots } from './screenshots.js';
-import { formatChecks } from './verify.js';
-import { findResult } from './progress.js';
+import { materializeScreenshots } from './screenshots/materializeScreenshots.js';
+import { formatChecks } from './verify/formatChecks.js';
+import { findResult } from './progress/findResult.js';
 import { workerConfig } from './config.js';
 import { TRACKER_CLI } from './claudeTools.js';
 import { launchArgs } from './launchArgs.js';

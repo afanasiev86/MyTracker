@@ -1,5 +1,5 @@
 import { STATUS_LABELS } from '../../../shared/statuses.js';
-import { notify } from '../services/notify.js';
+import { notify } from '../services/notify/owner.js';
 import { reviewKeyboard } from '../bot/callbackData.js';
 
 const ICONS = { review: '🔍', failed: '❌', ready: '⏸', waiting: '❓' };

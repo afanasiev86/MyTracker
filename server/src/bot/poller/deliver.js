@@ -1,4 +1,4 @@
-import { sendTelegram } from '../../services/telegram.js';
+import { sendTelegram } from '../../services/telegram/send.js';
 
 // Ответ владельцу: строка или { text, reply_markup }
 export async function deliver(reply) {

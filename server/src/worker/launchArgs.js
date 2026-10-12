@@ -1,5 +1,5 @@
 import { claudeTools } from './claudeTools.js';
-import { screenshotNote } from './screenshots.js';
+import { screenshotNote } from './screenshots/screenshotNote.js';
 
 const BASE_FLAGS = ['--output-format', 'stream-json', '--verbose', '--allowedTools'];
 

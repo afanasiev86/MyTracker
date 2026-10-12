@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
-import { enqueue, queueSizes } from '../src/worker/queue.js';
+import { enqueue } from '../src/worker/queue/enqueue.js';
+import { queueSizes } from '../src/worker/queue/queueSizes.js';
 
 // Задание, которое завершаем вручную: так видно, в каком порядке очередь их запускает
 function manualJob(log, name) {

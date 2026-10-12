@@ -21,8 +21,8 @@
 ## Уведомления о статусе
 Когда видимая заказчику подпись статуса меняется (например, «На проверке» или «Принято»), заказчику приходит сообщение в Telegram с названием задачи и проекта. Черновики и переходы без смены подписи не отправляются.
 - Перехват смены статуса: `server/src/models/Task.js:L77@taskSchema.post('save'`; подписка `server/src/models/Task.js:L68-70#onTaskStatusChange`, подключение в `server/src/index.js:L34@onTaskStatusChange(notifyClientOfStatusChange);`.
-- Правило «сообщать или нет»: `server/src/services/notify/client.js:L14-17#shouldNotifyClient`. Текст: `server/src/services/notify/client.js:L8-10#clientStatusMessage`.
-- Получатель: только заказчик с подтверждённым доступом (`portalApproved`) и известным `telegramId`: `server/src/services/notify/client.js:L21-28#notifyClientOfStatusChange`.
+- Правило «сообщать или нет»: `server/src/services/notify/client.js:L15-18#shouldNotifyClient`. Текст: `server/src/services/notify/client.js:L9-11#clientStatusMessage`.
+- Получатель: только заказчик с подтверждённым доступом (`portalApproved`) и известным `telegramId`: `server/src/services/notify/client.js:L22-29#notifyClientOfStatusChange`.
 - Тесты: `server/test/clientNotify.test.js:L3@describe('уведомления заказчику`.
 
 ## Безопасность
@@ -34,5 +34,5 @@
 ## Где что лежит
 - Модели: `server/src/models/AccessRequest.js`, `server/src/models/Client.js`.
 - API владельца для запросов: `server/src/routes/access.js`. API портала: `server/src/routes/portal.js`.
-- Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller/startPolling.js:L8-46#startPolling`.
-- Интерфейс заказчика: `client/src/components/Portal.jsx:L8-54#Portal`. Выбор роли при входе: `client/src/App.jsx:L10-75#App`.
+- Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller/startPolling.js:L9-47#startPolling`.
+- Интерфейс заказчика: `client/src/components/Portal.jsx:L8-54#Portal`. Выбор роли при входе: `client/src/App.jsx:L11-76#App`.

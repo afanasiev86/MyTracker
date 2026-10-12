@@ -9,7 +9,7 @@
 Поле `progress` модели `server/src/models/Task.js:L33-61#taskSchema`. Записи идут по очереди, чтобы не перетереть финальный статус: `server/src/worker/runTask.js:L53@writes = writes.then`.
 
 ## Троттлинг
-Не чаще раза в 3 секунды: `server/src/worker/claudeProcess.js:L5@PROGRESS_THROTTLE_MS`. Последнее сообщение доотправляется при завершении.
+Не чаще раза в 3 секунды: `server/src/worker/claudeProcess.js:L9@PROGRESS_THROTTLE_MS`. Последнее сообщение доотправляется при завершении.
 
 ## Итоговое событие
 Результат, стоимость и `session_id` берутся из последнего события `result`: findResult (`docs/functions/server/progress/findResult.md:L13#Алгоритм`).

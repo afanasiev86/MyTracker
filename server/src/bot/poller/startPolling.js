@@ -1,4 +1,5 @@
-import { telegramApi, sendTelegramTo, telegramEnabled } from '../../services/telegram.js';
+import { telegramApi, telegramEnabled } from '../../services/telegram/api.js';
+import { sendTelegramTo } from '../../services/telegram/send.js';
 import { setMenuButton } from './setMenuButton.js';
 import { deliver } from './deliver.js';
 import { handleButton } from './handleButton.js';

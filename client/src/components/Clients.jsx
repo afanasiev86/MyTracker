@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { deleteClient, revokeClientPortal } from '../api.js';
-import { confirmAction } from '../lib/telegram.js';
+import { confirmAction } from '../lib/telegram/confirm.js';
 import ClientForm from './ClientForm.jsx';
 import AccessRequests from './AccessRequests.jsx';
 import ClientCard from './clients/ClientCard.jsx';

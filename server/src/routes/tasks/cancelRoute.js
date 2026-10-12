@@ -1,5 +1,5 @@
 import { findTask } from '../../services/store/tasks.js';
-import { cancelTask } from '../../services/runs.js';
+import { cancelTask } from '../../services/runs/cancelTask.js';
 
 // POST /api/tasks/:id/cancel — отмена запуска, который идёт сейчас
 export async function cancelRoute(req, res, next) {

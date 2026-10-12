@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createTask } from '../api.js';
-import { applyTemplate } from '../lib/templates.js';
+import { applyTemplate } from '../lib/templates/applyTemplate.js';
 import { EMPTY_TASK_FORM } from './newTask/emptyForm.js';
 import { buildTaskBody } from './newTask/buildTaskBody.js';
 import { useProjects } from './newTask/useProjects.js';

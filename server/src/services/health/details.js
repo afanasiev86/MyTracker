@@ -1,6 +1,6 @@
 import Task from '../../models/Task.js';
-import { queueSizes } from '../../worker/queue.js';
-import { runningTaskIds } from '../../worker/processes.js';
+import { queueSizes } from '../../worker/queue/queueSizes.js';
+import { runningTaskIds } from '../../worker/processes/runningTaskIds.js';
 import { getChecks } from './getChecks.js';
 
 const STARTED_AT = new Date();

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { putObject, getActiveProvider } from '../storage.js';
+import { putObject } from '../storage/objects.js';
+import { getActiveProvider } from '../storage/selection.js';
 import { checkAttachment, displayName } from './validate.js';
 
 // Сохраняет файл в выбранное хранилище и добавляет метаданные в задачу.

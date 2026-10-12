@@ -1,4 +1,4 @@
-import { TASK_TEMPLATES } from '../../lib/templates.js';
+import { TASK_TEMPLATES } from '../../lib/templates/catalog.js';
 
 // Шаблон заполняет пустые поля формы. Выбор сбрасывается сразу, чтобы можно было взять тот же шаблон снова.
 export default function TemplatePicker({ onPick }) {

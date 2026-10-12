@@ -1,7 +1,10 @@
 import { jest } from '@jest/globals';
 import { canTransition, allowedTargets, RUNNABLE_FROM, TASK_STATUSES } from '../../shared/statuses.js';
-import { registerRun, unregisterRun, stopRun, isRunning } from '../src/worker/processes.js';
-import { parseCommand } from '../src/bot/commands.js';
+import { registerRun } from '../src/worker/processes/registerRun.js';
+import { unregisterRun } from '../src/worker/processes/unregisterRun.js';
+import { stopRun } from '../src/worker/processes/stopRun.js';
+import { isRunning } from '../src/worker/processes/isRunning.js';
+import { parseCommand } from '../src/bot/commands/parse.js';
 import { isLimitError } from '../src/worker/limits.js';
 
 describe('статусы', () => {
@@ -106,13 +109,13 @@ describe('остановка процесса', () => {
 
 describe('скриншоты задачи в рабочей копии', () => {
   it('имя файла безопасно и содержит номер', async () => {
-    const { screenshotFileName } = await import('../src/worker/screenshots.js');
+    const { screenshotFileName } = await import('../src/worker/screenshots/screenshotFileName.js');
     expect(screenshotFileName(0, '../../etc/shot.png', 'image/png')).toBe('1-shot.png');
     expect(screenshotFileName(2, 'экран', 'image/jpeg')).toBe('3-_.jpg');
   });
 
   it('подсказка Claude пустая без скриншотов и перечисляет пути с ними', async () => {
-    const { screenshotNote } = await import('../src/worker/screenshots.js');
+    const { screenshotNote } = await import('../src/worker/screenshots/screenshotNote.js');
     expect(screenshotNote([])).toBe('');
     expect(screenshotNote(['.tracker-attachments/1-a.png'])).toContain('.tracker-attachments/1-a.png');
   });

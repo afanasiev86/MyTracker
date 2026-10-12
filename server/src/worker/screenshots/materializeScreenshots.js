@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readAttachments } from '../../services/attachments.js';
+import { readAttachments } from '../../services/attachments/readAttachments.js';
 import { SCREENSHOT_DIR } from './config.js';
 import { screenshotFileName } from './screenshotFileName.js';
 import { excludeFromGit } from './excludeFromGit.js';

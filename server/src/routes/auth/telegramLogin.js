@@ -1,4 +1,4 @@
-import { issueToken } from '../../services/auth.js';
+import { issueToken } from '../../services/auth/tokens.js';
 import { verifyInitData } from '../../services/telegramAuth.js';
 import { findClientByTelegramId } from '../../services/store/index.js';
 import { telegramSchema } from './schemas.js';

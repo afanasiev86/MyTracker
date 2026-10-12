@@ -24,7 +24,7 @@ cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и 
 
 ## Вложения
 Скриншоты к задаче (PNG, JPEG, GIF, WebP до 5 МБ). Файлы лежат в выбранном хранилище: MinIO на своём сервере или S3 в облаке reg.ru. В базе только метаданные: имя объекта, провайдер, тип и размер.
-- Загрузка: `POST /api/tasks/:id/attachments`, тело — сам файл. Маршрут: `server/src/routes/tasks.js:L28@'/:id/attachments'`. Логика: `server/src/services/attachments/saveAttachment.js:L7-16#saveAttachment`. Проверка типа и размера: `server/src/services/attachments/validate.js:L6-12#checkAttachment`.
+- Загрузка: `POST /api/tasks/:id/attachments`, тело — сам файл. Маршрут: `server/src/routes/tasks.js:L28@'/:id/attachments'`. Логика: `server/src/services/attachments/saveAttachment.js:L8-17#saveAttachment`. Проверка типа и размера: `server/src/services/attachments/validate.js:L6-12#checkAttachment`.
 - Отдача: `GET /api/tasks/:id/attachments/:attachmentId` читает объект и отдаёт поток, бакет приватный. Логика: `server/src/services/attachments/attachmentStream.js:L4-9#attachmentStream`.
 - Провайдер вложения записывается при загрузке, поэтому смена хранилища не ломает старые файлы.
 - Выбор хранилища: вкладка «Настройки» в интерфейсе, сервис `server/src/services/storage/selection.js:L7-11#getActiveProvider`, маршрут `server/src/routes/storage.js`. Ключи доступа задаются только в переменных окружения (`server/.env.example`), в интерфейсе их не видно.

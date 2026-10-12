@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import { getActiveProvider, probeProvider } from '../storage.js';
+import { getActiveProvider } from '../storage/selection.js';
+import { probeProvider } from '../storage/probe.js';
 import { withTimeout } from './withTimeout.js';
 
 export async function storageCheck() {

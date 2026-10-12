@@ -1,4 +1,4 @@
-import { providerStatus, PROVIDERS } from '../src/services/storage.js';
+import { providerStatus, PROVIDERS } from '../src/services/storage/providers.js';
 
 describe('хранилища вложений', () => {
   const saved = { ...process.env };

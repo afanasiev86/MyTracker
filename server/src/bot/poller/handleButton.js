@@ -1,4 +1,4 @@
-import { telegramApi } from '../../services/telegram.js';
+import { telegramApi } from '../../services/telegram/api.js';
 import { deliver } from './deliver.js';
 import { getConfig } from '../../config.js';
 

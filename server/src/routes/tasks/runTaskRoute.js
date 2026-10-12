@@ -1,5 +1,5 @@
 import { findTask } from '../../services/store/tasks.js';
-import { startTask } from '../../services/runs.js';
+import { startTask } from '../../services/runs/startTask.js';
 
 // POST /api/tasks/:id/run — запуск в Claude из ready, review (доработка) или failed
 export async function runTaskRoute(req, res, next) {

@@ -1,4 +1,4 @@
-import { answerTask } from '../../services/runs.js';
+import { answerTask } from '../../services/runs/answerTask.js';
 import { findTask } from './findTask.js';
 
 // Ответ владельца на вопрос Claude по ID задачи (через /answer или ответом на сообщение)

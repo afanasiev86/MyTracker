@@ -1,6 +1,6 @@
 import Task from '../../models/Task.js';
 import Client from '../../models/Client.js';
-import { notify } from '../notify.js';
+import { notify } from '../notify/owner.js';
 import { clientProjects } from './clientProjects.js';
 import { domainError } from '../errors.js';
 

@@ -1,4 +1,4 @@
-import { startAccessRequest } from '../services/access.js';
+import { startAccessRequest } from '../services/access/startRequest.js';
 
 // Сообщения от людей, которые не владелец. Любой /start — запрос доступа, который подтверждает владелец.
 export async function handleGuest(msg) {

@@ -1,4 +1,4 @@
-import { verifyToken } from '../services/auth.js';
+import { verifyToken } from '../services/auth/tokens.js';
 
 export async function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';

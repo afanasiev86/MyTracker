@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { requireOwner } from '../middleware/roles.js';
-import { getPublicHealth, getDetails } from '../services/health.js';
+import { getPublicHealth } from '../services/health/publicHealth.js';
+import { getDetails } from '../services/health/details.js';
 
 const router = Router();
 

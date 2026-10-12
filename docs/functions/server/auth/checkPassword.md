@@ -21,6 +21,6 @@
 - Длина пароля проверяется открыто (разная длина быстро возвращает `false`). Это принятый компромисс: для личного трекера длина пароля не секрет.
 
 ## Связи
-- Вызывается из `server/src/routes/auth/login.js:L5-15#login`.
+- Вызывается из `server/src/routes/auth/login.js:L6-16#login`.
 - Подход к токенам: `docs/architecture/auth-tokens.md:L5#Вход по паролю`.
 - Функция, которая выдаёт токен после успешной проверки: `docs/functions/server/auth/issueToken.md:L3#Назначение`.

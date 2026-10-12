@@ -1,5 +1,5 @@
 import { findTask } from '../../services/store/tasks.js';
-import { attachmentStream } from '../../services/attachments.js';
+import { attachmentStream } from '../../services/attachments/attachmentStream.js';
 
 // GET /api/tasks/:id/attachments/:attachmentId — файл из хранилища проходит через API (бакет приватный)
 export async function downloadAttachment(req, res, next) {

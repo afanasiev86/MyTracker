@@ -1,5 +1,6 @@
 import { encodeCallback, decodeCallback, reviewKeyboard } from '../src/bot/callbackData.js';
-import { buildDigest, moscowParts } from '../src/services/digest.js';
+import { buildDigest } from '../src/services/digest/buildDigest.js';
+import { moscowParts } from '../src/services/digest/moscowParts.js';
 
 const ID = '65f1a2b3c4d5e6f708192a3b';
 

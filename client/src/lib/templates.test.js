@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyTemplate } from './templates.js';
+import { applyTemplate } from './templates/applyTemplate.js';
 
 const EMPTY = { goal: '', acceptance: '', outOfScope: '', context: '' };
 

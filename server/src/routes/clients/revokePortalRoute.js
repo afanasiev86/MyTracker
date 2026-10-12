@@ -1,4 +1,4 @@
-import { revokePortal } from '../../services/access.js';
+import { revokePortal } from '../../services/access/revokePortal.js';
 
 // POST /api/clients/:id/portal/revoke — закрыть клиенту доступ к порталу (отвязать его Telegram)
 export async function revokePortalRoute(req, res, next) {

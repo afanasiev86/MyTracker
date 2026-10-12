@@ -1,7 +1,8 @@
 import Task from '../../models/Task.js';
-import { buildDigest, moscowParts } from '../digest.js';
-import { notify } from '../notify.js';
-import { telegramEnabled } from '../telegram.js';
+import { buildDigest } from '../digest/buildDigest.js';
+import { moscowParts } from '../digest/moscowParts.js';
+import { notify } from '../notify/owner.js';
+import { telegramEnabled } from '../telegram/api.js';
 import { lastDigestDay, saveDigestDay } from './lastDigestDay.js';
 
 const DIGEST_HOUR = 9;

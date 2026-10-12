@@ -1,5 +1,5 @@
 import AccessRequest from '../../models/AccessRequest.js';
-import { sendTelegramTo } from '../telegram.js';
+import { sendTelegramTo } from '../telegram/send.js';
 import { domainError } from '../errors.js';
 
 // Отклонение запроса: заказчик получает сообщение, повторный /start не создаёт новый запрос. Ошибка — DomainError (404).

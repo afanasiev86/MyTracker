@@ -1,4 +1,5 @@
-import { checkAttachment, displayName, MAX_ATTACHMENT_BYTES } from '../src/services/attachments.js';
+import { checkAttachment, displayName } from '../src/services/attachments/validate.js';
+import { MAX_ATTACHMENT_BYTES } from '../src/services/attachments/config.js';
 
 describe('вложения: проверка файла', () => {
   it('принимает картинки и возвращает расширение', () => {

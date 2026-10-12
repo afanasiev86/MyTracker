@@ -1,4 +1,5 @@
-import { checkPassword, issueToken } from '../../services/auth.js';
+import { checkPassword } from '../../services/auth/password.js';
+import { issueToken } from '../../services/auth/tokens.js';
 import { loginSchema } from './schemas.js';
 
 // POST /api/auth/login — вход владельца по паролю

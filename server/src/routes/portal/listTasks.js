@@ -1,4 +1,4 @@
-import { clientTasks } from '../../services/portal.js';
+import { clientTasks } from '../../services/portal/clientTasks.js';
 
 // GET /api/portal/tasks — задачи заказчика
 export async function listTasks(req, res, next) {

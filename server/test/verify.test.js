@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { projectChecks, formatChecks } from '../src/worker/verify.js';
+import { projectChecks } from '../src/worker/verify/projectChecks.js';
+import { formatChecks } from '../src/worker/verify/formatChecks.js';
 
 async function projectWith(pkg) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'verify-test-'));

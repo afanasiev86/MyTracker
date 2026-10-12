@@ -2,7 +2,8 @@
 import Project from '../../models/Project.js';
 import Client from '../../models/Client.js';
 import { CLIENT_STATUS_LABELS } from '../../../../shared/statuses.js';
-import { sendTelegramTo, telegramEnabled } from '../telegram.js';
+import { sendTelegramTo } from '../telegram/send.js';
+import { telegramEnabled } from '../telegram/api.js';
 
 // Текст для заказчика: название задачи, проект и видимый ему статус. Внутренние детали не пишем.
 export function clientStatusMessage(title, projectName, status) {

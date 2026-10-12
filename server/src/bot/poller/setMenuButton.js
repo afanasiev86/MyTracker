@@ -1,4 +1,4 @@
-import { telegramApi } from '../../services/telegram.js';
+import { telegramApi } from '../../services/telegram/api.js';
 import { getConfig } from '../../config.js';
 
 // Кнопка меню бота открывает Mini App (нужен HTTPS-адрес в TELEGRAM_MINIAPP_URL)

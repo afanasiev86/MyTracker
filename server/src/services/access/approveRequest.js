@@ -1,6 +1,6 @@
 import Client from '../../models/Client.js';
 import AccessRequest from '../../models/AccessRequest.js';
-import { sendTelegramTo } from '../telegram.js';
+import { sendTelegramTo } from '../telegram/send.js';
 import { domainError } from '../errors.js';
 
 // Владелец подтверждает запрос и привязывает его к клиенту. Ошибки — DomainError (404, 409).

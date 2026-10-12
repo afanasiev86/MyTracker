@@ -1,5 +1,5 @@
 import { canTransition, STATUS_LABELS } from '../../../../shared/statuses.js';
-import { startTask } from '../../services/runs.js';
+import { startTask } from '../../services/runs/startTask.js';
 import { findTask } from './findTask.js';
 
 // /ready <id> — перевести в «Готово к работе»; /run <id> — сразу запустить в Claude
