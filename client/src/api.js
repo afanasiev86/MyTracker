@@ -65,6 +65,9 @@ export const updateTask = (id, patch) =>
 export const addComment = (id, text) =>
   request(`/tasks/${id}/comments`, { method: 'POST', body: { text } });
 export const runTask = (id) => request(`/tasks/${id}/run`, { method: 'POST' });
+export const answerTask = (id, text) =>
+  request(`/tasks/${id}/answer`, { method: 'POST', body: { text } });
+export const cancelTask = (id) => request(`/tasks/${id}/cancel`, { method: 'POST' });
 
 export async function fetchDiff(id) {
   let res;

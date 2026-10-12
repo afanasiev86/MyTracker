@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
-import { startTask } from '../services/runs.js';
+import { startTask, answerTask, cancelTask } from '../services/runs.js';
 import { git } from '../worker/git.js';
 import { TASK_STATUSES, canTransition } from '../../../shared/statuses.js';
 import { PRIORITIES } from '../../../shared/crm.js';
@@ -30,6 +30,7 @@ const updateSchema = createSchema.partial().extend({
 });
 
 const commentSchema = z.object({ text: z.string().min(1) });
+const textSchema = z.object({ text: z.string().trim().min(1, 'Текст не может быть пустым') });
 
 function normalize(data) {
   const out = { ...data };
@@ -138,6 +139,51 @@ router.post('/:id/run', async (req, res, next) => {
     const result = await startTask(task);
     if (result.error) return res.status(409).json({ error: result.error });
     return res.status(202).json(result.task.toObject());
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Claude задаёт вопрос: задача переходит в «Нужен ответ» после завершения запуска.
+// Вызывает skill implement-task во время работы.
+router.post('/:id/question', async (req, res, next) => {
+  try {
+    const { text } = textSchema.parse(req.body);
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+    if (task.status !== 'in_progress') {
+      return res.status(409).json({ error: 'Вопрос можно задать только во время работы' });
+    }
+    task.pendingQuestion = text;
+    await task.save();
+    return res.status(201).json({ ok: true });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Ответ владельца на вопрос Claude: продолжает ту же сессию
+router.post('/:id/answer', async (req, res, next) => {
+  try {
+    const { text } = textSchema.parse(req.body);
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+    const result = await answerTask(task, text);
+    if (result.error) return res.status(409).json({ error: result.error });
+    return res.status(202).json(result.task.toObject());
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Отмена запуска, который идёт сейчас
+router.post('/:id/cancel', async (req, res, next) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+    const result = await cancelTask(task);
+    if (result.error) return res.status(409).json({ error: result.error });
+    return res.status(202).json({ stopping: result.stopping, task: result.task.toObject() });
   } catch (err) {
     return next(err);
   }

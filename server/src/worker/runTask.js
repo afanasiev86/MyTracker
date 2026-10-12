@@ -7,11 +7,12 @@ import { notify } from '../services/notify.js';
 import { STATUS_LABELS } from '../../../shared/statuses.js';
 import { git } from './git.js';
 import { isLimitError } from './limits.js';
+import { registerRun, unregisterRun, stopRun } from './processes.js';
 
 // Инструменты, которые Claude может использовать без подтверждения
 const CLAUDE_TOOLS = 'Read Edit Write Bash(git *) Bash(npm *) Bash(npx *) Bash(curl *)';
 
-const ICONS = { review: '🔍', failed: '❌', ready: '⏸' };
+const ICONS = { review: '🔍', failed: '❌', ready: '⏸', waiting: '❓' };
 
 function config() {
   return {
@@ -20,18 +21,30 @@ function config() {
     base: process.env.DEFAULT_BRANCH || 'main',
     claudeBin: process.env.CLAUDE_BIN || 'claude',
     apiUrl: process.env.TRACKER_API_URL || `http://localhost:${process.env.PORT || 3001}/api`,
+    timeoutMin: Number(process.env.RUN_TIMEOUT_MIN) || 30,
   };
 }
 
-function runClaude(bin, args, { cwd, env }) {
+function runClaude(bin, args, { cwd, env, taskId, timeoutMs }) {
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, { cwd, env });
+    registerRun(taskId, child);
+    const timer = setTimeout(() => stopRun(taskId, 'timeout'), timeoutMs);
+
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => { stdout += d; });
     child.stderr.on('data', (d) => { stderr += d; });
-    child.on('error', reject);
-    child.on('close', (code) => resolve({ code, stdout, stderr }));
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      unregisterRun(taskId);
+      reject(err);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const entry = unregisterRun(taskId);
+      resolve({ code, stdout, stderr, reason: entry?.reason ?? null });
+    });
   });
 }
 
@@ -44,7 +57,7 @@ function parseOutput(stdout) {
 }
 
 // Готовит отдельную рабочую копию под задачу.
-// Если ветка уже есть в origin (повторный запуск после проверки), продолжаем с неё.
+// Если ветка уже есть в origin (продолжение после вопроса или доработка), продолжаем с неё.
 async function prepareWorktree(cfg, repo, branch, wt) {
   await git(repo, ['fetch', 'origin']);
   const remote = (await git(repo, ['ls-remote', '--heads', 'origin', branch])).trim();
@@ -57,7 +70,12 @@ async function prepareWorktree(cfg, repo, branch, wt) {
   return startPoint;
 }
 
-export async function runTask(taskId) {
+async function countNewCommits(wt, startPoint) {
+  return Number((await git(wt, ['rev-list', '--count', `${startPoint}..HEAD`])).trim());
+}
+
+// options.answer — ответ владельца на вопрос Claude. Продолжаем ту же сессию.
+export async function runTask(taskId, { answer = null } = {}) {
   const cfg = config();
   const task = await Task.findById(taskId);
   if (!task || task.status !== 'in_progress') return;
@@ -75,16 +93,44 @@ export async function runTask(taskId) {
       TRACKER_API: cfg.apiUrl,
       TRACKER_TOKEN: issueToken('worker', '2h'),
     };
-    const res = await runClaude(
-      cfg.claudeBin,
-      ['-p', `/implement-task ${task._id}`, '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS],
-      { cwd: wt, env },
-    );
+
+    let args;
+    if (answer && task.sessionId) {
+      args = ['-p', answer, '--resume', task.sessionId, '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS];
+    } else if (answer) {
+      // Сессии нет (например, она потеряна): передаём ответ вместе с задачей
+      args = ['-p', `/implement-task ${task._id}\n\nОтвет владельца на ваш вопрос: ${answer}`,
+        '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS];
+    } else {
+      args = ['-p', `/implement-task ${task._id}`, '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS];
+    }
+
+    const res = await runClaude(cfg.claudeBin, args, {
+      cwd: wt,
+      env,
+      taskId: task._id,
+      timeoutMs: cfg.timeoutMin * 60 * 1000,
+    });
+
     const data = parseOutput(res.stdout);
     const log = `${res.stdout}\n${res.stderr}`.slice(-20000);
     const costUsd = data?.total_cost_usd;
+    if (data?.session_id) task.sessionId = data.session_id;
 
-    if (isLimitError(res.stdout) || isLimitError(res.stderr)) {
+    // Вопрос, который Claude сохранил через API во время работы
+    const fresh = await Task.findById(task._id).select('pendingQuestion').lean();
+    const question = fresh?.pendingQuestion || '';
+
+    if (res.reason === 'cancelled') {
+      outcome = { status: 'failed', summary: 'Запуск остановлен вручную.', costUsd, log };
+    } else if (res.reason === 'timeout') {
+      outcome = {
+        status: 'failed',
+        summary: `Превышено время запуска (${cfg.timeoutMin} мин). Запуск остановлен.`,
+        costUsd,
+        log,
+      };
+    } else if (isLimitError(res.stdout) || isLimitError(res.stderr)) {
       outcome = {
         status: 'ready',
         summary: 'Достигнут лимит Claude. Задача возвращена в «Готово к работе», запустите её позже.',
@@ -98,10 +144,14 @@ export async function runTask(taskId) {
         costUsd,
         log,
       };
+    } else if (question) {
+      // Claude ждёт ответа. Сохраняем сделанное, чтобы продолжить с того же места
+      if (await countNewCommits(wt, startPoint) > 0) {
+        await git(wt, ['push', '-u', 'origin', branch]);
+      }
+      outcome = { status: 'waiting', summary: question, costUsd, log };
     } else {
-      const newCommits = Number(
-        (await git(wt, ['rev-list', '--count', `${startPoint}..HEAD`])).trim(),
-      );
+      const newCommits = await countNewCommits(wt, startPoint);
       if (newCommits === 0) {
         outcome = { status: 'failed', summary: 'Claude не создал коммитов.', costUsd, log };
       } else {
@@ -119,6 +169,7 @@ export async function runTask(taskId) {
 
   task.status = outcome.status;
   task.branch = branch;
+  if (outcome.status !== 'waiting') task.pendingQuestion = '';
   task.runs.push({
     startedAt,
     finishedAt: new Date(),
@@ -130,10 +181,9 @@ export async function runTask(taskId) {
 
   await git(repo, ['worktree', 'remove', '--force', wt]).catch(() => {});
 
-  await notify(
-    `${ICONS[task.status] ?? 'ℹ️'} ${task.project}: ${task.title}\n` +
-    `Статус: ${STATUS_LABELS[task.status]}\n` +
-    `${outcome.summary.slice(0, 800)}\n` +
-    `ID: ${task._id}`,
-  );
+  const title = outcome.status === 'waiting'
+    ? `${task.project}: ${task.title}\nClaude ждёт ответа:\n${outcome.summary}\n\n` +
+      `Ответьте ответом на это сообщение или командой /answer ${task._id} текст`
+    : `${task.project}: ${task.title}\nСтатус: ${STATUS_LABELS[task.status]}\n${outcome.summary.slice(0, 800)}`;
+  await notify(`${ICONS[task.status] ?? 'ℹ️'} ${title}\nID: ${task._id}`);
 }

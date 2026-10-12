@@ -4,6 +4,8 @@ import {
   updateTask,
   addComment,
   runTask,
+  answerTask,
+  cancelTask,
   fetchDiff,
 } from '../api.js';
 import {
@@ -25,6 +27,7 @@ export default function TaskDetail({ id, onChanged, onClose }) {
   const [error, setError] = useState('');
   const [diff, setDiff] = useState(null);
   const [comment, setComment] = useState('');
+  const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
 
   const reload = () => getTask(id).then(setTask).catch((err) => setError(err.message));
@@ -89,7 +92,36 @@ export default function TaskDetail({ id, onChanged, onClose }) {
       {task.outOfScope && <p><b>Не трогать:</b> {task.outOfScope}</p>}
       {task.context && <p><b>Контекст:</b> {task.context}</p>}
 
+      {task.status === 'waiting' && (
+        <section className="question" aria-label="Вопрос Claude">
+          <p className="question-label">Claude спрашивает</p>
+          <p>{task.pendingQuestion || 'Вопрос не сохранён, посмотрите комментарии и последний запуск.'}</p>
+          <form
+            className="comment-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!answer.trim()) return;
+              perform(async () => {
+                await answerTask(id, answer.trim());
+                setAnswer('');
+              });
+            }}
+          >
+            <label className="full">
+              Ваш ответ
+              <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={2} />
+            </label>
+            <button type="submit" disabled={busy || !answer.trim()}>Ответить и продолжить</button>
+          </form>
+        </section>
+      )}
+
       <div className="actions">
+        {task.status === 'in_progress' && (
+          <button className="danger" disabled={busy} onClick={() => perform(() => cancelTask(id))}>
+            Отменить запуск
+          </button>
+        )}
         {canRun && (
           <button disabled={busy} onClick={() => perform(() => runTask(id))}>
             {runLabel}

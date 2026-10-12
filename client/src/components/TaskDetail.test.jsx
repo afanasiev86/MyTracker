@@ -55,3 +55,26 @@ describe('TaskDetail', () => {
     expect(await screen.findByText('Фильтр применяется к каталогу')).toBeTruthy();
   });
 });
+
+describe('TaskDetail: вопрос Claude', () => {
+  it('для задачи, которая ждёт ответа, показывает вопрос и форму ответа', async () => {
+    vi.mocked(api.getTask).mockResolvedValue({
+      ...baseTask,
+      status: 'waiting',
+      pendingQuestion: 'Какой формат цены показывать?',
+    });
+
+    render(<TaskDetail id="abc" onChanged={() => {}} onClose={() => {}} />);
+
+    expect(await screen.findByText('Какой формат цены показывать?')).toBeTruthy();
+    expect(screen.getByText('Ответить и продолжить')).toBeTruthy();
+  });
+
+  it('во время работы предлагает отменить запуск', async () => {
+    vi.mocked(api.getTask).mockResolvedValue({ ...baseTask, status: 'in_progress' });
+
+    render(<TaskDetail id="abc" onChanged={() => {}} onClose={() => {}} />);
+
+    expect(await screen.findByText('Отменить запуск')).toBeTruthy();
+  });
+});

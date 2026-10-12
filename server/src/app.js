@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.js';
 import taskRoutes from './routes/tasks.js';
 import statsRoutes from './routes/stats.js';
@@ -8,13 +8,24 @@ import projectRoutes from './routes/projects.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
+// Попытки входа ограничены: 10 за 15 минут с одного адреса
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Слишком много попыток входа. Подождите 15 минут.' },
+});
+
 export function createApp() {
   const app = express();
-  app.use(cors());
+  // За nginx берём адрес клиента из X-Forwarded-For
+  app.set('trust proxy', 1);
+  // CORS не нужен: клиент и API работают на одном домене (nginx или Vite proxy)
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/api/health', (_req, res) => res.json({ ok: true }));
-  app.use('/api/auth', authRoutes);
+  app.use('/api/auth', loginLimiter, authRoutes);
   app.use('/api/tasks', requireAuth, taskRoutes);
   app.use('/api/projects', requireAuth, projectRoutes);
   app.use('/api/clients', requireAuth, clientRoutes);

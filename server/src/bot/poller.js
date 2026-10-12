@@ -35,7 +35,8 @@ export async function startPolling(handle) {
         if (!msg?.text) continue;
         if (String(msg.from?.id) !== String(process.env.TELEGRAM_OWNER_ID)) continue;
 
-        const reply = await handle(msg.text).catch((err) => `Ошибка: ${err.message}`);
+        const replyToText = msg.reply_to_message?.text || '';
+        const reply = await handle(msg.text, replyToText).catch((err) => `Ошибка: ${err.message}`);
         await deliver(reply);
       }
     } catch (err) {

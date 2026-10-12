@@ -2,16 +2,32 @@ import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
 import { canTransition, STATUS_LABELS } from '../../../shared/statuses.js';
-import { startTask } from '../services/runs.js';
+import { startTask, answerTask, cancelTask } from '../services/runs.js';
 
 const HELP = [
   'Команды:',
   '/new <проект> <заголовок>: создать задачу',
   '/ready <id>: перевести в «Готово к работе»',
   '/run <id>: запустить в Claude',
+  '/answer <id> <текст>: ответить на вопрос Claude',
+  '/cancel <id>: остановить запуск',
   '/status: активные задачи',
   '/app: открыть трекер',
+  '',
+  'Чтобы ответить на вопрос Claude, просто ответьте на его сообщение.',
 ].join('\n');
+
+const ID_IN_TEXT = /ID: ([a-f0-9]{24})/;
+
+export function parseCommand(text) {
+  const [head = '', ...args] = text.trim().split(/\s+/);
+  return { cmd: head.toLowerCase().replace(/@\S+$/, ''), args };
+}
+
+async function findTask(id) {
+  if (!mongoose.isValidObjectId(id)) return null;
+  return Task.findById(id);
+}
 
 function appButton() {
   const url = process.env.TELEGRAM_MINIAPP_URL;
@@ -24,18 +40,21 @@ function appButton() {
   };
 }
 
-export function parseCommand(text) {
-  const [head = '', ...args] = text.trim().split(/\s+/);
-  return { cmd: head.toLowerCase().replace(/@\S+$/, ''), args };
+async function answerById(id, text) {
+  const task = await findTask(id);
+  if (!task) return 'Задача не найдена';
+  const result = await answerTask(task, text);
+  return result.error ?? `Ответ принят, Claude продолжает задачу ${id}.`;
 }
 
-async function findTask(id) {
-  if (!mongoose.isValidObjectId(id)) return null;
-  return Task.findById(id);
-}
+// Возвращает строку или { text, reply_markup } для Telegram.
+// replyToText — текст сообщения, на которое ответил владелец (там есть ID задачи).
+export async function handleCommand(text, replyToText = '') {
+  const replyId = replyToText.match(ID_IN_TEXT)?.[1];
+  if (replyId && !text.startsWith('/')) {
+    return answerById(replyId, text.trim());
+  }
 
-// Возвращает строку или { text, reply_markup } для Telegram
-export async function handleCommand(text) {
   const { cmd, args } = parseCommand(text);
 
   if (cmd === '/app') return appButton();
@@ -49,6 +68,23 @@ export async function handleCommand(text) {
     }
     const task = await Task.create({ project, title });
     return `Создана задача ${task._id}\n${project}: ${title}`;
+  }
+
+  if (cmd === '/answer') {
+    const [id, ...words] = args;
+    const answer = words.join(' ');
+    if (!id || !answer) return 'Формат: /answer <id> <текст ответа>';
+    return answerById(id, answer);
+  }
+
+  if (cmd === '/cancel') {
+    const [id] = args;
+    if (!id) return 'Формат: /cancel <id>';
+    const task = await findTask(id);
+    if (!task) return 'Задача не найдена';
+    const result = await cancelTask(task);
+    if (result.error) return result.error;
+    return result.stopping ? `Останавливаю задачу ${id}…` : `Задача ${id} переведена в «Ошибка»`;
   }
 
   if (cmd === '/ready' || cmd === '/run') {
@@ -72,7 +108,7 @@ export async function handleCommand(text) {
   }
 
   if (cmd === '/status') {
-    const tasks = await Task.find({ status: { $in: ['in_progress', 'review', 'ready'] } })
+    const tasks = await Task.find({ status: { $in: ['in_progress', 'waiting', 'review', 'ready'] } })
       .sort({ updatedAt: -1 })
       .limit(20)
       .lean();

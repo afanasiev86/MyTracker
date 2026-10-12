@@ -127,6 +127,13 @@ body { margin: 0; }
 
 .prio-high { color: var(--danger); font-weight: 700; }
 
+.question {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 12px;
+  margin: 12px 0;
+}
+.question-label { margin: 0 0 4px; font-size: 13px; color: var(--accent); font-weight: 600; }
+
 button.danger { background: #fff; color: var(--danger); border: 1px solid #fca5a5; }
 
 input[type='search'] { min-width: 180px; }

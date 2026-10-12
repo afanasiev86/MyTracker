@@ -29,6 +29,10 @@ const taskSchema = new mongoose.Schema({
   dueDate: { type: Date, default: null },
   tags: { type: [String], default: [] },
   branch: { type: String, default: '' },
+  // Сессия Claude Code, которую продолжаем после ответа на вопрос
+  sessionId: { type: String, default: '' },
+  // Вопрос, который Claude задал и который ждёт ответа
+  pendingQuestion: { type: String, default: '' },
   runs: { type: [runSchema], default: [] },
   comments: { type: [commentSchema], default: [] },
 }, { timestamps: true });
