@@ -23,5 +23,5 @@
 - Лимит входа (`server/src/app.js:L17-23#loginLimiter`) действует на весь `/api/auth`, включая `/revoke`. Это безопасно, но выход на всех устройствах тоже попадает под лимит.
 
 ## Связи
-- Точка входа сервера: `server/src/index.js:L29@createApp().listen(PORT`.
+- Точка входа сервера: `server/src/index.js:L30@createApp().listen(PORT`.
 - Тесты: `server/test/app.test.js`.

@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import { createApp } from './app.js';
-import Task from './models/Task.js';
+import Task, { onTaskStatusChange } from './models/Task.js';
+import { notifyClientOfStatusChange } from './services/clientNotify.js';
 import { startPolling } from './bot/poller.js';
 import { handleCommand } from './bot/commands.js';
 import { handleCallback } from './bot/callbacks.js';
@@ -32,3 +33,4 @@ createApp().listen(PORT, () => {
 
 void startPolling(handleCommand, handleCallback, handleGuest);
 startDigestScheduler();
+onTaskStatusChange(notifyClientOfStatusChange);

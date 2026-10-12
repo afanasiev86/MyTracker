@@ -55,4 +55,28 @@ const taskSchema = new mongoose.Schema({
 
 taskSchema.index({ project: 1, status: 1 });
 
+// Подписчики на смену статуса задачи: (task, fromStatus) => void.
+// Сюда подключаются уведомления заказчику (см. services/clientNotify.js).
+const statusListeners = [];
+export function onTaskStatusChange(listener) {
+  statusListeners.push(listener);
+}
+
+// Запоминаем статус при загрузке, чтобы после сохранения понять, менялся ли он
+taskSchema.post('init', function rememberStatus(doc) {
+  doc.$locals.loadedStatus = doc.status;
+});
+
+taskSchema.post('save', function notifyStatusChange(doc) {
+  const from = doc.$locals.loadedStatus ?? 'backlog';
+  if (from === doc.status) return;
+  doc.$locals.loadedStatus = doc.status;
+  for (const listener of statusListeners) {
+    // Ошибка подписчика не должна ломать сохранение задачи
+    Promise.resolve()
+      .then(() => listener(doc, from))
+      .catch((err) => console.error('Подписчик статуса:', err.message));
+  }
+});
+
 export default mongoose.model('Task', taskSchema);
