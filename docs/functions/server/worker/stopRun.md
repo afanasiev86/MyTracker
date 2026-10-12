@@ -4,19 +4,19 @@
 Останавливает запущенный процесс Claude и запоминает причину: `cancelled` (вручную) или `timeout` (по времени).
 
 ## Где объявлено
-`server/src/worker/processes.js:L27-39#stopRun`
+`server/src/worker/processes/stopRun.js:L6-18#stopRun`
 
 ## Вход и выход
 - Вход: `taskId`, `reason`.
 - Выход: `true`, если сигнал отправлен; `false`, если процесса нет.
 
 ## Алгоритм
-1. Находит запись в реестре: `server/src/worker/processes.js:L10@const entry = running.get(String(taskId));`.
-2. Сохраняет причину, чтобы воркер потом понял, почему процесс завершился: `server/src/worker/processes.js:L30@entry.reason = reason;`.
-3. Отправляет SIGTERM: `server/src/worker/processes.js:L31@entry.child.kill('SIGTERM');`.
+1. Находит запись в реестре: `server/src/worker/processes/stopRun.js:L7@const entry = running.get(String(taskId));`.
+2. Сохраняет причину, чтобы воркер потом понял, почему процесс завершился: `server/src/worker/processes/stopRun.js:L9@entry.reason = reason;`.
+3. Отправляет SIGTERM: `server/src/worker/processes/stopRun.js:L10@entry.child.kill('SIGTERM');`.
 
 ## Ошибки и граничные случаи
-- Если процесс игнорирует SIGTERM, через 10 секунд отправляется SIGKILL: `server/src/worker/processes.js:L2@KILL_AFTER_MS`. Таймер снимается при завершении процесса (`unregisterRun`).
+- Если процесс игнорирует SIGTERM, через 10 секунд отправляется SIGKILL: `server/src/worker/processes/stopRun.js:L2@KILL_AFTER_MS`. Таймер снимается при завершении процесса (`unregisterRun`).
 - Реестр хранит процессы в памяти, поэтому после перезапуска сервера отмена работает только для процессов текущего сеанса. Остальные задачи помечаются как ошибка при старте.
 
 ## Связи

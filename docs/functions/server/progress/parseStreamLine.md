@@ -4,15 +4,15 @@
 Разбирает одну строку stdout потока Claude. Пустые строки и не-JSON строки не ломают воркер.
 
 ## Где объявлено
-`server/src/worker/progress.js:L32-40#parseStreamLine`
+`server/src/worker/progress/parseStreamLine.js:L2-10#parseStreamLine`
 
 ## Вход и выход
 - Вход: `line` — строка без перевода строки.
 - Выход: объект события или `null`.
 
 ## Алгоритм
-1. Обрезает пробелы и отсекает строки, которые не начинаются с `{`: `server/src/worker/progress.js:L34@if (!trimmed.startsWith('{')) return null;`.
-2. Парсит JSON, ошибку парсинга ловит и возвращает `null`: `server/src/worker/progress.js:L36@return JSON.parse(trimmed);`.
+1. Обрезает пробелы и отсекает строки, которые не начинаются с `{`: `server/src/worker/progress/parseStreamLine.js:L4@if (!trimmed.startsWith('{')) return null;`.
+2. Парсит JSON, ошибку парсинга ловит и возвращает `null`: `server/src/worker/progress/parseStreamLine.js:L6@return JSON.parse(trimmed);`.
 
 ## Ошибки и граничные случаи
 - Строки, начинающиеся с `{`, но не являющиеся JSON, тоже дают `null` (блок `catch`).
