@@ -26,4 +26,4 @@ cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и 
 - Отдача: `GET /api/tasks/:id/attachments/:attachmentId` читает объект и отдаёт поток, бакет приватный. Логика: `server/src/services/attachments.js:L50-55#attachmentStream`.
 - Провайдер вложения записывается при загрузке, поэтому смена хранилища не ломает старые файлы.
 - Выбор хранилища: вкладка «Настройки» в интерфейсе, сервис `server/src/services/storage.js:L47-51#getActiveProvider`, маршрут `server/src/routes/storage.js`. Ключи доступа задаются только в переменных окружения (`server/.env.example`), в интерфейсе их не видно.
-- Ограничение: Claude пока не видит скриншоты в запуске. Передача картинок в рабочую копию — следующий шаг.
+- Передача Claude: перед запуском скриншоты копируются в `.tracker-attachments/` рабочей копии ([materializeScreenshots](docs/functions/server/worker/materializeScreenshots.md#Алгоритм)), а в промпт добавляется их список. Папка не попадает в коммиты.

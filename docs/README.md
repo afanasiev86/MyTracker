@@ -49,7 +49,7 @@
 ## Известные проблемы (проверено по коду)
 - Очередь запусков и реестр процессов в памяти: после перезапуска сервера теряются (задачи помечаются ошибкой при старте).
 - Поток `stream-json` и итоговое событие `result` не проверены на реальном запуске `claude`.
-- Вложения: см. [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения). Claude пока не получает скриншоты.
+- Вложения: см. [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).
 
 ## Тесты
 Серверные: `server/test/` (без базы запускаются `unit`, `progress`, `bot`, `app`, `telegramAuth`; с `MONGO_URL_TEST` — `*.db.test.js`). Клиентские: `client/src/**/*.test.jsx`, `client/src/api.test.js`.

@@ -103,3 +103,17 @@ describe('остановка процесса', () => {
     jest.useRealTimers();
   });
 });
+
+describe('скриншоты задачи в рабочей копии', () => {
+  it('имя файла безопасно и содержит номер', async () => {
+    const { screenshotFileName } = await import('../src/worker/screenshots.js');
+    expect(screenshotFileName(0, '../../etc/shot.png', 'image/png')).toBe('1-shot.png');
+    expect(screenshotFileName(2, 'экран', 'image/jpeg')).toBe('3-_.jpg');
+  });
+
+  it('подсказка Claude пустая без скриншотов и перечисляет пути с ними', async () => {
+    const { screenshotNote } = await import('../src/worker/screenshots.js');
+    expect(screenshotNote([])).toBe('');
+    expect(screenshotNote(['.tracker-attachments/1-a.png'])).toContain('.tracker-attachments/1-a.png');
+  });
+});

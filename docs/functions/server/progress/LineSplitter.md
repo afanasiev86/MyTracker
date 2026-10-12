@@ -16,7 +16,7 @@
 
 ## Ошибки и граничные случаи
 - Буфер растёт, пока не придёт перевод строки. Для потока `stream-json` строки короткие, поэтому проблем нет.
-- Без `flush` последнее событие, пришедшее без перевода строки, потерялось бы. `runClaude` вызывает его при закрытии: `server/src/worker/runTask.js:L84@handleLines(splitter.flush());`.
+- Без `flush` последнее событие, пришедшее без перевода строки, потерялось бы. `runClaude` вызывает его при закрытии: `server/src/worker/runTask.js:L85@handleLines(splitter.flush());`.
 
 ## Связи
 - Подход: `docs/architecture/stream-progress.md:L5#Разбор событий`.

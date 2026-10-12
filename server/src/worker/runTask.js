@@ -11,6 +11,7 @@ import { isLimitError } from './limits.js';
 import { registerRun, unregisterRun, stopRun } from './processes.js';
 import { progressFromEvent, parseStreamLine, findResult, LineSplitter } from './progress.js';
 import { reviewKeyboard } from '../bot/callbackData.js';
+import { materializeScreenshots, screenshotNote } from './screenshots.js';
 
 // Скрипт для вызовов API трекера (deploy/tracker-api.sh рядом с сервером)
 const TRACKER_CLI = fileURLToPath(new URL('../../../deploy/tracker-api.sh', import.meta.url));
@@ -122,6 +123,11 @@ export async function runTask(taskId, { answer = null } = {}) {
 
   try {
     const startPoint = await prepareWorktree(cfg, repo, branch, wt);
+    // Скриншоты задачи: если не удалось скачать, запуск идёт без них
+    const screenshots = await materializeScreenshots(task, wt).catch((err) => {
+      console.error('Скриншоты:', err.message);
+      return [];
+    });
     const env = {
       ...process.env,
       TRACKER_API: cfg.apiUrl,
@@ -134,10 +140,10 @@ export async function runTask(taskId, { answer = null } = {}) {
       args = ['-p', answer, '--resume', task.sessionId, '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     } else if (answer) {
       // Сессии нет (например, она потеряна): передаём ответ вместе с задачей
-      args = ['-p', `/implement-task ${task._id}\n\nОтвет владельца на ваш вопрос: ${answer}`,
+      args = ['-p', `/implement-task ${task._id}\n\nОтвет владельца на ваш вопрос: ${answer}${screenshotNote(screenshots)}`,
         '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     } else {
-      args = ['-p', `/implement-task ${task._id}`, '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
+      args = ['-p', `/implement-task ${task._id}${screenshotNote(screenshots)}`, '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     }
 
     // Записи прогресса идут по очереди, чтобы не перезаписать финальный статус
