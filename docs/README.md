@@ -33,6 +33,7 @@
 | Mini App | features/telegram.md (`docs/features/telegram.md:L17#Mini App`) | verifyInitData (`docs/functions/server/telegram/verifyInitData.md:L3#Назначение`) |
 | Клиенты и проекты (CRM) | features/crm-and-auth.md (`docs/features/crm-and-auth.md:L3#Клиенты и проекты`) | маршруты в `server/src/routes/clients.js`, `server/src/routes/projects.js` |
 | Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L20#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
+| Бэкапы и восстановление | `docs/RUNBOOK.md:L152#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-minio.sh:L35@docker run --rm` |
 | Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L64-307#TaskDetail` | главная кнопка Telegram: `client/src/lib/telegram.js:L55-69#setMainButton` |
 
 ## Функции (детально, по одной на файл)
