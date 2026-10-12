@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchTasks, setToken, clearToken, UNAUTHORIZED_EVENT } from './api.js';
+import { fetchTasks, setToken, clearToken, revokeAllSessions, UNAUTHORIZED_EVENT } from './api.js';
 
 describe('api: ошибки', () => {
   beforeEach(() => {
@@ -41,5 +41,24 @@ describe('api: ошибки', () => {
   it('объясняет обрыв связи по-русски', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
     await expect(fetchTasks()).rejects.toThrow('Нет связи с сервером');
+  });
+});
+
+describe('api: выход на всех устройствах', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('отправляет запрос на отзыв токенов с текущим токеном', async () => {
+    setToken('current-token');
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await revokeAllSessions();
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/api\/auth\/revoke$/);
+    expect(options.method).toBe('POST');
+    expect(options.headers.Authorization).toBe('Bearer current-token');
   });
 });

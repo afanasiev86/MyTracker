@@ -69,6 +69,9 @@ export const answerTask = (id, text) =>
   request(`/tasks/${id}/answer`, { method: 'POST', body: { text } });
 export const cancelTask = (id) => request(`/tasks/${id}/cancel`, { method: 'POST' });
 
+// Все выданные токены перестают работать (выход на всех устройствах)
+export const revokeAllSessions = () => request('/auth/revoke', { method: 'POST' });
+
 export async function fetchDiff(id) {
   let res;
   try {

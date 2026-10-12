@@ -4,9 +4,10 @@ import {
   clearToken,
   setToken,
   loginWithTelegram,
+  revokeAllSessions,
   UNAUTHORIZED_EVENT,
 } from './api.js';
-import { getInitData, initTelegramUi } from './lib/telegram.js';
+import { getInitData, initTelegramUi, confirmAction } from './lib/telegram.js';
 import Login from './components/Login.jsx';
 import Board from './components/Board.jsx';
 import Projects from './components/Projects.jsx';
@@ -63,11 +64,27 @@ export default function App() {
     setAuthed(false);
   };
 
+  const logoutEverywhere = async () => {
+    const ok = await confirmAction('Выйти на всех устройствах? Войти снова придётся везде, включая Telegram.');
+    if (!ok) return;
+    try {
+      await revokeAllSessions();
+    } catch {
+      // Если сеть недоступна, всё равно выходим здесь: токен отзовёт следующий вход
+    }
+    logout();
+  };
+
   return (
     <div className="app">
       <header className="topbar">
         <h1>MyTracker</h1>
-        {!inTelegram && <button className="ghost" onClick={logout}>Выйти</button>}
+        {!inTelegram && (
+          <div className="topbar-actions">
+            <button className="ghost" onClick={logout}>Выйти</button>
+            <button className="ghost" onClick={logoutEverywhere}>Выйти на всех устройствах</button>
+          </div>
+        )}
       </header>
 
       <nav className="tabs" role="tablist" aria-label="Разделы">
