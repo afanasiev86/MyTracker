@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
-    "test": "npm test -w server",
-    "lint": "eslint server/src client/src",
+    "test": "npm test -w server && npm test -w client",
+    "lint": "eslint server/src client/src shared server/test",
     "build": "npm run build -w client"
   },
   "workspaces": [

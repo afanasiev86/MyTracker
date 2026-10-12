@@ -1,0 +1,20 @@
+# Шаблон systemd-юнита для API трекера.
+# Установка: скопируйте в /etc/systemd/system/, поправьте User, WorkingDirectory и пути,
+# затем: sudo systemctl daemon-reload && sudo systemctl enable --now mytracker-api
+
+[Unit]
+Description=MyTracker API and worker
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=claude-worker
+WorkingDirectory=/srv/mytracker/server
+EnvironmentFile=/srv/mytracker/server/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

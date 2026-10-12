@@ -23,6 +23,12 @@ body { margin: 0; }
 }
 .topbar h1 { font-size: 20px; margin: 0; }
 
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -48,8 +54,53 @@ body { margin: 0; }
   display: flex;
   flex-direction: column;
   gap: 4px;
+  cursor: pointer;
 }
+.card:hover { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
 .card small { color: var(--muted); }
+
+.panel {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  max-width: 820px;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.panel-head h2 { margin: 0 0 4px; font-size: 18px; }
+.panel h3 { font-size: 15px; margin: 16px 0 6px; }
+
+.form { display: flex; flex-direction: column; gap: 10px; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+.form h2 { margin: 0; font-size: 18px; color: var(--text); }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.comment-form { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.comment-form textarea { width: 100%; }
+
+.muted { color: var(--muted); font-size: 14px; }
+
+.diff {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 480px;
+  font-size: 13px;
+}
 
 .login {
   max-width: 320px;
@@ -60,23 +111,25 @@ body { margin: 0; }
 }
 .login h1 { margin: 0; font-size: 22px; }
 
-input {
-  padding: 10px 12px;
+input, select, textarea {
+  padding: 8px 10px;
   border: 1px solid #cbd1db;
   border-radius: 6px;
   font-size: 15px;
+  font-family: inherit;
+  background: #fff;
 }
 
 button {
-  padding: 10px 14px;
+  padding: 8px 14px;
   border: none;
   border-radius: 6px;
   background: var(--accent);
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
 }
 button:disabled { opacity: 0.5; cursor: default; }
-button.ghost { background: transparent; color: var(--accent); }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid #cbd5e1; }
 
 .error { color: var(--danger); margin: 0; }

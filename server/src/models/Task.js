@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
-
-export const TASK_STATUSES = ['backlog', 'ready', 'in_progress', 'review', 'done', 'failed'];
+import { TASK_STATUSES } from '../../../shared/statuses.js';
 
 const runSchema = new mongoose.Schema({
   startedAt: Date,
@@ -28,5 +27,7 @@ const taskSchema = new mongoose.Schema({
   runs: { type: [runSchema], default: [] },
   comments: { type: [commentSchema], default: [] },
 }, { timestamps: true });
+
+taskSchema.index({ project: 1, status: 1 });
 
 export default mongoose.model('Task', taskSchema);

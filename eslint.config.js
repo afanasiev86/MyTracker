@@ -19,4 +19,8 @@ export default [
       'react/jsx-uses-react': 'error',
     },
   },
+  {
+    files: ['server/test/**/*.js'],
+    languageOptions: { globals: { ...globals.jest } },
+  },
 ];

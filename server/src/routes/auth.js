@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { checkPassword } from '../services/auth.js';
+import { checkPassword, issueToken } from '../services/auth.js';
 
 const router = Router();
 
@@ -13,8 +12,7 @@ router.post('/login', (req, res, next) => {
     if (!checkPassword(password)) {
       return res.status(401).json({ error: 'Неверный пароль' });
     }
-    const token = jwt.sign({ sub: 'owner' }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    return res.json({ token });
+    return res.json({ token: issueToken('owner') });
   } catch (err) {
     return next(err);
   }
