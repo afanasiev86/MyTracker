@@ -6,7 +6,9 @@
     "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
     "test": "npm test -w server && npm test -w client",
     "lint": "eslint server/src client/src shared server/test",
-    "build": "npm run build -w client"
+    "build": "npm run build -w client",
+    "docs:build": "node scripts/docs/refs.mjs build",
+    "docs:check": "node scripts/docs/refs.mjs check"
   },
   "workspaces": [
     "server",
