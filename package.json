@@ -1,0 +1,26 @@
+{
+  "name": "mytracker",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "test": "npm test -w server",
+    "lint": "eslint server/src client/src",
+    "build": "npm run build -w client"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module"
+}
