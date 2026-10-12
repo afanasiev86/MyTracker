@@ -11,6 +11,7 @@ import {
   RUNNABLE_FROM,
   allowedTargets,
 } from '../../../shared/statuses.js';
+import { sumRunCosts, formatUsd } from '../lib/cost.js';
 
 export default function TaskDetail({ id, onChanged, onClose }) {
   const [task, setTask] = useState(null);
@@ -100,6 +101,9 @@ export default function TaskDetail({ id, onChanged, onClose }) {
       {diff && <pre className="diff">{diff}</pre>}
 
       <h3>Запуски</h3>
+      {task.runs.length > 0 && (
+        <p className="muted">Стоимость задачи: <b>{formatUsd(sumRunCosts(task.runs))}</b></p>
+      )}
       {task.runs.length === 0 ? (
         <p className="muted">Запусков пока не было.</p>
       ) : (

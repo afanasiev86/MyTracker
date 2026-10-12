@@ -92,6 +92,9 @@ body { margin: 0; }
 
 .muted { color: var(--muted); font-size: 14px; }
 
+.cost-summary { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+.cost-badge { color: var(--accent); font-weight: 600; }
+
 .diff {
   background: #0f172a;
   color: #e2e8f0;
