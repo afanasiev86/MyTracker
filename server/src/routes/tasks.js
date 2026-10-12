@@ -1,10 +1,9 @@
-import path from 'node:path';
 import { Router } from 'express';
 import { z } from 'zod';
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
 import { startTask, answerTask, cancelTask } from '../services/runs.js';
-import { git } from '../worker/git.js';
+import { taskDiff } from '../services/diff.js';
 import { TASK_STATUSES, canTransition } from '../../../shared/statuses.js';
 import { PRIORITIES } from '../../../shared/crm.js';
 
@@ -196,10 +195,7 @@ router.get('/:id/diff', async (req, res, next) => {
     if (!task) return res.status(404).json({ error: 'Задача не найдена' });
     if (!task.branch) return res.status(404).json({ error: 'Ветка ещё не создана' });
 
-    const repo = path.join(process.env.REPOS_DIR, task.project);
-    const base = process.env.DEFAULT_BRANCH || 'main';
-    const diff = await git(repo, ['diff', `origin/${base}...${task.branch}`]);
-    return res.type('text/plain').send(diff.slice(0, 300000));
+    return res.type('text/plain').send(await taskDiff(task));
   } catch (err) {
     return next(err);
   }

@@ -49,3 +49,30 @@ export function setBackButton(onBack) {
   bb.show();
   return () => bb.offClick(handler);
 }
+
+// Главная кнопка Telegram внизу экрана. Вне Telegram ничего не делает.
+// Возвращает функцию, которая скрывает кнопку.
+export function setMainButton(text, onClick) {
+  const mb = getWebApp()?.MainButton;
+  if (!mb) return () => {};
+  if (!text) {
+    mb.hide();
+    return () => {};
+  }
+  mb.setText(text);
+  mb.onClick(onClick);
+  mb.show();
+  return () => {
+    mb.offClick(onClick);
+    mb.hide();
+  };
+}
+
+// Лёгкая вибрация после действия: 'success' | 'error' | 'warning'
+export function haptic(type) {
+  try {
+    getWebApp()?.HapticFeedback?.notificationOccurred(type);
+  } catch {
+    // Вибрация необязательна, сбой не должен мешать работе
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   getTask,
   updateTask,
@@ -14,6 +14,7 @@ import {
   allowedTargets,
 } from '../../../shared/statuses.js';
 import { sumRunCosts, formatUsd } from '../lib/cost.js';
+import { setMainButton, haptic } from '../lib/telegram.js';
 
 // Подписи действий описывают, что произойдёт, а не новый статус
 const ACTION_LABELS = {
@@ -23,6 +24,15 @@ const ACTION_LABELS = {
 };
 
 const PROGRESS_POLL_MS = 4000;
+
+// Главная кнопка Telegram: одно самое полезное действие для текущего статуса
+function mainLabel(task) {
+  if (RUNNABLE_FROM.includes(task.status)) {
+    return task.status === 'review' ? 'Вернуть в работу' : 'Запустить в Claude';
+  }
+  if (task.status === 'review') return 'Принять результат';
+  return '';
+}
 
 export default function TaskDetail({ id, onChanged, onClose }) {
   const [task, setTask] = useState(null);
@@ -40,6 +50,19 @@ export default function TaskDetail({ id, onChanged, onClose }) {
     getTask(id).then(setTask).catch((err) => setError(err.message));
   }, [id]);
 
+  // Главная кнопка Telegram. Обработчик берём из ref, чтобы он всегда видел свежее состояние
+  const mainText = task && !busy ? mainLabel(task) : '';
+  const onMainRef = useRef(null);
+  onMainRef.current = () => {
+    if (!task) return;
+    if (RUNNABLE_FROM.includes(task.status)) perform(() => runTask(id));
+    else if (task.status === 'review') perform(() => updateTask(id, { status: 'done' }));
+  };
+  useEffect(() => {
+    if (!mainText) return undefined;
+    return setMainButton(mainText, () => onMainRef.current());
+  }, [mainText]);
+
   // Пока задача в работе, подгружаем текущий шаг Claude
   const inProgress = task?.status === 'in_progress';
   useEffect(() => {
@@ -55,9 +78,11 @@ export default function TaskDetail({ id, onChanged, onClose }) {
     setBusy(true);
     try {
       await action();
+      haptic('success');
       await reload();
       onChanged();
     } catch (err) {
+      haptic('error');
       setError(err.message);
     } finally {
       setBusy(false);

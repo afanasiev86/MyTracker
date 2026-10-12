@@ -16,8 +16,16 @@ async function deliver(reply) {
   return sendTelegram(reply.text, { reply_markup: reply.reply_markup });
 }
 
+// Нажатие inline-кнопки: Telegram ждёт ответа на callback, иначе кнопка «крутится»
+async function handleButton(query, onCallback) {
+  if (String(query.from?.id) !== String(process.env.TELEGRAM_OWNER_ID)) return;
+  await telegramApi('answerCallbackQuery', { callback_query_id: query.id }).catch(() => {});
+  const reply = await onCallback(query.data).catch((err) => `Ошибка: ${err.message}`);
+  await deliver(reply);
+}
+
 // Long polling: бот отвечает только владельцу (TELEGRAM_OWNER_ID)
-export async function startPolling(handle) {
+export async function startPolling(handle, onCallback = async () => 'Кнопка не поддерживается') {
   if (!telegramEnabled()) {
     console.log('Telegram не настроен (TELEGRAM_BOT_TOKEN, TELEGRAM_OWNER_ID), бот не запущен');
     return;
@@ -31,6 +39,12 @@ export async function startPolling(handle) {
       const updates = await telegramApi('getUpdates', { offset, timeout: 25 });
       for (const update of updates) {
         offset = update.update_id + 1;
+
+        if (update.callback_query) {
+          await handleButton(update.callback_query, onCallback);
+          continue;
+        }
+
         const msg = update.message;
         if (!msg?.text) continue;
         if (String(msg.from?.id) !== String(process.env.TELEGRAM_OWNER_ID)) continue;
