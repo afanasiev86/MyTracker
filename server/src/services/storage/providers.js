@@ -1,5 +1,7 @@
 // Провайдеры хранилища вложений. Оба варианта говорят по протоколу S3.
 // Секреты задаются только в переменных окружения, в базе хранится лишь выбранный провайдер.
+import { getConfig } from '../../config.js';
+
 export const PROVIDERS = {
   minio: { label: 'MinIO (свой сервер)' },
   s3: { label: 'S3 в облаке reg.ru' },
@@ -8,25 +10,24 @@ export const PROVIDERS = {
 // Настройки провайдера из окружения. Для MinIO адрес собирается из хоста и порта.
 export function providerConfig(id) {
   if (id === 'minio') {
-    const { MINIO_ENDPOINT, MINIO_PORT, MINIO_USE_SSL, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET } = process.env;
+    const m = getConfig().minio;
     return {
-      endpoint: MINIO_ENDPOINT ? `${MINIO_USE_SSL === 'true' ? 'https' : 'http'}://${MINIO_ENDPOINT}:${MINIO_PORT || 9000}` : '',
+      endpoint: m.endpoint ? `${m.useSsl === 'true' ? 'https' : 'http'}://${m.endpoint}:${m.port || 9000}` : '',
       region: 'us-east-1',
-      accessKeyId: MINIO_ACCESS_KEY || '',
-      secretAccessKey: MINIO_SECRET_KEY || '',
-      bucket: MINIO_BUCKET || 'mytracker-attachments',
+      accessKeyId: m.accessKey || '',
+      secretAccessKey: m.secretKey || '',
+      bucket: m.bucket || 'mytracker-attachments',
     };
   }
-  const { S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET } = process.env;
+  const s = getConfig().s3;
   return {
-    endpoint: S3_ENDPOINT || '',
-    region: S3_REGION || 'us-east-1',
-    accessKeyId: S3_ACCESS_KEY || '',
-    secretAccessKey: S3_SECRET_KEY || '',
-    bucket: S3_BUCKET || 'mytracker-attachments',
+    endpoint: s.endpoint || '',
+    region: s.region || 'us-east-1',
+    accessKeyId: s.accessKey || '',
+    secretAccessKey: s.secretKey || '',
+    bucket: s.bucket || 'mytracker-attachments',
   };
 }
-
 export function isConfigured(cfg) {
   return Boolean(cfg.endpoint && cfg.accessKeyId && cfg.secretAccessKey && cfg.bucket);
 }

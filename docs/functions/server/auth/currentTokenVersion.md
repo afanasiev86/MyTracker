@@ -22,4 +22,4 @@
 
 ## Связи
 - Подход: `docs/architecture/auth-tokens.md:L17#Отзыв токенов`.
-- Вызывается из `server/src/services/auth/tokens.js:L11-17#verifyToken` и `server/src/services/auth/tokens.js:L5-8#issueToken`.
+- Вызывается из `server/src/services/auth/tokens.js:L12-18#verifyToken` и `server/src/services/auth/tokens.js:L6-9#issueToken`.

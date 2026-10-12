@@ -1,11 +1,12 @@
 import Client from '../../models/Client.js';
 import AccessRequest from '../../models/AccessRequest.js';
 import { notify } from '../notify.js';
+import { getConfig } from '../../config.js';
 
 // Запрос доступа от человека, который написал боту /start. Повторный /start обновляет запрос.
 export async function startAccessRequest(from) {
   const telegramId = String(from.id);
-  if (telegramId === String(process.env.TELEGRAM_OWNER_ID)) return { reply: null };
+  if (telegramId === String(getConfig().telegram.ownerId)) return { reply: null };
 
   const linked = await Client.findOne({ telegramId }).select('name portalApproved').lean();
   if (linked?.portalApproved) {

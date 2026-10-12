@@ -4,15 +4,15 @@
 Выпускает подписанный JWT для владельца или воркера. В токен записывается текущая версия, чтобы его можно было отозвать.
 
 ## Где объявлено
-`server/src/services/auth/tokens.js:L5-8#issueToken`
+`server/src/services/auth/tokens.js:L6-9#issueToken`
 
 ## Вход и выход
 - Вход: `sub` — кто получает токен (`'owner'` или `'worker'`); `expiresIn` — срок, по умолчанию `'30d'`.
 - Выход: `Promise<string>` — JWT.
 
 ## Алгоритм
-1. Берёт текущую версию: `server/src/services/auth/tokens.js:L6@const tv = await currentTokenVersion();`.
-2. Подписывает payload `{ sub, tv }` секретом `JWT_SECRET`: `server/src/services/auth/tokens.js:L7@return jwt.sign`.
+1. Берёт текущую версию: `server/src/services/auth/tokens.js:L7@const tv = await currentTokenVersion();`.
+2. Подписывает payload `{ sub, tv }` секретом `JWT_SECRET`: `server/src/services/auth/tokens.js:L8@return jwt.sign`.
 
 ## Ошибки и граничные случаи
 - Если `JWT_SECRET` не задан, `jwt.sign` выбросит ошибку. Сервер при старте этого не проверяет, поэтому ошибка появится при первом входе. Это место для будущей проверки конфигурации.

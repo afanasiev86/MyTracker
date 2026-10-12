@@ -8,15 +8,17 @@ import { handleCommand } from './bot/commands.js';
 import { handleCallback } from './bot/callbacks.js';
 import { handleGuest } from './bot/guest.js';
 import { startDigestScheduler } from './services/digestScheduler.js';
+import { getConfig, assertStartupConfig } from './config.js';
 
-const { PORT = 3001, MONGO_URL } = process.env;
-
-if (!MONGO_URL) {
-  console.error('MONGO_URL не задан. См. server/.env.example');
+const cfg = getConfig();
+try {
+  for (const warning of assertStartupConfig(cfg)) console.warn(`Предупреждение: ${warning}`);
+} catch (err) {
+  console.error(err.message);
   process.exit(1);
 }
 
-await mongoose.connect(MONGO_URL);
+await mongoose.connect(cfg.mongoUrl);
 
 // Задачи, которые были в работе при остановке сервера, помечаем как ошибку
 await Task.updateMany(
@@ -27,8 +29,8 @@ await Task.updateMany(
   },
 );
 
-createApp().listen(PORT, () => {
-  console.log(`API запущен на порту ${PORT}`);
+createApp().listen(cfg.port, () => {
+  console.log(`API запущен на порту ${cfg.port}`);
 });
 
 void startPolling(handleCommand, handleCallback, handleGuest);

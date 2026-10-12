@@ -2,6 +2,7 @@ import { telegramApi, sendTelegramTo, telegramEnabled } from '../../services/tel
 import { setMenuButton } from './setMenuButton.js';
 import { deliver } from './deliver.js';
 import { handleButton } from './handleButton.js';
+import { getConfig } from '../../config.js';
 
 // Long polling: бот отвечает только владельцу (TELEGRAM_OWNER_ID)
 export async function startPolling(handle, onCallback = async () => 'Кнопка не поддерживается', onGuest = async () => null) {
@@ -26,7 +27,7 @@ export async function startPolling(handle, onCallback = async () => 'Кнопк�
 
         const msg = update.message;
         if (!msg?.text) continue;
-        if (String(msg.from?.id) !== String(process.env.TELEGRAM_OWNER_ID)) {
+        if (String(msg.from?.id) !== String(getConfig().telegram.ownerId)) {
           // Не владелец: запрос доступа к порталу (см. services/access)
           const guestReply = await onGuest(msg).catch(() => null);
           if (guestReply) await sendTelegramTo(msg.chat.id, guestReply);

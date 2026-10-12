@@ -20,4 +20,4 @@
 - Некорректный JSON в поле `user` теперь даёт отказ `некорректные данные пользователя`, а не 500: `server/src/services/telegramAuth.js:L36@некорректные данные пользователя`. Маршрут отвечает 401.
 
 ## Связи
-- Маршрут: `server/src/routes/auth/telegramLogin.js:L8-31#telegramLogin`. Подход: `docs/architecture/auth-tokens.md:L8#Вход через Telegram`.
+- Маршрут: `server/src/routes/auth/telegramLogin.js:L9-32#telegramLogin`. Подход: `docs/architecture/auth-tokens.md:L8#Вход через Telegram`.

@@ -3,10 +3,10 @@
 Заказчик видит свои задачи и статусы и пишет комментарии. Доступ открывает владелец после подтверждения.
 
 ## Как заказчик получает доступ
-1. Заказчик пишет боту `/start`. Запрос сохраняется: `server/src/services/access/startRequest.js:L6-26#startAccessRequest`. Бот отвечает, что запрос отправлен, и сообщает владельцу.
+1. Заказчик пишет боту `/start`. Запрос сохраняется: `server/src/services/access/startRequest.js:L7-27#startAccessRequest`. Бот отвечает, что запрос отправлен, и сообщает владельцу.
 2. Владелец во вкладке «Клиенты» видит запрос в блоке «Запросы доступа» и выбирает клиента из CRM. Компонент: `client/src/components/AccessRequests.jsx:L5-33#AccessRequests`.
 3. Подтверждение привязывает Telegram к клиенту и открывает портал: `server/src/services/access/approveRequest.js:L6-26#approveAccessRequest`. Заказчик получает сообщение от бота.
-4. Заказчик открывает «Трекер» в боте. Вход выдаёт роль `client`: `server/src/routes/auth/telegramLogin.js:L21@Доступ ещё не подтверждён исполнителем`. Пока доступ не подтверждён, вход отклоняется.
+4. Заказчик открывает «Трекер» в боте. Вход выдаёт роль `client`: `server/src/routes/auth/telegramLogin.js:L22@Доступ ещё не подтверждён исполнителем`. Пока доступ не подтверждён, вход отклоняется.
 
 Закрыть доступ можно в карточке клиента: `server/src/services/access/revokePortal.js:L4-11#revokePortal`. Токены заказчика после этого перестают открывать портал, потому что доступ проверяется на каждом запросе: `server/src/services/access/isPortalOpen.js:L4-7#isPortalOpen`.
 
@@ -20,7 +20,7 @@
 
 ## Уведомления о статусе
 Когда видимая заказчику подпись статуса меняется (например, «На проверке» или «Принято»), заказчику приходит сообщение в Telegram с названием задачи и проекта. Черновики и переходы без смены подписи не отправляются.
-- Перехват смены статуса: `server/src/models/Task.js:L73@taskSchema.post('save'`; подписка `server/src/models/Task.js:L64-66#onTaskStatusChange`, подключение в `server/src/index.js:L36@onTaskStatusChange(notifyClientOfStatusChange);`.
+- Перехват смены статуса: `server/src/models/Task.js:L73@taskSchema.post('save'`; подписка `server/src/models/Task.js:L64-66#onTaskStatusChange`, подключение в `server/src/index.js:L38@onTaskStatusChange(notifyClientOfStatusChange);`.
 - Правило «сообщать или нет»: `server/src/services/clientNotify.js:L13-16#shouldNotifyClient`. Текст: `server/src/services/clientNotify.js:L7-9#clientStatusMessage`.
 - Получатель: только заказчик с подтверждённым доступом (`portalApproved`) и известным `telegramId`: `server/src/services/clientNotify.js:L20-27#notifyClientOfStatusChange`.
 - Тесты: `server/test/clientNotify.test.js:L3@describe('уведомления заказчику`.
@@ -34,5 +34,5 @@
 ## Где что лежит
 - Модели: `server/src/models/AccessRequest.js`, `server/src/models/Client.js`.
 - API владельца для запросов: `server/src/routes/access.js`. API портала: `server/src/routes/portal.js`.
-- Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller/startPolling.js:L7-45#startPolling`.
+- Бот: `server/src/bot/guest.js:L4-7#handleGuest`, поллер: `server/src/bot/poller/startPolling.js:L8-46#startPolling`.
 - Интерфейс заказчика: `client/src/components/Portal.jsx:L8-54#Portal`. Выбор роли при входе: `client/src/App.jsx:L10-75#App`.

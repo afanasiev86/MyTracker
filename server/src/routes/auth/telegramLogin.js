@@ -2,18 +2,19 @@ import { issueToken } from '../../services/auth.js';
 import { verifyInitData } from '../../services/telegramAuth.js';
 import Client from '../../models/Client.js';
 import { telegramSchema } from './schemas.js';
+import { getConfig } from '../../config.js';
 
 // POST /api/auth/telegram — вход из Telegram Mini App: владелец или привязанный заказчик.
 // Подпись проверяется, пароль не нужен.
 export async function telegramLogin(req, res, next) {
   try {
     const { initData } = telegramSchema.parse(req.body);
-    const check = verifyInitData(initData, process.env.TELEGRAM_BOT_TOKEN);
+    const check = verifyInitData(initData, getConfig().telegram.botToken);
     if (!check.ok) {
       return res.status(401).json({ error: check.reason });
     }
     const telegramId = String(check.user?.id);
-    if (telegramId === String(process.env.TELEGRAM_OWNER_ID)) {
+    if (telegramId === String(getConfig().telegram.ownerId)) {
       return res.json({ token: await issueToken('owner'), role: 'owner' });
     }
     const client = await Client.findOne({ telegramId }).select('_id portalApproved').lean();

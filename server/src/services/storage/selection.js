@@ -1,10 +1,11 @@
 import Settings from '../../models/Settings.js';
 import { PROVIDERS, providerStatus } from './providers.js';
+import { getConfig } from '../../config.js';
 
 // Активный провайдер: выбор из базы, иначе из окружения, иначе MinIO
 export async function getActiveProvider() {
   const doc = await Settings.findOne({ key: 'storage' }).lean();
-  const chosen = doc?.provider || process.env.ATTACHMENT_STORAGE || 'minio';
+  const chosen = doc?.provider || getConfig().attachmentStorage || 'minio';
   return PROVIDERS[chosen] ? chosen : 'minio';
 }
 

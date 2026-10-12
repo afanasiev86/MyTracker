@@ -1,8 +1,9 @@
 import { timingSafeEqual } from 'node:crypto';
+import { getConfig } from '../../config.js';
 
 // Сравнение за постоянное время, чтобы не утекала информация о пароле
 export function checkPassword(input) {
-  const expected = process.env.ADMIN_PASSWORD || '';
+  const expected = getConfig().adminPassword || '';
   if (!expected) return false;
   const a = Buffer.from(String(input));
   const b = Buffer.from(expected);

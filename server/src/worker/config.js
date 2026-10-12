@@ -1,11 +1,14 @@
-// Настройки воркера из переменных окружения
+import { getConfig } from '../config.js';
+
+// Настройки воркера: берутся из общей конфигурации
 export function workerConfig() {
+  const w = getConfig().worker;
   return {
-    reposDir: process.env.REPOS_DIR,
-    worktreesDir: process.env.WORKTREES_DIR,
-    base: process.env.DEFAULT_BRANCH || 'main',
-    claudeBin: process.env.CLAUDE_BIN || 'claude',
-    apiUrl: process.env.TRACKER_API_URL || `http://localhost:${process.env.PORT || 3001}/api`,
-    timeoutMin: Number(process.env.RUN_TIMEOUT_MIN) || 30,
+    reposDir: w.reposDir,
+    worktreesDir: w.worktreesDir,
+    base: w.defaultBranch,
+    claudeBin: w.claudeBin,
+    apiUrl: w.apiUrl,
+    timeoutMin: w.timeoutMin,
   };
 }
