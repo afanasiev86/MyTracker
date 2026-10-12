@@ -211,6 +211,21 @@ body { margin: 0; }
   .task-title.ant-typography { font-size: 19px; }
 }
 
+/* Журнал сервиса в окне раздела «Сервер» */
+.ops-logs {
+  margin: 0;
+  padding: 12px;
+  max-height: 480px;
+  overflow: auto;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 640px) {
   .app-content { padding: 12px; }
 }

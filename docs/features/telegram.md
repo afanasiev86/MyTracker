@@ -9,6 +9,15 @@
 - Применение без перезапуска: `server/src/services/telegram/connect.js:L25-41#connectTelegram`. Новый токен или включение бота перезапускают опрос (`server/src/bot/poller/botRunner.js:L11-15#restartBot`, старый цикл выходит по `isCurrent`), смена только ID или адреса Mini App обновляет кнопку меню. Планировщик дайджеста проверяет Telegram на каждом тике.
 - После сохранения бот пишет владельцу. Если не смог (не нажат Start у бота или неверный ID), интерфейс показывает предупреждение, настройки при этом сохранены.
 
+## Управление сервером
+Вкладка «Сервер» (`client/src/components/Server.jsx:L10-45#Server`) и команды бота: `/server` (ресурсы и сервисы), `/logs <сервис> [строк]`, `/service <restart|start|stop> <сервис>`, `/deploy`. Опасные действия бот сначала подтверждает кнопкой (`server/src/bot/opsCallbackData.js:L21-28#confirmKeyboard`), кнопка живёт 5 минут и срабатывает один раз.
+- Только список: сервисы и допустимые действия заданы в `server/src/services/ops/catalog.js:L4-10#SERVICES`, произвольных команд нет. Команды запускаются без оболочки, аргументы списком: `server/src/services/ops/exec.js:L5-11#run`. Сам API можно только перезапустить, Docker только смотреть: остановка отсюда лишила бы управления.
+- Метрики: `server/src/services/ops/metrics.js:L33-44#readMetrics` (память по `MemAvailable` из `/proc/meminfo`, диск раздела с трекером). Сервисы, журналы и обновление работают только на Linux (`server/src/services/ops/platform.js:L5-5#opsAvailable`), на другом ОС раздел показывает лишь ресурсы.
+- Права: пользователь API не root. `deploy/ops-setup.sh` один раз даёт ему чтение журналов (группа `systemd-journal`) и `sudo` без пароля только на команды из списка в `/etc/sudoers.d/mytracker-ops`. Без этого действия отвечают «нет прав на sudo: выполните deploy/ops-setup.sh».
+- Перезапуск самого API: `server/src/services/ops/control.js:L24-44#controlService` откладывает рестарт на секунду, чтобы ответ ушёл, и сохраняет сообщение в `.ops/notice.json`; после старта сервер отправляет его (`server/src/services/ops/notice.js:L17-25#reportPendingNotice`).
+- Обновление: `server/src/services/ops/deploy.js:L71-88#startDeploy` запускает `deploy/update.sh` через `systemd-run`, чтобы перезапуск API не оборвал скрипт. Скрипт делает `git fetch` и `merge --ff-only`, `npm ci`, сборку, перезапуск и проверку, что API отвечает. При ошибке сборки или запуска возвращает прежнюю версию (`git reset --hard`). Итог пишется в `.ops/deploy-result.json`, владельцу его отправляет API (`server/src/services/ops/deploy.js:L46-52#reportDeployResult`): сразу, если API не перезапускался, или при старте.
+- Оповещения: раз в минуту `server/src/services/ops/monitor.js:L33-49#startOpsMonitor` пишет владельцу, когда сервис остановился, диск или память заполнены на 90% и больше, и когда это исправилось. Сервисы, остановленные самим владельцем, поломкой не считаются.
+
 ## Команды бота
 Разбор и обработка: handleCommand (`docs/functions/server/bot/handleCommand.md:L13#Алгоритм`). Ответ на сообщение с ID работает как ответ на вопрос.
 
