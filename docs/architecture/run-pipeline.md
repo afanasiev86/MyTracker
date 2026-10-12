@@ -24,7 +24,7 @@
 Оба случая отправляют SIGTERM через реестр процессов: `server/src/worker/processes/stopRun.js:L6-18#stopRun`. Причина (`cancelled` или `timeout`) определяет исход. Если процесс не завершился за 10 секунд, идёт SIGKILL (`server/src/worker/processes/config.js:L2@KILL_AFTER_MS`), см. stopRun (`docs/functions/server/worker/stopRun.md:L13#Алгоритм`).
 
 ## Здоровье
-Публичный `/api/health` отвечает 200 или 503 и показывает по каждому сервису (база, Claude Code, хранилище, Telegram) признак «в норме». Проверки кэшируются на 30 секунд: `server/src/services/health.js:L65-82#getChecks`. Подробности для владельца (очередь по проектам, запуски, зависшие задачи «в работе» без процесса) собирает `server/src/services/health.js:L94-121#getDetails` и показывает блок «Состояние» в «Настройках».
+Публичный `/api/health` отвечает 200 или 503 и показывает по каждому сервису (база, Claude Code, хранилище, Telegram) признак «в норме». Проверки кэшируются на 30 секунд: `server/src/services/health/getChecks.js:L11-28#getChecks`. Подробности для владельца (очередь по проектам, запуски, зависшие задачи «в работе» без процесса) собирает `server/src/services/health/details.js:L9-36#getDetails` и показывает блок «Состояние» в «Настройках».
 
 ## Состояния задачи
 Таблица статусов и переходов: `shared/statuses.js:L24-32#TRANSITIONS`. Ручные переходы проверяет `server/src/routes/tasks/patchTask.js:L7-34#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L13#Алгоритм`)).
