@@ -25,6 +25,7 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "transform": {}
+    "transform": {},
+    "maxWorkers": 1
   }
 }
