@@ -7,68 +7,28 @@ import {
   answerTask,
   cancelTask,
   fetchDiff,
+  uploadAttachment,
 } from '../api.js';
-import {
-  STATUS_LABELS,
-  RUNNABLE_FROM,
-  allowedTargets,
-} from '../../../shared/statuses.js';
-import { sumRunCosts, formatUsd } from '../lib/cost.js';
+import { RUNNABLE_FROM, STATUS_LABELS } from '../../../shared/statuses.js';
 import { KIND_LABELS } from '../../../shared/taskKinds.js';
 import { setMainButton, haptic } from '../lib/telegram.js';
-import { uploadAttachment, fetchAttachmentUrl } from '../api.js';
-
-// Подписи действий описывают, что произойдёт, а не новый статус
-const ACTION_LABELS = {
-  ready: 'Отдать в работу',
-  backlog: 'Вернуть в бэклог',
-  done: 'Принять результат',
-};
+import { mainLabel } from '../lib/mainButton.js';
+import TaskSpec from './task/TaskSpec.jsx';
+import ProgressBlock from './task/ProgressBlock.jsx';
+import QuestionBlock from './task/QuestionBlock.jsx';
+import ActionBar from './task/ActionBar.jsx';
+import DiffView from './task/DiffView.jsx';
+import AttachmentsSection from './task/AttachmentsSection.jsx';
+import RunsSection from './task/RunsSection.jsx';
+import CommentsSection from './task/CommentsSection.jsx';
 
 const PROGRESS_POLL_MS = 4000;
 
-// Подписи авторов комментариев для владельца
-const COMMENT_AUTHORS = { owner: 'Вы', client: 'Заказчик', system: 'Система', worker: 'Исполнитель' };
-
-// Миниатюра вложения. Картинка грузится с токеном и освобождается при уходе со страницы.
-function AttachmentThumb({ taskId, attachment }) {
-  const [src, setSrc] = useState('');
-  useEffect(() => {
-    let url = '';
-    let alive = true;
-    fetchAttachmentUrl(taskId, attachment._id)
-      .then((objectUrl) => {
-        url = objectUrl;
-        if (alive) setSrc(objectUrl);
-        else URL.revokeObjectURL(objectUrl);
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [taskId, attachment._id]);
-  return src
-    ? <a href={src} target="_blank" rel="noreferrer"><img className="thumb" src={src} alt={attachment.name} /></a>
-    : <span className="muted">{attachment.name}</span>;
-}
-
-// Главная кнопка Telegram: одно самое полезное действие для текущего статуса
-function mainLabel(task) {
-  if (RUNNABLE_FROM.includes(task.status)) {
-    return task.status === 'review' ? 'Вернуть в работу' : 'Запустить в Claude';
-  }
-  if (task.status === 'review') return 'Принять результат';
-  return '';
-}
-
+// Карточка задачи: состояние и действия. Отдельные блоки лежат в components/task/.
 export default function TaskDetail({ id, onChanged, onClose }) {
   const [task, setTask] = useState(null);
   const [error, setError] = useState('');
   const [diff, setDiff] = useState(null);
-  const [comment, setComment] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [visibleToClient, setVisibleToClient] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const reload = () => getTask(id).then(setTask).catch((err) => setError(err.message));
@@ -102,6 +62,8 @@ export default function TaskDetail({ id, onChanged, onClose }) {
     return () => clearInterval(timer);
   }, [id, inProgress]);
 
+  // Любое действие: блокируем кнопки, при успехе перечитываем задачу и сообщаем списку.
+  // Возвращает true, если действие прошло.
   async function perform(action) {
     setError('');
     setBusy(true);
@@ -110,9 +72,11 @@ export default function TaskDetail({ id, onChanged, onClose }) {
       haptic('success');
       await reload();
       onChanged();
+      return true;
     } catch (err) {
       haptic('error');
       setError(err.message);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -132,9 +96,9 @@ export default function TaskDetail({ id, onChanged, onClose }) {
     return <section className="panel">{error || 'Загрузка…'}</section>;
   }
 
-  const targets = allowedTargets(task.status);
-  const canRun = RUNNABLE_FROM.includes(task.status);
-  const runLabel = task.status === 'review' ? 'Вернуть в работу' : 'Запустить в Claude';
+  // Ответ и комментарий: возвращают true при успехе, чтобы блок очистил поле
+  const answerAndReload = (text) => perform(() => answerTask(id, text));
+  const addCommentAndReload = (text, visible) => perform(() => addComment(id, text, visible));
 
   return (
     <section className="panel" aria-live="polite">
@@ -146,163 +110,31 @@ export default function TaskDetail({ id, onChanged, onClose }) {
         <button className="ghost" onClick={onClose}>Закрыть</button>
       </header>
 
-      {task.goal && <p><b>Цель:</b> {task.goal}</p>}
-      {task.acceptance.length > 0 && (
-        <>
-          <b>Критерии приёмки:</b>
-          <ul>
-            {task.acceptance.map((item, i) => <li key={i}>{item}</li>)}
-          </ul>
-        </>
-      )}
-      {task.outOfScope && <p><b>Не трогать:</b> {task.outOfScope}</p>}
-      {task.context && <p><b>Контекст:</b> {task.context}</p>}
+      <TaskSpec task={task} />
+      {task.status === 'in_progress' && <ProgressBlock task={task} />}
+      {task.status === 'waiting' && <QuestionBlock task={task} busy={busy} onAnswer={answerAndReload} />}
 
-      {task.status === 'in_progress' && (
-        <section className="progress" aria-label="Ход запуска">
-          <p className="question-label">Claude работает</p>
-          <p>{task.progress || 'Запуск…'}</p>
-        </section>
-      )}
-
-      {task.status === 'waiting' && (
-        <section className="question" aria-label="Вопрос Claude">
-          <p className="question-label">Claude спрашивает</p>
-          <p>{task.pendingQuestion || 'Вопрос не сохранён, посмотрите комментарии и последний запуск.'}</p>
-          <form
-            className="comment-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!answer.trim()) return;
-              perform(async () => {
-                await answerTask(id, answer.trim());
-                setAnswer('');
-              });
-            }}
-          >
-            <label className="full">
-              Ваш ответ
-              <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={2} />
-            </label>
-            <button type="submit" disabled={busy || !answer.trim()}>Ответить и продолжить</button>
-          </form>
-        </section>
-      )}
-
-      <div className="actions">
-        {task.status === 'in_progress' && (
-          <button className="danger" disabled={busy} onClick={() => perform(() => cancelTask(id))}>
-            Отменить запуск
-          </button>
-        )}
-        {canRun && (
-          <button disabled={busy} onClick={() => perform(() => runTask(id))}>
-            {runLabel}
-          </button>
-        )}
-        {targets.map((status) => (
-          <button
-            key={status}
-            className="ghost"
-            disabled={busy}
-            onClick={() => perform(() => updateTask(id, { status }))}
-          >
-            {ACTION_LABELS[status] || STATUS_LABELS[status]}
-          </button>
-        ))}
-        {task.branch && (
-          <button className="ghost" onClick={toggleDiff}>
-            {diff === null ? 'Показать diff' : 'Скрыть diff'}
-          </button>
-        )}
-      </div>
+      <ActionBar
+        task={task}
+        busy={busy}
+        diffShown={diff !== null}
+        onCancel={() => perform(() => cancelTask(id))}
+        onRun={() => perform(() => runTask(id))}
+        onTransition={(status) => perform(() => updateTask(id, { status }))}
+        onToggleDiff={toggleDiff}
+      />
 
       {error && <p className="error" role="alert">{error}</p>}
-      {diff !== null && (
-        diff.trim()
-          ? <pre className="diff">{diff}</pre>
-          : <p className="muted">В ветке пока нет изменений относительно основной.</p>
-      )}
+      {diff !== null && <DiffView diff={diff} />}
 
-      <h3>Скриншоты</h3>
-      {task.attachments?.length > 0 && (
-        <div className="thumbs">
-          {task.attachments.map((a) => <AttachmentThumb key={a._id} taskId={id} attachment={a} />)}
-        </div>
-      )}
-      <label className="upload">
-        Прикрепить картинку (PNG, JPEG, GIF, WebP до 5 МБ)
-        <input
-          type="file"
-          accept="image/png,image/jpeg,image/gif,image/webp"
-          disabled={busy}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            e.target.value = '';
-            if (file) perform(() => uploadAttachment(id, file));
-          }}
-        />
-      </label>
-
-      <h3>Запуски</h3>
-      {task.runs.length === 0 ? (
-        <p className="muted">Запусков пока не было. Они появятся после запуска в Claude.</p>
-      ) : (
-        <>
-          <p className="muted">Стоимость задачи: <b>{formatUsd(sumRunCosts(task.runs))}</b></p>
-          <ul>
-            {task.runs.map((run, i) => (
-              <li key={i}>
-                {new Date(run.startedAt).toLocaleString('ru-RU')}: {run.summary?.slice(0, 300)}
-                {run.costUsd != null && ` (${formatUsd(run.costUsd)})`}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      <h3>Комментарии</h3>
-      {task.comments.length === 0 && (
-        <p className="muted">Комментариев нет. Claude читает их при следующем запуске, поэтому здесь можно написать доработку.</p>
-      )}
-      {task.comments.length > 0 && (
-        <ul>
-          {task.comments.map((c, i) => (
-            <li key={i}>
-              <span className="muted">{COMMENT_AUTHORS[c.author] ?? c.author}: </span>
-              {c.text}
-              {c.visibleToClient && c.author !== 'client' && <span className="muted"> · видно заказчику</span>}
-            </li>
-          ))}
-        </ul>
-      )}
-      <form
-        className="comment-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!comment.trim()) return;
-          perform(async () => {
-            await addComment(id, comment.trim(), visibleToClient);
-            setComment('');
-            setVisibleToClient(false);
-          });
-        }}
-      >
-        <label className="full">
-          Новый комментарий
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={2}
-            placeholder="Что исправить или уточнить"
-          />
-        </label>
-        <label className="full">
-          <input type="checkbox" checked={visibleToClient} onChange={(e) => setVisibleToClient(e.target.checked)} />
-          {' '}Показать заказчику в портале
-        </label>
-        <button type="submit" disabled={busy || !comment.trim()}>Добавить комментарий</button>
-      </form>
+      <AttachmentsSection
+        taskId={id}
+        attachments={task.attachments}
+        busy={busy}
+        onUpload={(file) => perform(() => uploadAttachment(id, file))}
+      />
+      <RunsSection runs={task.runs} />
+      <CommentsSection comments={task.comments} busy={busy} onAdd={addCommentAndReload} />
     </section>
   );
 }

@@ -14,5 +14,5 @@
 2. Вторая строка: принять и вернуть в работу: `server/src/bot/callbackData.js:L22@text: 'Принять'`.
 
 ## Связи
-- Используется в `server/src/worker/runTask.js:L247@reply_markup: reviewKeyboard(task._id)` при статусе «На проверке».
+- Используется в `server/src/worker/notifyRun.js:L14@reply_markup: reviewKeyboard(task._id)` при статусе «На проверке».
 - Формат данных: `docs/functions/server/bot/encodeCallback.md:L3#Назначение`.

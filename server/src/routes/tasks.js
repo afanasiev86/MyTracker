@@ -1,241 +1,31 @@
-import express, { Router } from 'express';
-import { z } from 'zod';
-import Task from '../models/Task.js';
-import Project from '../models/Project.js';
-import { startTask, answerTask, cancelTask } from '../services/runs.js';
-import { taskDiff } from '../services/diff.js';
-import { ALLOWED_TYPES, MAX_ATTACHMENT_BYTES, saveAttachment, attachmentStream } from '../services/attachments.js';
-import { TASK_STATUSES, canTransition } from '../../../shared/statuses.js';
-import { PRIORITIES } from '../../../shared/crm.js';
-import { TASK_KINDS } from '../../../shared/taskKinds.js';
+import { Router } from 'express';
+import { listTasks } from './tasks/listTasks.js';
+import { createTask } from './tasks/createTask.js';
+import { getTask } from './tasks/getTask.js';
+import { patchTask } from './tasks/patchTask.js';
+import { addComment } from './tasks/addComment.js';
+import { runTaskRoute } from './tasks/runTaskRoute.js';
+import { questionRoute } from './tasks/questionRoute.js';
+import { answerRoute } from './tasks/answerRoute.js';
+import { cancelRoute } from './tasks/cancelRoute.js';
+import { diffRoute } from './tasks/diffRoute.js';
+import { attachmentBody, uploadAttachment } from './tasks/uploadAttachment.js';
+import { downloadAttachment } from './tasks/downloadAttachment.js';
 
+// Маршруты задач. Каждый обработчик лежит в своём файле папки tasks/.
 const router = Router();
 
-const dateField = z.string().nullable().optional();
-
-const createSchema = z.object({
-  project: z.string().min(1),
-  title: z.string().min(1),
-  goal: z.string().optional(),
-  acceptance: z.array(z.string()).optional(),
-  context: z.string().optional(),
-  outOfScope: z.string().optional(),
-  priority: z.enum(PRIORITIES).optional(),
-  kind: z.enum(TASK_KINDS).optional(),
-  dueDate: dateField,
-  tags: z.array(z.string()).optional(),
-});
-
-const updateSchema = createSchema.partial().extend({
-  status: z.enum(TASK_STATUSES).optional(),
-  branch: z.string().optional(),
-});
-
-const commentSchema = z.object({ text: z.string().min(1), visibleToClient: z.boolean().optional() });
-const textSchema = z.object({ text: z.string().trim().min(1, 'Текст не может быть пустым') });
-
-function normalize(data) {
-  const out = { ...data };
-  if (out.dueDate !== undefined) out.dueDate = out.dueDate ? new Date(out.dueDate) : null;
-  return out;
-}
-
-async function assertProjectExists(slug) {
-  if (!(await Project.exists({ slug }))) {
-    const error = new Error(`Проект «${slug}» не найден. Сначала создайте его в CRM.`);
-    error.status = 400;
-    throw error;
-  }
-}
-
-function escapeRegex(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-router.get('/', async (req, res, next) => {
-  try {
-    const filter = {};
-    if (req.query.project) filter.project = req.query.project;
-    if (req.query.status) filter.status = req.query.status;
-    if (req.query.q) filter.title = { $regex: escapeRegex(String(req.query.q)), $options: 'i' };
-    const tasks = await Task.find(filter)
-      .sort({ updatedAt: -1 })
-      .select('-runs.log')
-      .lean();
-    res.json(tasks);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post('/', async (req, res, next) => {
-  try {
-    const data = normalize(createSchema.parse(req.body));
-    await assertProjectExists(data.project);
-    const task = await Task.create(data);
-    res.status(201).json(task);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.get('/:id', async (req, res, next) => {
-  try {
-    const task = await Task.findById(req.params.id).lean();
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    return res.json(task);
-  } catch (err) {
-    return next(err);
-  }
-});
-
-router.patch('/:id', async (req, res, next) => {
-  try {
-    const patch = normalize(updateSchema.parse(req.body));
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-
-    if (patch.project && patch.project !== task.project) {
-      await assertProjectExists(patch.project);
-    }
-
-    if (patch.status && patch.status !== task.status) {
-      if (patch.status === 'in_progress') {
-        return res.status(409).json({ error: 'Статус «В работе» ставится только запуском задачи' });
-      }
-      if (!canTransition(task.status, patch.status)) {
-        return res.status(409).json({
-          error: `Нельзя перевести из «${task.status}» в «${patch.status}»`,
-        });
-      }
-    }
-
-    Object.assign(task, patch);
-    await task.save();
-    return res.json(task.toObject());
-  } catch (err) {
-    return next(err);
-  }
-});
-
-router.post('/:id/comments', async (req, res, next) => {
-  try {
-    const { text, visibleToClient } = commentSchema.parse(req.body);
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
-      { $push: { comments: { text, visibleToClient: Boolean(visibleToClient) } } },
-      { new: true },
-    ).lean();
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    return res.status(201).json(task.comments.at(-1));
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Запуск задачи в Claude: из ready, review (доработка) или failed
-router.post('/:id/run', async (req, res, next) => {
-  try {
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    const result = await startTask(task);
-    if (result.error) return res.status(409).json({ error: result.error });
-    return res.status(202).json(result.task.toObject());
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Claude задаёт вопрос: задача переходит в «Нужен ответ» после завершения запуска.
-// Вызывает skill implement-task во время работы.
-router.post('/:id/question', async (req, res, next) => {
-  try {
-    const { text } = textSchema.parse(req.body);
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    if (task.status !== 'in_progress') {
-      return res.status(409).json({ error: 'Вопрос можно задать только во время работы' });
-    }
-    task.pendingQuestion = text;
-    await task.save();
-    return res.status(201).json({ ok: true });
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Ответ владельца на вопрос Claude: продолжает ту же сессию
-router.post('/:id/answer', async (req, res, next) => {
-  try {
-    const { text } = textSchema.parse(req.body);
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    const result = await answerTask(task, text);
-    if (result.error) return res.status(409).json({ error: result.error });
-    return res.status(202).json(result.task.toObject());
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Отмена запуска, который идёт сейчас
-router.post('/:id/cancel', async (req, res, next) => {
-  try {
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    const result = await cancelTask(task);
-    if (result.error) return res.status(409).json({ error: result.error });
-    return res.status(202).json({ stopping: result.stopping, task: result.task.toObject() });
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Diff ветки задачи относительно основной ветки
-router.get('/:id/diff', async (req, res, next) => {
-  try {
-    const task = await Task.findById(req.params.id).lean();
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    if (!task.branch) return res.status(404).json({ error: 'Ветка ещё не создана' });
-
-    return res.type('text/plain').send(await taskDiff(task));
-  } catch (err) {
-    return next(err);
-  }
-});
-
-
-// Загрузка вложения: тело запроса — сам файл, его тип в Content-Type
-router.post(
-  '/:id/attachments',
-  express.raw({ type: Object.keys(ALLOWED_TYPES), limit: MAX_ATTACHMENT_BYTES }),
-  async (req, res, next) => {
-    try {
-      const task = await Task.findById(req.params.id);
-      if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-      if (!Buffer.isBuffer(req.body)) return res.status(415).json({ error: 'Можно прикреплять только картинки' });
-      const name = req.get('X-File-Name') ? decodeURIComponent(req.get('X-File-Name')) : '';
-      const attachment = await saveAttachment(task, req.body, req.get('Content-Type'), name);
-      return res.status(201).json(attachment.toObject());
-    } catch (err) {
-      return next(err);
-    }
-  },
-);
-
-// Отдача вложения: файл читается из MinIO и проходит через API (бакет приватный)
-router.get('/:id/attachments/:attachmentId', async (req, res, next) => {
-  try {
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Задача не найдена' });
-    const file = await attachmentStream(task, req.params.attachmentId);
-    if (!file) return res.status(404).json({ error: 'Вложение не найдено' });
-    res.type(file.mime);
-    file.stream.on('error', next);
-    return file.stream.pipe(res);
-  } catch (err) {
-    return next(err);
-  }
-});
+router.get('/', listTasks);
+router.post('/', createTask);
+router.get('/:id', getTask);
+router.patch('/:id', patchTask);
+router.post('/:id/comments', addComment);
+router.post('/:id/run', runTaskRoute);
+router.post('/:id/question', questionRoute);
+router.post('/:id/answer', answerRoute);
+router.post('/:id/cancel', cancelRoute);
+router.get('/:id/diff', diffRoute);
+router.post('/:id/attachments', attachmentBody, uploadAttachment);
+router.get('/:id/attachments/:attachmentId', downloadAttachment);
 
 export default router;

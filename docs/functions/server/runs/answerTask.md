@@ -17,10 +17,10 @@
 4. Ставит запуск в очередь с параметром `answer` и приоритетом задачи; воркер продолжит сессию `--resume`: `server/src/services/runs.js:L26@enqueue(task.project, () => runTask(task._id, { answer: text }), { priority: task.priority });`.
 
 ## Ошибки и граничные случаи
-- Если `sessionId` потерян, воркер не сможет продолжить сессию и передаст ответ вместе с задачей: см. `server/src/worker/runTask.js:L142@} else if (answer) {`.
+- Если `sessionId` потерян, воркер не сможет продолжить сессию и передаст ответ вместе с задачей: см. `server/src/worker/launchArgs.js:L15@if (answer) {`.
 - Два ответа подряд: после первого статус уже `in_progress`, поэтому второй вернёт ошибку «Задача сейчас не ждёт ответа». Это защита от дубля.
 
 ## Связи
-- Маршрут: ``server/src/routes/tasks.js:L168-179#POST /:id/answer``.
+- Маршрут: ``server/src/routes/tasks/answerRoute.js:L6-17#answerRoute``.
 - Воркер: `docs/functions/server/worker/runTask.md:L3#Назначение`.
 - Поток вопросов: `docs/features/tasks-and-runs.md:L13#Вопросы от Claude`.
