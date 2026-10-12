@@ -1,25 +1,9 @@
-import { useEffect, useState } from 'react';
-import { fetchAccessRequests, fetchClients, approveAccessRequest, rejectAccessRequest } from '../api.js';
+import { useAccessRequests } from './access/useAccessRequests.js';
+import AccessRow from './access/AccessRow.jsx';
 
 // Запросы доступа к порталу: вы подтверждаете человека и привязываете его к клиенту
 export default function AccessRequests({ onChanged }) {
-  const [requests, setRequests] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [error, setError] = useState('');
-
-  function load() {
-    Promise.resolve()
-      .then(() => Promise.all([fetchAccessRequests(), fetchClients()]))
-      .then(([reqs, list]) => {
-        setRequests(reqs ?? []);
-        setClients(list ?? []);
-      })
-      .catch((err) => setError(err.message));
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  const { requests, clients, error, setError, load } = useAccessRequests();
 
   async function act(action) {
     setError('');
@@ -45,34 +29,5 @@ export default function AccessRequests({ onChanged }) {
       ))}
       {error && <p className="error" role="alert">{error}</p>}
     </section>
-  );
-}
-
-function AccessRow({ request, clients, onAct }) {
-  const [clientId, setClientId] = useState('');
-  const who = `${request.name}${request.username ? ` ${request.username}` : ''}`;
-
-  return (
-    <div className="access-row">
-      <div>
-        <strong>{who}</strong>
-        <span className="muted"> · запрос {new Date(request.createdAt).toLocaleString('ru-RU')}</span>
-      </div>
-      <div className="actions">
-        <select value={clientId} onChange={(e) => setClientId(e.target.value)} aria-label="Клиент">
-          <option value="">Выберите клиента</option>
-          {clients.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
-        </select>
-        <button
-          disabled={!clientId}
-          onClick={() => onAct(() => approveAccessRequest(request._id, clientId))}
-        >
-          Подтвердить
-        </button>
-        <button className="ghost" onClick={() => onAct(() => rejectAccessRequest(request._id))}>
-          Отклонить
-        </button>
-      </div>
-    </div>
   );
 }

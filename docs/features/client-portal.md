@@ -4,7 +4,7 @@
 
 ## Как заказчик получает доступ
 1. Заказчик пишет боту `/start`. Запрос сохраняется: `server/src/services/access/startRequest.js:L6-26#startAccessRequest`. Бот отвечает, что запрос отправлен, и сообщает владельцу.
-2. Владелец во вкладке «Клиенты» видит запрос в блоке «Запросы доступа» и выбирает клиента из CRM. Компонент: `client/src/components/AccessRequests.jsx:L5-49#AccessRequests`.
+2. Владелец во вкладке «Клиенты» видит запрос в блоке «Запросы доступа» и выбирает клиента из CRM. Компонент: `client/src/components/AccessRequests.jsx:L5-33#AccessRequests`.
 3. Подтверждение привязывает Telegram к клиенту и открывает портал: `server/src/services/access/approveRequest.js:L6-26#approveAccessRequest`. Заказчик получает сообщение от бота.
 4. Заказчик открывает «Трекер» в боте. Вход выдаёт роль `client`: `server/src/routes/auth/telegramLogin.js:L21@Доступ ещё не подтверждён исполнителем`. Пока доступ не подтверждён, вход отклоняется.
 

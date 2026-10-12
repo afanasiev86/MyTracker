@@ -1,30 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
-import { fetchProjects, deleteProject } from '../api.js';
-import { PROJECT_STATUS_LABELS } from '../../../shared/crm.js';
-import { formatUsd } from '../lib/cost.js';
+import { useState } from 'react';
+import { deleteProject } from '../api.js';
 import { confirmAction } from '../lib/telegram.js';
 import ProjectForm from './ProjectForm.jsx';
+import ProjectCard from './projects/ProjectCard.jsx';
+import { useProjectList } from './projects/useProjectList.js';
 
 export default function Projects() {
-  const [projects, setProjects] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState('');
+  const { projects, loaded, error, setError, load } = useProjectList();
   const [notice, setNotice] = useState('');
   // null | 'new' | объект проекта для редактирования
   const [editing, setEditing] = useState(null);
-
-  const load = useCallback(
-    () =>
-      fetchProjects()
-        .then(setProjects)
-        .catch((err) => setError(err.message))
-        .finally(() => setLoaded(true)),
-    [],
-  );
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   function saved(message) {
     setEditing(null);
@@ -73,26 +58,11 @@ export default function Projects() {
 
       <div className="list">
         {projects.map((p) => (
-          <article
+          <ProjectCard
             key={p._id}
-            className="row-card"
-            role="button"
-            tabIndex={0}
-            onClick={() => { setNotice(''); setEditing(p); }}
-            onKeyDown={(e) => e.key === 'Enter' && setEditing(p)}
-          >
-            <div>
-              <strong>{p.name}</strong> <span className="muted">{p.slug}</span>
-            </div>
-            <div className="muted">
-              {PROJECT_STATUS_LABELS[p.status]}
-              {p.client && ` · клиент ${p.client.name}`}
-              {p.deadline && ` · срок ${new Date(p.deadline).toLocaleDateString('ru-RU')}`}
-            </div>
-            <div className="muted">
-              Задач: {p.stats.tasks}, открыто {p.stats.open} · затраты на Claude {formatUsd(p.stats.costUsd)}
-            </div>
-          </article>
+            project={p}
+            onOpen={(project) => { setNotice(''); setEditing(project); }}
+          />
         ))}
       </div>
     </>

@@ -1,27 +1,9 @@
-import { useEffect, useState } from 'react';
-import { fetchStorage, saveStorage } from '../api.js';
+import { useStorageSettings } from './storage/useStorageSettings.js';
+import ProviderOption from './storage/ProviderOption.jsx';
 
 // Настройки: выбор хранилища для вложений. Ключи доступа здесь не показываются и не меняются.
 export default function Settings() {
-  const [state, setState] = useState(null);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    fetchStorage().then(setState).catch((err) => setError(err.message));
-  }, []);
-
-  async function choose(provider) {
-    setBusy(true);
-    setError('');
-    try {
-      setState(await saveStorage(provider));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { state, error, busy, choose } = useStorageSettings();
 
   if (!state) {
     return <section className="panel">{error || 'Загрузка…'}</section>;
@@ -36,20 +18,7 @@ export default function Settings() {
       <fieldset className="radio-list">
         <legend>Куда сохранять</legend>
         {state.providers.map((p) => (
-          <label key={p.id} className="radio-row">
-            <input
-              type="radio"
-              name="storage"
-              value={p.id}
-              checked={state.active === p.id}
-              disabled={busy || !p.configured}
-              onChange={() => choose(p.id)}
-            />
-            <span>{p.label}</span>
-            <span className="muted">
-              {p.configured ? `бакет ${p.bucket}` : 'не настроено: задайте переменные окружения на сервере'}
-            </span>
-          </label>
+          <ProviderOption key={p.id} provider={p} active={state.active} busy={busy} onChoose={choose} />
         ))}
       </fieldset>
       {error && <p className="error" role="alert">{error}</p>}
