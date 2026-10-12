@@ -22,6 +22,8 @@ const ACTION_LABELS = {
   done: 'Принять результат',
 };
 
+const PROGRESS_POLL_MS = 4000;
+
 export default function TaskDetail({ id, onChanged, onClose }) {
   const [task, setTask] = useState(null);
   const [error, setError] = useState('');
@@ -37,6 +39,16 @@ export default function TaskDetail({ id, onChanged, onClose }) {
     setError('');
     getTask(id).then(setTask).catch((err) => setError(err.message));
   }, [id]);
+
+  // Пока задача в работе, подгружаем текущий шаг Claude
+  const inProgress = task?.status === 'in_progress';
+  useEffect(() => {
+    if (!inProgress) return undefined;
+    const timer = setInterval(() => {
+      getTask(id).then(setTask).catch(() => {});
+    }, PROGRESS_POLL_MS);
+    return () => clearInterval(timer);
+  }, [id, inProgress]);
 
   async function perform(action) {
     setError('');
@@ -91,6 +103,13 @@ export default function TaskDetail({ id, onChanged, onClose }) {
       )}
       {task.outOfScope && <p><b>Не трогать:</b> {task.outOfScope}</p>}
       {task.context && <p><b>Контекст:</b> {task.context}</p>}
+
+      {task.status === 'in_progress' && (
+        <section className="progress" aria-label="Ход запуска">
+          <p className="question-label">Claude работает</p>
+          <p>{task.progress || 'Запуск…'}</p>
+        </section>
+      )}
 
       {task.status === 'waiting' && (
         <section className="question" aria-label="Вопрос Claude">

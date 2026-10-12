@@ -9,6 +9,7 @@ import { STATUS_LABELS } from '../../../shared/statuses.js';
 import { git } from './git.js';
 import { isLimitError } from './limits.js';
 import { registerRun, unregisterRun, stopRun } from './processes.js';
+import { progressFromEvent, parseStreamLine, findResult, LineSplitter } from './progress.js';
 
 // Скрипт для вызовов API трекера (deploy/tracker-api.sh рядом с сервером)
 const TRACKER_CLI = fileURLToPath(new URL('../../../deploy/tracker-api.sh', import.meta.url));
@@ -38,7 +39,10 @@ function config() {
   };
 }
 
-function runClaude(bin, args, { cwd, env, taskId, timeoutMs }) {
+// Не чаще раза в PROGRESS_THROTTLE_MS пишем прогресс в базу
+const PROGRESS_THROTTLE_MS = 3000;
+
+function runClaude(bin, args, { cwd, env, taskId, timeoutMs, onProgress }) {
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, { cwd, env });
     registerRun(taskId, child);
@@ -46,7 +50,28 @@ function runClaude(bin, args, { cwd, env, taskId, timeoutMs }) {
 
     let stdout = '';
     let stderr = '';
-    child.stdout.on('data', (d) => { stdout += d; });
+    const splitter = new LineSplitter();
+    let lastSent = 0;
+    let pending = null;
+
+    const handleLines = (lines) => {
+      for (const line of lines) {
+        const text = progressFromEvent(parseStreamLine(line));
+        if (!text || !onProgress) continue;
+        pending = text;
+        const now = Date.now();
+        if (now - lastSent >= PROGRESS_THROTTLE_MS) {
+          lastSent = now;
+          pending = null;
+          onProgress(text);
+        }
+      }
+    };
+
+    child.stdout.on('data', (d) => {
+      stdout += d;
+      handleLines(splitter.push(String(d)));
+    });
     child.stderr.on('data', (d) => { stderr += d; });
     child.on('error', (err) => {
       clearTimeout(timer);
@@ -55,18 +80,13 @@ function runClaude(bin, args, { cwd, env, taskId, timeoutMs }) {
     });
     child.on('close', (code) => {
       clearTimeout(timer);
+      handleLines(splitter.flush());
+      // Последнее сообщение могло прийти внутри окна троттлинга
+      if (pending && onProgress) onProgress(pending);
       const entry = unregisterRun(taskId);
       resolve({ code, stdout, stderr, reason: entry?.reason ?? null });
     });
   });
-}
-
-function parseOutput(stdout) {
-  try {
-    return JSON.parse(stdout);
-  } catch {
-    return null;
-  }
 }
 
 // Готовит отдельную рабочую копию под задачу.
@@ -110,23 +130,31 @@ export async function runTask(taskId, { answer = null } = {}) {
 
     let args;
     if (answer && task.sessionId) {
-      args = ['-p', answer, '--resume', task.sessionId, '--output-format', 'json', '--allowedTools', claudeTools()];
+      args = ['-p', answer, '--resume', task.sessionId, '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     } else if (answer) {
       // Сессии нет (например, она потеряна): передаём ответ вместе с задачей
       args = ['-p', `/implement-task ${task._id}\n\nОтвет владельца на ваш вопрос: ${answer}`,
-        '--output-format', 'json', '--allowedTools', claudeTools()];
+        '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     } else {
-      args = ['-p', `/implement-task ${task._id}`, '--output-format', 'json', '--allowedTools', claudeTools()];
+      args = ['-p', `/implement-task ${task._id}`, '--output-format', 'stream-json', '--verbose', '--allowedTools', claudeTools()];
     }
+
+    // Записи прогресса идут по очереди, чтобы не перезаписать финальный статус
+    let writes = Task.updateOne({ _id: task._id }, { progress: 'Запуск…' }).catch(() => {});
+    const onProgress = (text) => {
+      writes = writes.then(() => Task.updateOne({ _id: task._id }, { progress: text })).catch(() => {});
+    };
 
     const res = await runClaude(cfg.claudeBin, args, {
       cwd: wt,
       env,
       taskId: task._id,
       timeoutMs: cfg.timeoutMin * 60 * 1000,
+      onProgress,
     });
+    await writes;
 
-    const data = parseOutput(res.stdout);
+    const data = findResult(res.stdout);
     const log = `${res.stdout}\n${res.stderr}`.slice(-20000);
     const costUsd = data?.total_cost_usd;
     if (data?.session_id) task.sessionId = data.session_id;
@@ -183,6 +211,7 @@ export async function runTask(taskId, { answer = null } = {}) {
 
   task.status = outcome.status;
   task.branch = branch;
+  task.progress = '';
   if (outcome.status !== 'waiting') task.pendingQuestion = '';
   task.runs.push({
     startedAt,

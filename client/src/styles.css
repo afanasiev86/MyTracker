@@ -127,7 +127,8 @@ body { margin: 0; }
 
 .prio-high { color: var(--danger); font-weight: 700; }
 
-.question {
+.question,
+.progress {
   border-left: 3px solid var(--accent);
   padding: 4px 0 4px 12px;
   margin: 12px 0;

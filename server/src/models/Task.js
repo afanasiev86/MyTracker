@@ -33,6 +33,8 @@ const taskSchema = new mongoose.Schema({
   sessionId: { type: String, default: '' },
   // Вопрос, который Claude задал и который ждёт ответа
   pendingQuestion: { type: String, default: '' },
+  // Текущий шаг запуска, пока задача в работе (обновляется воркером)
+  progress: { type: String, default: '' },
   runs: { type: [runSchema], default: [] },
   comments: { type: [commentSchema], default: [] },
 }, { timestamps: true });
