@@ -1,13 +1,21 @@
 // Все запросы к API проходят через этот модуль
 
 const TOKEN_KEY = 'mytracker_token';
+const ROLE_KEY = 'mytracker_role';
 
 // Событие для всего приложения: токен истёк или недействителен
 export const UNAUTHORIZED_EVENT = 'mytracker:unauthorized';
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+export const clearToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ROLE_KEY);
+};
+
+// Роль: owner (владелец) или client (заказчик с порталом). По умолчанию владелец.
+export const getRole = () => localStorage.getItem(ROLE_KEY) || 'owner';
+export const setRole = (role) => localStorage.setItem(ROLE_KEY, role);
 
 function authHeaders(extra = {}) {
   const headers = { ...extra };
@@ -62,8 +70,8 @@ export const getTask = (id) => request(`/tasks/${id}`);
 export const createTask = (task) => request('/tasks', { method: 'POST', body: task });
 export const updateTask = (id, patch) =>
   request(`/tasks/${id}`, { method: 'PATCH', body: patch });
-export const addComment = (id, text) =>
-  request(`/tasks/${id}/comments`, { method: 'POST', body: { text } });
+export const addComment = (id, text, visibleToClient = false) =>
+  request(`/tasks/${id}/comments`, { method: 'POST', body: { text, visibleToClient } });
 export const runTask = (id) => request(`/tasks/${id}/run`, { method: 'POST' });
 export const answerTask = (id, text) =>
   request(`/tasks/${id}/answer`, { method: 'POST', body: { text } });
@@ -135,3 +143,16 @@ export async function fetchAttachmentUrl(id, attachmentId) {
 // Хранилище вложений: какой провайдер активен и какие настроены
 export const fetchStorage = () => request('/storage');
 export const saveStorage = (provider) => request('/storage', { method: 'PUT', body: { provider } });
+
+// Запросы доступа к порталу (владелец)
+export const fetchAccessRequests = () => request('/access');
+export const approveAccessRequest = (id, clientId) =>
+  request(`/access/${id}/approve`, { method: 'POST', body: { clientId } });
+export const rejectAccessRequest = (id) => request(`/access/${id}/reject`, { method: 'POST' });
+export const revokeClientPortal = (id) => request(`/clients/${id}/portal/revoke`, { method: 'POST' });
+
+// Портал заказчика
+export const fetchPortalMe = () => request('/portal/me');
+export const fetchPortalTasks = () => request('/portal/tasks');
+export const postPortalComment = (taskId, text) =>
+  request(`/portal/tasks/${taskId}/comments`, { method: 'POST', body: { text } });

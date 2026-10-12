@@ -5,6 +5,8 @@ import {
   setToken,
   loginWithTelegram,
   revokeAllSessions,
+  getRole,
+  setRole,
   UNAUTHORIZED_EVENT,
 } from './api.js';
 import { getInitData, initTelegramUi, confirmAction } from './lib/telegram.js';
@@ -13,6 +15,7 @@ import Board from './components/Board.jsx';
 import Projects from './components/Projects.jsx';
 import Clients from './components/Clients.jsx';
 import Settings from './components/Settings.jsx';
+import Portal from './components/Portal.jsx';
 
 const SECTIONS = [
   { id: 'board', title: 'Задачи' },
@@ -26,6 +29,7 @@ export default function App() {
   const [tgError, setTgError] = useState('');
   const [notice, setNotice] = useState('');
   const [section, setSection] = useState('board');
+  const [role, setRoleState] = useState(getRole());
   const inTelegram = Boolean(getInitData());
 
   // Любой запрос с истёкшим токеном возвращает на вход с понятным сообщением
@@ -44,8 +48,10 @@ export default function App() {
     if (authed || !inTelegram) return;
     // Открыто внутри Telegram: входим по подписи initData, пароль не нужен
     loginWithTelegram(getInitData())
-      .then(({ token }) => {
+      .then(({ token, role: userRole }) => {
         setToken(token);
+        setRole(userRole);
+        setRoleState(userRole);
         setAuthed(true);
       })
       .catch((err) => setTgError(err.message));
@@ -57,7 +63,7 @@ export default function App() {
         ? <p className="error center">{tgError}</p>
         : <p className="muted center">Входим через Telegram…</p>;
     }
-    return <Login notice={notice} onSuccess={() => setAuthed(true)} />;
+    return <Login notice={notice} onSuccess={() => { setRole('owner'); setRoleState('owner'); setAuthed(true); }} />;
   }
 
   const logout = () => {
@@ -76,6 +82,19 @@ export default function App() {
     }
     logout();
   };
+
+  // Заказчик видит только свой портал, без вкладок владельца
+  if (role === 'client') {
+    return (
+      <div className="app">
+        <header className="topbar">
+          <h1>MyTracker</h1>
+          {!inTelegram && <button className="ghost" onClick={logout}>Выйти</button>}
+        </header>
+        <Portal />
+      </div>
+    );
+  }
 
   return (
     <div className="app">

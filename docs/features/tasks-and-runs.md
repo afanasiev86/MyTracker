@@ -3,7 +3,7 @@
 Для изменения этой области начинай с этого файла, затем открой ссылки.
 
 ## Задачи
-Поля и статусы: `server/src/models/Task.js:L30-52#taskSchema`. Список статусов и переходы: `shared/statuses.js:L24-32#TRANSITIONS`. Создание и правка: `server/src/routes/tasks.js:L90-117#PATCH /:id` (подробно (`docs/functions/server/routes/patchTask.md:L13#Алгоритм`)).
+Поля и статусы: `server/src/models/Task.js:L32-54#taskSchema`. Список статусов и переходы: `shared/statuses.js:L24-32#TRANSITIONS`. Создание и правка: `server/src/routes/tasks.js:L90-117#PATCH /:id` (подробно (`docs/functions/server/routes/patchTask.md:L13#Алгоритм`)).
 
 ## Запуск
 Вход из API, бота и кнопок: startTask (`docs/functions/server/runs/startTask.md:L13#Алгоритм`). Конвейер: run-pipeline (`docs/architecture/run-pipeline.md:L5#Этапы запуска`).

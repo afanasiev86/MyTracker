@@ -246,3 +246,7 @@ button.ghost { color: var(--accent); }
 .radio-list { border: 0; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
 .radio-row { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: center; }
 .radio-row .muted { grid-column: 2; font-size: 13px; }
+.badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; font-size: 12px; background: var(--accent); color: var(--accent-text); }
+.comments { padding-left: 16px; }
+.access-row { display: grid; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--muted); }
+.portal-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }

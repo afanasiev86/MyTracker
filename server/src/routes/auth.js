@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { checkPassword, issueToken, revokeAllTokens } from '../services/auth.js';
 import { requireAuth } from '../middleware/auth.js';
 import { verifyInitData } from '../services/telegramAuth.js';
+import Client from '../models/Client.js';
 
 const router = Router();
 
@@ -15,13 +16,13 @@ router.post('/login', async (req, res, next) => {
     if (!checkPassword(password)) {
       return res.status(401).json({ error: 'Неверный пароль' });
     }
-    return res.json({ token: await issueToken('owner') });
+    return res.json({ token: await issueToken('owner'), role: 'owner' });
   } catch (err) {
     return next(err);
   }
 });
 
-// Вход из Telegram Mini App: подпись проверяется, пароль не нужен
+// Вход из Telegram Mini App: владелец или привязанный заказчик. Подпись проверяется, пароль не нужен.
 router.post('/telegram', async (req, res, next) => {
   try {
     const { initData } = telegramSchema.parse(req.body);
@@ -29,10 +30,19 @@ router.post('/telegram', async (req, res, next) => {
     if (!check.ok) {
       return res.status(401).json({ error: check.reason });
     }
-    if (String(check.user?.id) !== String(process.env.TELEGRAM_OWNER_ID)) {
-      return res.status(403).json({ error: 'Этот аккаунт не имеет доступа' });
+    const telegramId = String(check.user?.id);
+    if (telegramId === String(process.env.TELEGRAM_OWNER_ID)) {
+      return res.json({ token: await issueToken('owner'), role: 'owner' });
     }
-    return res.json({ token: await issueToken('owner') });
+    const client = await Client.findOne({ telegramId }).select('_id portalApproved').lean();
+    if (client && !client.portalApproved) {
+      return res.status(403).json({ error: 'Доступ ещё не подтверждён исполнителем' });
+    }
+    if (client) {
+      const claims = { role: 'client', clientId: String(client._id) };
+      return res.json({ token: await issueToken(`client:${client._id}`, '30d', claims), role: 'client' });
+    }
+    return res.status(403).json({ error: 'Этот аккаунт не имеет доступа' });
   } catch (err) {
     return next(err);
   }

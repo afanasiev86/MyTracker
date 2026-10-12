@@ -44,3 +44,14 @@ export function canTransition(from, to) {
 export function allowedTargets(from) {
   return TRANSITIONS[from] || [];
 }
+
+// Подписи статусов для заказчика: без внутренних деталей (запуски, вопросы Claude и т. п.)
+export const CLIENT_STATUS_LABELS = {
+  backlog: 'Запланировано',
+  ready: 'В очереди',
+  in_progress: 'В работе',
+  waiting: 'Уточняем детали',
+  review: 'На проверке',
+  done: 'Принято',
+  failed: 'Требует внимания',
+};

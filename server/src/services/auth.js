@@ -36,9 +36,10 @@ export async function revokeAllTokens() {
   cachedVersion = doc.tokenVersion;
 }
 
-export async function issueToken(sub, expiresIn = '30d') {
+// claims — дополнительные поля токена, например { role: 'client', clientId }
+export async function issueToken(sub, expiresIn = '30d', claims = {}) {
   const tv = await currentTokenVersion();
-  return jwt.sign({ sub, tv }, process.env.JWT_SECRET, { expiresIn });
+  return jwt.sign({ sub, tv, ...claims }, process.env.JWT_SECRET, { expiresIn });
 }
 
 // Проверка токена: подпись, срок и версия (отзыв)

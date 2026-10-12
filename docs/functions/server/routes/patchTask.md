@@ -22,5 +22,5 @@
 - Здесь нет бизнес-логики запуска, поэтому маршрут тонкий, как требует `CLAUDE.md`. Правила переходов вынесены в `shared/statuses.js`.
 
 ## Связи
-- Клиент: ``client/src/api.js:L63-64#updateTask``.
+- Клиент: ``client/src/api.js:L71-72#updateTask``.
 - Статусы: `docs/architecture/run-pipeline.md:L24#Состояния задачи`.

@@ -33,7 +33,7 @@
 | Mini App | features/telegram.md (`docs/features/telegram.md:L17#Mini App`) | verifyInitData (`docs/functions/server/telegram/verifyInitData.md:L3#Назначение`) |
 | Клиенты и проекты (CRM) | features/crm-and-auth.md (`docs/features/crm-and-auth.md:L3#Клиенты и проекты`) | маршруты в `server/src/routes/clients.js`, `server/src/routes/projects.js` |
 | Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L20#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
-| Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L61-292#TaskDetail` | главная кнопка Telegram: `client/src/lib/telegram.js:L55-69#setMainButton` |
+| Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L64-307#TaskDetail` | главная кнопка Telegram: `client/src/lib/telegram.js:L55-69#setMainButton` |
 
 ## Функции (детально, по одной на файл)
 - Авторизация: checkPassword (`docs/functions/server/auth/checkPassword.md:L3#Назначение`), issueToken (`docs/functions/server/auth/issueToken.md:L3#Назначение`), currentTokenVersion (`docs/functions/server/auth/currentTokenVersion.md:L3#Назначение`), verifyToken (`docs/functions/server/auth/verifyToken.md:L3#Назначение`), revokeAllTokens (`docs/functions/server/auth/revokeAllTokens.md:L3#Назначение`), requireAuth (`docs/functions/server/auth/requireAuth.md:L3#Назначение`)

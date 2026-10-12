@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchClients, deleteClient } from '../api.js';
+import { fetchClients, deleteClient, revokeClientPortal } from '../api.js';
 import { formatUsd } from '../lib/cost.js';
 import { confirmAction } from '../lib/telegram.js';
 import ClientForm from './ClientForm.jsx';
+import AccessRequests from './AccessRequests.jsx';
 
 // Ставка с единицей измерения: «2000 RUB в час» или «150000 RUB за проект»
 export function formatRate(rate) {
@@ -38,6 +39,19 @@ export default function Clients() {
     load();
   }
 
+  async function closePortal(client) {
+    const ok = await confirmAction(`Закрыть «${client.name}» доступ к порталу? Он перестанет видеть свои задачи.`);
+    if (!ok) return;
+    setError('');
+    try {
+      await revokeClientPortal(client._id);
+      setNotice(`Портал для «${client.name}» закрыт`);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function remove(client) {
     const ok = await confirmAction(`Удалить клиента «${client.name}»?`);
     if (!ok) return;
@@ -58,6 +72,8 @@ export default function Clients() {
       <div className="toolbar">
         <button onClick={() => { setNotice(''); setEditing('new'); }}>Новый клиент</button>
       </div>
+
+      <AccessRequests onChanged={load} />
 
       {notice && !editing && <p className="notice">{notice}</p>}
       {error && <p className="error" role="alert">{error}</p>}
@@ -95,6 +111,19 @@ export default function Clients() {
             </div>
             {c.projects.length > 0 && (
               <div className="muted">{c.projects.map((p) => p.name).join(', ')}</div>
+            )}
+            {c.telegramId ? (
+              <div className="portal-row">
+                <span className="badge">Портал открыт</span>
+                <button
+                  className="ghost"
+                  onClick={(e) => { e.stopPropagation(); closePortal(c); }}
+                >
+                  Закрыть доступ
+                </button>
+              </div>
+            ) : (
+              <div className="muted">Портал не подключён: подтвердите запрос выше</div>
             )}
           </article>
         ))}

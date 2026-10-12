@@ -7,6 +7,9 @@ import clientRoutes from './routes/clients.js';
 import storageRoutes from './routes/storage.js';
 import projectRoutes from './routes/projects.js';
 import { requireAuth } from './middleware/auth.js';
+import { requireOwner, requireClient } from './middleware/roles.js';
+import portalRoutes from './routes/portal.js';
+import accessRoutes from './routes/access.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Попытки входа ограничены: 10 за 15 минут с одного адреса
@@ -27,11 +30,15 @@ export function createApp() {
 
   app.get('/api/health', (_req, res) => res.json({ ok: true }));
   app.use('/api/auth', loginLimiter, authRoutes);
-  app.use('/api/tasks', requireAuth, taskRoutes);
-  app.use('/api/projects', requireAuth, projectRoutes);
-  app.use('/api/clients', requireAuth, clientRoutes);
-  app.use('/api/stats', requireAuth, statsRoutes);
-  app.use('/api/storage', requireAuth, storageRoutes);
+  // Владельческий API: заказчик сюда не попадает
+  app.use('/api/tasks', requireAuth, requireOwner, taskRoutes);
+  app.use('/api/projects', requireAuth, requireOwner, projectRoutes);
+  app.use('/api/clients', requireAuth, requireOwner, clientRoutes);
+  app.use('/api/stats', requireAuth, requireOwner, statsRoutes);
+  app.use('/api/storage', requireAuth, requireOwner, storageRoutes);
+  app.use('/api/access', requireAuth, requireOwner, accessRoutes);
+  // Портал заказчика: только свои данные
+  app.use('/api/portal', requireAuth, requireClient, portalRoutes);
 
   app.use((_req, res) => res.status(404).json({ error: 'Не найдено' }));
   app.use(errorHandler);

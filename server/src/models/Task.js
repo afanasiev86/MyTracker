@@ -13,6 +13,8 @@ const runSchema = new mongoose.Schema({
 const commentSchema = new mongoose.Schema({
   author: { type: String, default: 'owner' },
   text: { type: String, required: true },
+  // Виден ли комментарий заказчику в портале (комментарии заказчика — всегда видны)
+  visibleToClient: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 }, { _id: false });
 

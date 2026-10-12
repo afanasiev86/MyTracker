@@ -21,5 +21,5 @@
 - Сообщения 4xx берутся из `err.message`. Поэтому в бизнес-ошибках нельзя писать внутренние детали.
 
 ## Связи
-- Подключается последним в `server/src/app.js:L21-39#createApp`.
+- Подключается последним в `server/src/app.js:L24-46#createApp`.
 - Подход: `docs/features/crm-and-auth.md:L9#Ошибки API`.

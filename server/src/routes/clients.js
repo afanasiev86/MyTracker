@@ -5,6 +5,7 @@ import Client from '../models/Client.js';
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
 import { RATE_KINDS, CURRENCIES } from '../../../shared/crm.js';
+import { revokePortal } from '../services/access.js';
 
 const router = Router();
 
@@ -83,6 +84,16 @@ router.delete('/:id', async (req, res, next) => {
     const result = await Client.deleteOne({ _id: req.params.id });
     if (result.deletedCount === 0) return res.status(404).json({ error: 'Клиент не найден' });
     return res.status(204).end();
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Закрыть клиенту доступ к порталу (отвязать его Telegram)
+router.post('/:id/portal/revoke', async (req, res, next) => {
+  try {
+    if (!(await revokePortal(req.params.id))) return res.status(404).json({ error: 'Клиент не найден' });
+    return res.json({ ok: true });
   } catch (err) {
     return next(err);
   }

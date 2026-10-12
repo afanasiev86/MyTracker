@@ -1,13 +1,15 @@
-import { telegramApi, sendTelegram, telegramEnabled } from '../services/telegram.js';
+import { telegramApi, sendTelegram, sendTelegramTo, telegramEnabled } from '../services/telegram.js';
 
 // Кнопка меню бота открывает Mini App (нужен HTTPS-адрес в TELEGRAM_MINIAPP_URL)
 async function setMenuButton() {
   const url = process.env.TELEGRAM_MINIAPP_URL;
   if (!url) return;
-  await telegramApi('setChatMenuButton', {
-    chat_id: process.env.TELEGRAM_OWNER_ID,
-    menu_button: { type: 'web_app', text: 'Трекер', web_app: { url } },
-  }).catch((err) => console.error('Menu button:', err.message));
+  const menu = { type: 'web_app', text: 'Трекер', web_app: { url } };
+  // Для владельца и для всех остальных (заказчики открывают портал той же кнопкой)
+  await telegramApi('setChatMenuButton', { chat_id: process.env.TELEGRAM_OWNER_ID, menu_button: menu })
+    .catch((err) => console.error('Menu button:', err.message));
+  await telegramApi('setChatMenuButton', { menu_button: menu })
+    .catch((err) => console.error('Menu button default:', err.message));
 }
 
 async function deliver(reply) {
@@ -25,7 +27,7 @@ async function handleButton(query, onCallback) {
 }
 
 // Long polling: бот отвечает только владельцу (TELEGRAM_OWNER_ID)
-export async function startPolling(handle, onCallback = async () => 'Кнопка не поддерживается') {
+export async function startPolling(handle, onCallback = async () => 'Кнопка не поддерживается', onGuest = async () => null) {
   if (!telegramEnabled()) {
     console.log('Telegram не настроен (TELEGRAM_BOT_TOKEN, TELEGRAM_OWNER_ID), бот не запущен');
     return;
@@ -47,7 +49,12 @@ export async function startPolling(handle, onCallback = async () => 'Кнопк�
 
         const msg = update.message;
         if (!msg?.text) continue;
-        if (String(msg.from?.id) !== String(process.env.TELEGRAM_OWNER_ID)) continue;
+        if (String(msg.from?.id) !== String(process.env.TELEGRAM_OWNER_ID)) {
+          // Не владелец: только привязка заказчика по коду приглашения
+          const guestReply = await onGuest(msg).catch(() => null);
+          if (guestReply) await sendTelegramTo(msg.chat.id, guestReply);
+          continue;
+        }
 
         const replyToText = msg.reply_to_message?.text || '';
         const reply = await handle(msg.text, replyToText).catch((err) => `Ошибка: ${err.message}`);

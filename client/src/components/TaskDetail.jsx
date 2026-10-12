@@ -26,6 +26,9 @@ const ACTION_LABELS = {
 
 const PROGRESS_POLL_MS = 4000;
 
+// Подписи авторов комментариев для владельца
+const COMMENT_AUTHORS = { owner: 'Вы', client: 'Заказчик', system: 'Система', worker: 'Исполнитель' };
+
 // Миниатюра вложения. Картинка грузится с токеном и освобождается при уходе со страницы.
 function AttachmentThumb({ taskId, attachment }) {
   const [src, setSrc] = useState('');
@@ -64,6 +67,7 @@ export default function TaskDetail({ id, onChanged, onClose }) {
   const [diff, setDiff] = useState(null);
   const [comment, setComment] = useState('');
   const [answer, setAnswer] = useState('');
+  const [visibleToClient, setVisibleToClient] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const reload = () => getTask(id).then(setTask).catch((err) => setError(err.message));
@@ -262,7 +266,13 @@ export default function TaskDetail({ id, onChanged, onClose }) {
       )}
       {task.comments.length > 0 && (
         <ul>
-          {task.comments.map((c, i) => <li key={i}>{c.text}</li>)}
+          {task.comments.map((c, i) => (
+            <li key={i}>
+              <span className="muted">{COMMENT_AUTHORS[c.author] ?? c.author}: </span>
+              {c.text}
+              {c.visibleToClient && c.author !== 'client' && <span className="muted"> · видно заказчику</span>}
+            </li>
+          ))}
         </ul>
       )}
       <form
@@ -271,8 +281,9 @@ export default function TaskDetail({ id, onChanged, onClose }) {
           e.preventDefault();
           if (!comment.trim()) return;
           perform(async () => {
-            await addComment(id, comment.trim());
+            await addComment(id, comment.trim(), visibleToClient);
             setComment('');
+            setVisibleToClient(false);
           });
         }}
       >
@@ -284,6 +295,10 @@ export default function TaskDetail({ id, onChanged, onClose }) {
             rows={2}
             placeholder="Что исправить или уточнить"
           />
+        </label>
+        <label className="full">
+          <input type="checkbox" checked={visibleToClient} onChange={(e) => setVisibleToClient(e.target.checked)} />
+          {' '}Показать заказчику в портале
         </label>
         <button type="submit" disabled={busy || !comment.trim()}>Добавить комментарий</button>
       </form>

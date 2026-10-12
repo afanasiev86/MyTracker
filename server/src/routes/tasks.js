@@ -29,7 +29,7 @@ const updateSchema = createSchema.partial().extend({
   branch: z.string().optional(),
 });
 
-const commentSchema = z.object({ text: z.string().min(1) });
+const commentSchema = z.object({ text: z.string().min(1), visibleToClient: z.boolean().optional() });
 const textSchema = z.object({ text: z.string().trim().min(1, 'Текст не может быть пустым') });
 
 function normalize(data) {
@@ -118,10 +118,10 @@ router.patch('/:id', async (req, res, next) => {
 
 router.post('/:id/comments', async (req, res, next) => {
   try {
-    const { text } = commentSchema.parse(req.body);
+    const { text, visibleToClient } = commentSchema.parse(req.body);
     const task = await Task.findByIdAndUpdate(
       req.params.id,
-      { $push: { comments: { text } } },
+      { $push: { comments: { text, visibleToClient: Boolean(visibleToClient) } } },
       { new: true },
     ).lean();
     if (!task) return res.status(404).json({ error: 'Задача не найдена' });

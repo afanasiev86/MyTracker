@@ -12,6 +12,13 @@ const clientSchema = new mongoose.Schema({
     amount: { type: Number, default: 0, min: 0 },
     currency: { type: String, enum: CURRENCIES, default: 'RUB' },
   },
+  // Telegram-аккаунт заказчика, появляется после подтверждения запроса доступа
+  telegramId: { type: String },
+  // Портал открыт только после подтверждения владельцем
+  portalApproved: { type: Boolean, default: false },
 }, { timestamps: true });
+
+// Один Telegram-аккаунт — один клиент
+clientSchema.index({ telegramId: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model('Client', clientSchema);

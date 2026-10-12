@@ -4,7 +4,7 @@
 Отправляет текст владельцу. Обрезает до 4000 символов (лимит Telegram).
 
 ## Где объявлено
-`server/src/services/telegram.js:L20-26#sendTelegram`
+`server/src/services/telegram.js:L29-31#sendTelegram`
 
 ## Вход и выход
 - Вход: `text`, `extra` (например `reply_markup`). Выход: результат `sendMessage`.

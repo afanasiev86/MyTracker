@@ -5,6 +5,7 @@ import Task from './models/Task.js';
 import { startPolling } from './bot/poller.js';
 import { handleCommand } from './bot/commands.js';
 import { handleCallback } from './bot/callbacks.js';
+import { handleGuest } from './bot/guest.js';
 import { startDigestScheduler } from './services/digestScheduler.js';
 
 const { PORT = 3001, MONGO_URL } = process.env;
@@ -29,5 +30,5 @@ createApp().listen(PORT, () => {
   console.log(`API запущен на порту ${PORT}`);
 });
 
-void startPolling(handleCommand, handleCallback);
+void startPolling(handleCommand, handleCallback, handleGuest);
 startDigestScheduler();
