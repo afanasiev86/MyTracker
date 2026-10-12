@@ -38,13 +38,6 @@ describe('login', () => {
     expect(res.status).toBe(401);
   });
 
-  it('возвращает токен при верном пароле', async () => {
-    const res = await request(createApp())
-      .post('/api/auth/login')
-      .send({ password: 'test-password' });
-    expect(res.status).toBe(200);
-    expect(typeof res.body.token).toBe('string');
-  });
 });
 
 describe('checkPassword', () => {

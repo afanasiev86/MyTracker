@@ -16,7 +16,7 @@ describeDb('API задач с базой', () => {
     process.env.JWT_SECRET = 'test-secret';
     await mongoose.connect(MONGO_URL_TEST);
     app = createApp();
-    auth = `Bearer ${issueToken('owner')}`;
+    auth = `Bearer ${await issueToken('owner')}`;
   });
 
   beforeEach(async () => {

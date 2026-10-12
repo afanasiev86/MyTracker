@@ -17,7 +17,7 @@ describeDb('вопросы, ответы и отмена', () => {
     process.env.JWT_SECRET = 'test-secret';
     await mongoose.connect(MONGO_URL_TEST);
     app = createApp();
-    auth = `Bearer ${issueToken('owner')}`;
+    auth = `Bearer ${await issueToken('owner')}`;
   });
 
   beforeEach(async () => {

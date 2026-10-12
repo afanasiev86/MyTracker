@@ -1,15 +1,15 @@
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '../services/auth.js';
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) {
     return res.status(401).json({ error: 'Нужна авторизация' });
   }
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await verifyToken(token);
     return next();
   } catch {
-    return res.status(401).json({ error: 'Токен недействителен' });
+    return res.status(401).json({ error: 'Токен недействителен. Войдите снова.' });
   }
 }

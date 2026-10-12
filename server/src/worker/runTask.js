@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import Task from '../models/Task.js';
@@ -9,8 +10,20 @@ import { git } from './git.js';
 import { isLimitError } from './limits.js';
 import { registerRun, unregisterRun, stopRun } from './processes.js';
 
-// Инструменты, которые Claude может использовать без подтверждения
-const CLAUDE_TOOLS = 'Read Edit Write Bash(git *) Bash(npm *) Bash(npx *) Bash(curl *)';
+// Скрипт для вызовов API трекера (deploy/tracker-api.sh рядом с сервером)
+const TRACKER_CLI = fileURLToPath(new URL('../../../deploy/tracker-api.sh', import.meta.url));
+
+// Инструменты, которые Claude может использовать без подтверждения.
+// Нет curl и npx: сеть доступна только через скрипт трекера и npm для нужных команд.
+function claudeTools() {
+  return [
+    'Read', 'Edit', 'Write',
+    'Bash(git *)',
+    'Bash(npm test*)', 'Bash(npm run lint*)', 'Bash(npm run build*)',
+    'Bash(npm ci*)', 'Bash(npm install*)',
+    `Bash(${TRACKER_CLI} *)`,
+  ].join(' ');
+}
 
 const ICONS = { review: '🔍', failed: '❌', ready: '⏸', waiting: '❓' };
 
@@ -91,18 +104,19 @@ export async function runTask(taskId, { answer = null } = {}) {
     const env = {
       ...process.env,
       TRACKER_API: cfg.apiUrl,
-      TRACKER_TOKEN: issueToken('worker', '2h'),
+      TRACKER_TOKEN: await issueToken('worker', '2h'),
+      TRACKER_CLI,
     };
 
     let args;
     if (answer && task.sessionId) {
-      args = ['-p', answer, '--resume', task.sessionId, '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS];
+      args = ['-p', answer, '--resume', task.sessionId, '--output-format', 'json', '--allowedTools', claudeTools()];
     } else if (answer) {
       // Сессии нет (например, она потеряна): передаём ответ вместе с задачей
       args = ['-p', `/implement-task ${task._id}\n\nОтвет владельца на ваш вопрос: ${answer}`,
-        '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS];
+        '--output-format', 'json', '--allowedTools', claudeTools()];
     } else {
-      args = ['-p', `/implement-task ${task._id}`, '--output-format', 'json', '--allowedTools', CLAUDE_TOOLS];
+      args = ['-p', `/implement-task ${task._id}`, '--output-format', 'json', '--allowedTools', claudeTools()];
     }
 
     const res = await runClaude(cfg.claudeBin, args, {
