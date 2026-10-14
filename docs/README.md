@@ -41,7 +41,7 @@
 | Адреса страниц и форм (роутинг) | раздел «Адреса интерфейса» ниже | маршруты владельца `client/src/app/OwnerView.jsx:L17-52#OwnerView`, вход и роли `client/src/App.jsx:L12-95#App`, вкладки `client/src/app/SectionTabs.jsx:L6-19#SectionTabs` |
 
 ## Адреса интерфейса
-Роутер: react-router-dom, `BrowserRouter` в `client/src/main.jsx:L3@BrowserRouter`. Каждая страница и каждая форма/карточка (панель поверх списка) имеет свой адрес. Прод-nginx отдаёт `index.html` на любой путь (`deploy/nginx.conf:L19@try_files`).
+Роутер: react-router-dom, `BrowserRouter` в `client/src/main.jsx:L3@BrowserRouter`. Каждая страница и каждая форма/карточка (панель поверх списка) имеет свой адрес. Прод-nginx отдаёт `index.html` на любой путь (`deploy/nginx.conf:L22@try_files`).
 
 | Адрес | Что открывает |
 |---|---|
