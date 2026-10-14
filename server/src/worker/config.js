@@ -6,7 +6,6 @@ export function workerConfig() {
   return {
     reposDir: w.reposDir,
     worktreesDir: w.worktreesDir,
-    base: w.defaultBranch,
     claudeBin: w.claudeBin,
     apiUrl: w.apiUrl,
     timeoutMin: w.timeoutMin,

@@ -31,7 +31,7 @@ Claude сохраняет вопрос через API: POST /question (`docs/fun
 cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и остановка процесса stopRun (`docs/functions/server/worker/stopRun.md:L13#Алгоритм`).
 
 ## Проверка и приём
-Статус «На проверке» ставит воркер, принятие: acceptTask (`docs/functions/server/runs/acceptTask.md:L13#Алгоритм`). Diff: `server/src/services/diff.js:L6-11#taskDiff`.
+Статус «На проверке» ставит воркер, принятие: acceptTask (`docs/functions/server/runs/acceptTask.md:L13#Алгоритм`). Diff: `server/src/services/diff.js:L7-12#taskDiff`.
 
 ## Стоимость
 Суммы по запускам: `client/src/lib/cost.js:L3-5#sumRunCosts`, формат: `client/src/lib/cost.js:L7-9#formatUsd`. Агрегат по всем задачам: `server/src/routes/stats.js`.

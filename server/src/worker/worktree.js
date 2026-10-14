@@ -2,11 +2,12 @@ import fs from 'node:fs/promises';
 import { git } from './git.js';
 
 // Готовит отдельную рабочую копию под задачу.
-// Если ветка уже есть в origin (продолжение после вопроса или доработка), продолжаем с неё.
-export async function prepareWorktree(cfg, repo, branch, wt) {
+// Если ветка уже есть в origin (продолжение после вопроса или доработка), продолжаем с неё,
+// иначе начинаем от основной ветки проекта base.
+export async function prepareWorktree(repo, branch, wt, base) {
   await git(repo, ['fetch', 'origin']);
   const remote = (await git(repo, ['ls-remote', '--heads', 'origin', branch])).trim();
-  const startPoint = remote ? `origin/${branch}` : `origin/${cfg.base}`;
+  const startPoint = remote ? `origin/${branch}` : `origin/${base}`;
 
   await git(repo, ['worktree', 'remove', '--force', wt]).catch(() => {});
   await fs.rm(wt, { recursive: true, force: true });
