@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Col, DatePicker, Flex, Form, Input, Row, Select, Typography } from 'antd';
+import { Alert, Button, Card, Col, DatePicker, Flex, Form, Input, Row, Select, Typography, message } from 'antd';
 import dayjs from 'dayjs';
 import { createProject, updateProject, fetchClients } from '../api.js';
 import { fieldSetter } from '../lib/fieldValue.js';
-import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, SLUG_PATTERN } from '../../../shared/crm.js';
+import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from '../../../shared/crm.js';
 import { toForm } from './project/toForm.js';
 import { buildProjectBody } from './project/buildProjectBody.js';
 import SlugField from './project/SlugField.jsx';
@@ -23,15 +23,15 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
 
   const set = fieldSetter(setForm);
 
-  const slugOk = SLUG_PATTERN.test(form.slug);
-
   async function submit() {
     setBusy(true);
     setError('');
     const body = buildProjectBody(form);
     try {
-      if (isEdit) await updateProject(project._id, body);
-      else await createProject(body);
+      const saved = isEdit ? await updateProject(project._id, body) : await createProject(body);
+      if (saved.repo?.status === 'failed') {
+        message.warning(`Проект сохранён, но репозиторий не склонирован: ${saved.repo.error}. Исправьте ссылку или доступ и сохраните проект ещё раз.`, 12);
+      }
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -52,9 +52,11 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
               <Input value={form.name} onChange={set('name')} />
             </Field>
           </Col>
-          <Col xs={24} md={12}>
-            <SlugField value={form.slug} onChange={set('slug')} isEdit={isEdit} valid={slugOk} />
-          </Col>
+          {isEdit && (
+            <Col xs={24} md={12}>
+              <SlugField value={form.slug} />
+            </Col>
+          )}
           <Col xs={24} md={12}>
             <Field label="Клиент">
               <Select
@@ -74,7 +76,10 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
             </Field>
           </Col>
           <Col xs={24} md={12}>
-            <Field label="Репозиторий (ссылка)">
+            <Field
+              label="Репозиторий (ссылка)"
+              extra="Сервер сам склонирует его в папку проекта. Для приватного: git@github.com:владелец/имя.git, нужен ключ сервера."
+            >
               <Input value={form.repoUrl} onChange={set('repoUrl')} placeholder="https://github.com/..." />
             </Field>
           </Col>
@@ -107,7 +112,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
         </Field>
 
         <Flex wrap gap={8}>
-          <Button type="primary" htmlType="submit" loading={busy} disabled={!slugOk || !form.name.trim()}>
+          <Button type="primary" htmlType="submit" loading={busy} disabled={!form.name.trim()}>
             {busy ? 'Сохраняем…' : isEdit ? 'Сохранить' : 'Создать проект'}
           </Button>
           <Button onClick={onCancel}>Отмена</Button>

@@ -51,6 +51,21 @@ describeDb('CRM: клиенты и проекты', () => {
     expect(res.body.client).toBe(client._id);
   });
 
+  it('без slug строит код из названия и делает его уникальным', async () => {
+    const first = await post('/api/projects', { name: 'Магазин цветов' });
+    expect(first.status).toBe(201);
+    expect(first.body.slug).toBe('magazin-tsvetov');
+    expect(first.body.repo).toEqual({ status: 'none' });
+    const second = await post('/api/projects', { name: 'Магазин цветов' });
+    expect(second.body.slug).toBe('magazin-tsvetov-2');
+  });
+
+  it('отклоняет ссылку на репозиторий не в формате https или git@', async () => {
+    const res = await post('/api/projects', { name: 'x', repoUrl: '--upload-pack=touch /tmp/x' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Ссылка на репозиторий/);
+  });
+
   it('отклоняет slug с недопустимыми символами', async () => {
     const res = await post('/api/projects', { slug: 'Shop API!', name: 'x' });
     expect(res.status).toBe(400);

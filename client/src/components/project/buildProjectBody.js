@@ -1,7 +1,8 @@
 // Тело запроса из значений формы: пробелы убираем, пустые поля приводим к null или значению по умолчанию
 export function buildProjectBody(form) {
   return {
-    slug: form.slug.trim().toLowerCase(),
+    // Код нового проекта строит сервер из названия
+    ...(form.slug.trim() && { slug: form.slug.trim().toLowerCase() }),
     name: form.name.trim(),
     client: form.client || null,
     description: form.description.trim(),

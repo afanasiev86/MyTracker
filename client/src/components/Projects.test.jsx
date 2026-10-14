@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Projects from './Projects.jsx';
 import ProjectRoute from './projects/ProjectRoute.jsx';
@@ -56,6 +56,29 @@ describe('Projects', () => {
     renderAt('/projects/new');
 
     expect(await screen.findByText('Новый проект', { selector: 'h4' })).toBeTruthy();
+  });
+
+  it('в форме нового проекта нет поля кода, а запрос уходит без slug', async () => {
+    vi.mocked(api.fetchClients).mockResolvedValue([]);
+    vi.mocked(api.createProject).mockResolvedValue({ _id: 'p2', slug: 'novyy', repo: { status: 'none' } });
+    renderAt('/projects/new');
+
+    await screen.findByText('Новый проект', { selector: 'h4' });
+    expect(screen.queryByLabelText('Код проекта')).toBeNull();
+    fireEvent.change(screen.getByLabelText(/Название/), { target: { value: 'Новый' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Создать проект' }));
+
+    await waitFor(() => expect(api.createProject).toHaveBeenCalled());
+    expect(vi.mocked(api.createProject).mock.calls[0][0]).not.toHaveProperty('slug');
+  });
+
+  it('у существующего проекта код показан и недоступен для правки', async () => {
+    vi.mocked(api.fetchClients).mockResolvedValue([]);
+    renderAt('/projects/p1');
+
+    const field = await screen.findByLabelText('Код проекта');
+    expect(field.value).toBe('shop-api');
+    expect(field.disabled).toBe(true);
   });
 
   it('для неизвестного id сообщает, что проект не найден', async () => {

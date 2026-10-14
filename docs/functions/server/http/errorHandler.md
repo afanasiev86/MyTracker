@@ -24,4 +24,4 @@
 
 ## Связи
 - Подключается последним в `server/src/app.js:L26-50#createApp`.
-- Подход: `docs/features/crm-and-auth.md:L9#Ошибки API`.
+- Подход: `docs/features/crm-and-auth.md:L11#Ошибки API`.
