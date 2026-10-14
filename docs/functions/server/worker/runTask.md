@@ -14,7 +14,7 @@
 1. Загружает задачу и выходит, если она уже не в работе: `server/src/worker/runTask.js:L22@if (!task || task.status !== 'in_progress') return;`.
 2. Готовит ветку и рабочую копию: `server/src/worker/runTask.js:L37@const startPoint = await prepareWorktree(repo, branch, wt, await baseBranch(task.project));`.
 3. Выдаёт токен воркеру на 2 часа и передаёт путь к скрипту API: `server/src/worker/runTask.js:L9@TRACKER_CLI`.
-4. Выбирает аргументы запуска: продолжение сессии (`--resume`), передача ответа без сессии или новый запуск `/implement-task`: `server/src/worker/launchArgs.js:L13@return ['-p', answer, '--resume'`.
+4. Выбирает аргументы запуска: продолжение сессии (`--resume`), передача ответа без сессии или новый запуск `/implement-task`: `server/src/worker/launchArgs.js:L17@'--resume', sessionId`. К каждому запуску добавляется полный путь к скрипту трекера.
 5. Пишет прогресс в базу, при этом записи идут по очереди: `server/src/worker/runTask.js:L52@let writes = Task.updateOne`.
 6. Запускает Claude через `runClaude` и ждёт его завершения: `server/src/worker/runTask.js:L57@const res = await runClaude(`.
 7. Читает итоговое событие потока и вопрос, сохранённый через API: `server/src/worker/runTask.js:L66@const data = findResult(res.stdout);`, `server/src/worker/runTask.js:L69@const fresh = await Task.findById`.
