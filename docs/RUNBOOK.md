@@ -161,7 +161,7 @@ PASSWORD='пароль_из_шага_1' ./scripts/smoke.sh
 - [ ] В main ничего не попало: `git -C /srv/repos/тестовый_проект log main --oneline -n 3`
 - [ ] Стоимость записана: `curl -s -H "Authorization: Bearer ТОКЕН" http://127.0.0.1:3001/api/stats/costs`
 - [ ] Бэкап работает: `sudo /srv/mytracker/deploy/backup-mongo.sh` (появился файл в `/srv/backups/mytracker`)
-- [ ] Вложения копируются: `sudo /srv/mytracker/deploy/backup-minio.sh` (появились файлы в `/srv/backups/mytracker/minio`)
+- [ ] Вложения копируются: `sudo /srv/mytracker/deploy/backup-uploads.sh` (появился файл `uploads-*.tar.gz` в `/srv/backups/mytracker`; если вложений ещё не было, скрипт сообщит об этом)
 - [ ] Архив читается: `sudo /srv/mytracker/deploy/restore-mongo.sh verify <файл из /srv/backups/mytracker>`. Рабочая база не трогается, в конце выводится число документов
 - [ ] Здоровье сервисов: `curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3001/api/health`. Ответ 200 — всё в норме, 503 — что-то не работает. Подробности (очередь, зависшие запуски) видны владельцу в «Настройках» → «Состояние» или в `/api/health/details` с токеном
 
@@ -169,7 +169,7 @@ PASSWORD='пароль_из_шага_1' ./scripts/smoke.sh
 1. Остановите API: `sudo systemctl stop mytracker-api`.
 2. Выберите последний архив, который проходит `verify`.
 3. Восстановите: `sudo /srv/mytracker/deploy/restore-mongo.sh restore <файл> --yes`. Команда заменяет базу `mytracker`.
-4. Вложения: скопируйте каталог `/srv/backups/mytracker/minio` обратно в бакет через `mc mirror` (см. комментарий в `backup-minio.sh`).
+4. Вложения: распакуйте последний архив в папку вложений: `sudo -u claude-worker tar -xzf /srv/backups/mytracker/uploads-<дата>.tar.gz -C /srv/mytracker/uploads`.
 5. Запустите API: `sudo systemctl start mytracker-api`, проверьте `/api/health`.
 
 ## Если что-то сломалось

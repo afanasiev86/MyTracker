@@ -1,9 +1,8 @@
-import { getObjectStream } from '../storage/objects.js';
+import { fileStream } from '../storage/files.js';
 
 // Поток файла для отдачи клиенту, или null, если вложения нет в задаче
-export async function attachmentStream(task, attachmentId) {
+export function attachmentStream(task, attachmentId) {
   const item = task.attachments.id(attachmentId);
   if (!item) return null;
-  const stream = await getObjectStream(item.provider || 'minio', item.fileName);
-  return { stream, mime: item.mime, name: item.name };
+  return { stream: fileStream(item.fileName), mime: item.mime, name: item.name };
 }

@@ -19,11 +19,9 @@ const commentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 }, { _id: false });
 
-// Метаданные вложения (сам файл лежит на диске, см. services/attachments.js)
+// Метаданные вложения (сам файл лежит в ATTACHMENTS_DIR, см. services/storage/files.js)
 const attachmentSchema = new mongoose.Schema({
   fileName: { type: String, required: true },
-  // Где лежит файл: minio или s3
-  provider: { type: String, default: 'minio' },
   name: { type: String, default: 'screenshot' },
   mime: { type: String, required: true },
   size: { type: Number, default: 0 },

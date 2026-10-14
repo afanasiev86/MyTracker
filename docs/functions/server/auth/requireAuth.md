@@ -21,5 +21,5 @@ Express-middleware: пропускает запрос только с дейст
 - Middleware асинхронный, поэтому Express 4 не перехватит его исключения сам. Все ошибки внутри уже обёрнуты в `try/catch`.
 
 ## Связи
-- Подключается в `server/src/app.js:L27-52#createApp` для всех маршрутов кроме `/api/health` и входа.
+- Подключается в `server/src/app.js:L26-50#createApp` для всех маршрутов кроме `/api/health` и входа.
 - Подход: `docs/architecture/auth-tokens.md:L14#Проверка токена`.

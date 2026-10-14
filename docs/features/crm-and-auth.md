@@ -10,4 +10,4 @@ requireAuth (`docs/functions/server/auth/requireAuth.md:L13#Алгоритм`), 
 Единый формат `{ error }`: errorHandler (`docs/functions/server/http/errorHandler.md:L13#Алгоритм`). Сборка приложения: createApp (`docs/functions/server/http/createApp.md:L13#Алгоритм`).
 
 ## Хранилище вложений
-Выбор MinIO или S3 — вкладка «Настройки». Состояние: `server/src/services/storage/providers.js:L41-43#listProviders`, смена: `server/src/services/storage/selection.js:L14-21#setActiveProvider`. Подробно о вложениях: [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).
+Файлы вложений лежат на диске сервера, выбора хранилища нет. Подробно о вложениях: [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).

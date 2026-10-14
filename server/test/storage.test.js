@@ -1,27 +1,43 @@
-import { providerStatus, PROVIDERS } from '../src/services/storage/providers.js';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { putFile, readFile, fileStream, checkWritable } from '../src/services/storage/files.js';
 
-describe('хранилища вложений', () => {
+describe('хранилище вложений на диске', () => {
   const saved = { ...process.env };
-  afterEach(() => {
+  let dir;
+
+  beforeEach(async () => {
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), 'mt-uploads-'));
+    process.env.ATTACHMENTS_DIR = dir;
+  });
+  afterEach(async () => {
     process.env = { ...saved };
+    await fs.rm(dir, { recursive: true, force: true });
   });
 
-  it('MinIO настроен, когда заданы хост и ключи', () => {
-    process.env.MINIO_ENDPOINT = 'minio.local';
-    process.env.MINIO_ACCESS_KEY = 'key';
-    process.env.MINIO_SECRET_KEY = 'secret';
-    expect(providerStatus('minio').configured).toBe(true);
+  it('записывает файл в папку задачи и читает обратно', async () => {
+    await putFile('task1/a.png', Buffer.from('data'));
+    expect((await readFile('task1/a.png')).toString()).toBe('data');
+    expect(await fs.readdir(path.join(dir, 'task1'))).toEqual(['a.png']);
   });
 
-  it('S3 не настроен без ключей и не раскрывает их в статусе', () => {
-    process.env.S3_ENDPOINT = 'https://s3.example.ru';
-    delete process.env.S3_ACCESS_KEY;
-    const status = providerStatus('s3');
-    expect(status.configured).toBe(false);
-    expect(JSON.stringify(status)).not.toContain('secret');
+  it('отдаёт файл потоком', async () => {
+    await putFile('task1/a.png', Buffer.from('data'));
+    const chunks = [];
+    for await (const chunk of fileStream('task1/a.png')) chunks.push(chunk);
+    expect(Buffer.concat(chunks).toString()).toBe('data');
   });
 
-  it('оба провайдера описаны в списке', () => {
-    expect(Object.keys(PROVIDERS)).toEqual(['minio', 's3']);
+  it('создаёт папку при проверке и подтверждает запись', async () => {
+    process.env.ATTACHMENTS_DIR = path.join(dir, 'new', 'nested');
+    await expect(checkWritable()).resolves.toBeUndefined();
+    expect((await fs.stat(process.env.ATTACHMENTS_DIR)).isDirectory()).toBe(true);
+  });
+
+  it('папка по умолчанию — uploads рядом с каталогом server', async () => {
+    delete process.env.ATTACHMENTS_DIR;
+    const { getConfig } = await import('../src/config.js');
+    expect(getConfig().attachmentsDir).toBe(path.resolve(process.cwd(), '..', 'uploads'));
   });
 });

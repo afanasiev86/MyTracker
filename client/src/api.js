@@ -7,7 +7,6 @@ export * from './api/attachments.js';
 export * from './api/projects.js';
 export * from './api/clients.js';
 export * from './api/stats.js';
-export * from './api/storage.js';
 export * from './api/telegram.js';
 export * from './api/ops.js';
 export * from './api/health.js';

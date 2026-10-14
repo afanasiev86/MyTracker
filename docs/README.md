@@ -36,9 +36,9 @@
 | Клиенты и проекты (CRM) | features/crm-and-auth.md (`docs/features/crm-and-auth.md:L3#Клиенты и проекты`) | маршруты в `server/src/routes/clients.js`, `server/src/routes/projects.js` |
 | Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L36#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
 | Здоровье сервисов и запусков | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`), раздел «Здоровье» | getChecks (`server/src/services/health/getChecks.js:L11-28#getChecks`), getDetails (`server/src/services/health/details.js:L9-36#getDetails`), блок в интерфейсе `client/src/components/Health.jsx:L10-36#Health` |
-| Бэкапы и восстановление | `docs/RUNBOOK.md:L168#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-minio.sh:L35@docker run --rm` |
+| Бэкапы и восстановление | `docs/RUNBOOK.md:L168#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-uploads.sh:L21@tar -czf` |
 | Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L31-160#TaskDetail`; доска: раздел «Доска» в `docs/features/tasks-and-runs.md` | главная кнопка Telegram: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton` |
-| Адреса страниц и форм (роутинг) | раздел «Адреса интерфейса» ниже | маршруты владельца `client/src/app/OwnerView.jsx:L18-53#OwnerView`, вход и роли `client/src/App.jsx:L12-95#App`, вкладки `client/src/app/SectionTabs.jsx:L6-19#SectionTabs` |
+| Адреса страниц и форм (роутинг) | раздел «Адреса интерфейса» ниже | маршруты владельца `client/src/app/OwnerView.jsx:L17-52#OwnerView`, вход и роли `client/src/App.jsx:L12-95#App`, вкладки `client/src/app/SectionTabs.jsx:L6-19#SectionTabs` |
 
 ## Адреса интерфейса
 Роутер: react-router-dom, `BrowserRouter` в `client/src/main.jsx:L3@BrowserRouter`. Каждая страница и каждая форма/карточка (панель поверх списка) имеет свой адрес. Прод-nginx отдаёт `index.html` на любой путь (`deploy/nginx.conf:L19@try_files`).
@@ -51,7 +51,7 @@
 | `/tasks/:id` | карточка задачи |
 | `/projects`, `/projects/new`, `/projects/:id` | список, форма создания, форма редактирования проекта |
 | `/clients`, `/clients/new`, `/clients/:id` | то же для клиентов |
-| `/settings` | здоровье сервисов и хранилище вложений |
+| `/settings` | здоровье сервисов и настройка Telegram-бота |
 | `/portal` | портал заказчика (роль client) |
 
 Форма/карточка рендерится через `<Outlet>` внутри страницы списка, поэтому фильтры доски не сбрасываются при открытии задачи. Компоненты маршрутов: `client/src/components/board/TaskRoutes.jsx:L28-38#TaskRoute`, `client/src/components/projects/ProjectRoute.jsx:L6-36#ProjectRoute`, `client/src/components/clients/ClientRoute.jsx:L6-36#ClientRoute`. Неизвестный путь ведёт на `/tasks` (владелец) или `/portal` (заказчик). Кнопка «Назад» в Telegram закрывает задачу: `client/src/components/Board.jsx:L8@useBackButton`.

@@ -7,8 +7,6 @@ const settingsSchema = new mongoose.Schema({
   tokenVersion: { type: Number, default: 1 },
   // День (по Москве), за который уже отправлен дайджест
   digestDay: { type: String, default: '' },
-  // Выбранное хранилище вложений: minio или s3 (ключ 'storage')
-  provider: { type: String, default: '' },
   // Telegram-бот, заданный в интерфейсе (ключ 'telegram'). Токен хранится зашифрованным, см. services/telegram/secretBox.js
   telegramTokenEnc: { type: String, default: '' },
   telegramOwnerId: { type: String, default: '' },

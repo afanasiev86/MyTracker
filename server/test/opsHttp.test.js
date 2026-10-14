@@ -58,7 +58,7 @@ describe('/api/ops: состояние', () => {
     expect(res.status).toBe(200);
     expect(res.body.available).toBe(true);
     expect(res.body.metrics.memory.total).toBeGreaterThan(0);
-    expect(res.body.services.map((s) => s.id)).toEqual(['mytracker-api', 'nginx', 'docker', 'mongo', 'minio']);
+    expect(res.body.services.map((s) => s.id)).toEqual(['mytracker-api', 'nginx', 'docker', 'mongo']);
     expect(res.body.services.find((s) => s.id === 'nginx')).toMatchObject({ status: 'active', actions: ['restart', 'start', 'stop'] });
   });
 });

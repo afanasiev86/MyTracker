@@ -11,7 +11,7 @@
 - Выход: список относительных путей файлов. Пустой список, если вложений нет.
 
 ## Алгоритм
-1. Читает файлы вложений из хранилища: `server/src/worker/screenshots/materializeScreenshots.js:L10@const files = await readAttachments(task);`.
+1. Читает файлы вложений с диска: `server/src/worker/screenshots/materializeScreenshots.js:L10@const files = await readAttachments(task);`.
 2. Создаёт папку и исключает её из git: `server/src/worker/screenshots/materializeScreenshots.js:L14@await excludeFromGit(wt);`.
 3. Пишет файлы с безопасными именами: `server/src/worker/screenshots/materializeScreenshots.js:L18@await fs.writeFile(path.join(wt, rel), file.buffer);`.
 

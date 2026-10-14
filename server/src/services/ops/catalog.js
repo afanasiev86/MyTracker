@@ -6,7 +6,6 @@ export const SERVICES = [
   { id: 'nginx', label: 'nginx', kind: 'systemd', unit: 'nginx', actions: ['restart', 'start', 'stop'] },
   { id: 'docker', label: 'Docker', kind: 'systemd', unit: 'docker', actions: [] },
   { id: 'mongo', label: 'MongoDB', kind: 'compose', service: 'mongo', actions: ['restart', 'start', 'stop'] },
-  { id: 'minio', label: 'MinIO', kind: 'compose', service: 'minio', actions: ['restart', 'start', 'stop'] },
 ];
 
 export const ACTION_LABELS = { restart: 'перезапущен', start: 'запущен', stop: 'остановлен' };
