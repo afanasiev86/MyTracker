@@ -108,6 +108,37 @@ describe('Projects', () => {
     await waitFor(() => expect(api.syncProjectGithub).toHaveBeenCalledWith('p1'));
   });
 
+  it('флажок «Коммитить сразу в эту ветку» по умолчанию выключен и уходит в запросе, когда включён', async () => {
+    vi.mocked(api.fetchClients).mockResolvedValue([]);
+    vi.mocked(api.createProject).mockResolvedValue({ _id: 'p3', slug: 'x', repo: { status: 'none' } });
+    renderAt('/projects/new');
+
+    await screen.findByText('Новый проект', { selector: 'h4' });
+    const checkbox = screen.getByLabelText('Коммитить сразу в эту ветку');
+    expect(checkbox.checked).toBe(false);
+    expect(screen.getByText(/отдельной ветке task\/<id>/)).toBeTruthy();
+
+    fireEvent.click(checkbox);
+    expect(screen.getByText(/прямо в «main»/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/Название/), { target: { value: 'Новый' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Создать проект' }));
+
+    await waitFor(() => expect(api.createProject).toHaveBeenCalled());
+    expect(vi.mocked(api.createProject).mock.calls[0][0]).toMatchObject({ commitToBase: true, defaultBranch: 'main' });
+  });
+
+  it('у существующего проекта с включённым режимом флажок отмечен', async () => {
+    vi.mocked(api.fetchClients).mockResolvedValue([]);
+    vi.mocked(api.fetchProjects).mockResolvedValue([
+      { _id: 'p1', slug: 'shop-api', name: 'Магазин', status: 'active', defaultBranch: 'init', commitToBase: true, stats: { tasks: 0, open: 0, costUsd: 0 } },
+    ]);
+    renderAt('/projects/p1');
+
+    await screen.findByLabelText('Код проекта');
+    expect(screen.getByLabelText('Коммитить сразу в эту ветку').checked).toBe(true);
+    expect(screen.getByText(/прямо в «init»/)).toBeTruthy();
+  });
+
   it('для неизвестного id сообщает, что проект не найден', async () => {
     renderAt('/projects/nope');
 

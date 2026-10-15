@@ -13,6 +13,7 @@ export const projectSchema = z.object({
   status: z.enum(PROJECT_STATUSES).optional(),
   repoUrl: z.string().trim().refine((v) => v === '' || isRepoUrl(v), 'Ссылка на репозиторий: https://github.com/владелец/имя или git@github.com:владелец/имя.git').optional(),
   defaultBranch: z.string().optional(),
+  commitToBase: z.boolean().optional(),
   deadline: z.string().nullable().optional(),
   price: z.object({
     amount: z.number().min(0),

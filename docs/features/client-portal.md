@@ -20,7 +20,7 @@
 
 ## Уведомления о статусе
 Когда видимая заказчику подпись статуса меняется (например, «На проверке» или «Принято»), заказчику приходит сообщение в Telegram с названием задачи и проекта. Черновики и переходы без смены подписи не отправляются.
-- Перехват смены статуса: `server/src/models/Task.js:L77@taskSchema.post('save'`; подписка `server/src/models/Task.js:L68-70#onTaskStatusChange`, подключение в `server/src/index.js:L51@onTaskStatusChange(notifyClientOfStatusChange);`.
+- Перехват смены статуса: `server/src/models/Task.js:L82@taskSchema.post('save'`; подписка `server/src/models/Task.js:L73-75#onTaskStatusChange`, подключение в `server/src/index.js:L51@onTaskStatusChange(notifyClientOfStatusChange);`.
 - Правило «сообщать или нет»: `server/src/services/notify/client.js:L15-18#shouldNotifyClient`. Текст: `server/src/services/notify/client.js:L9-11#clientStatusMessage`.
 - Получатель: только заказчик с подтверждённым доступом (`portalApproved`) и известным `telegramId`: `server/src/services/notify/client.js:L22-29#notifyClientOfStatusChange`.
 - Тесты: `server/test/clientNotify.test.js:L3@describe('уведомления заказчику`.

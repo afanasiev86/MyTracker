@@ -16,6 +16,8 @@ const projectSchema = new mongoose.Schema({
   status: { type: String, enum: PROJECT_STATUSES, default: 'active' },
   repoUrl: { type: String, default: '', trim: true },
   defaultBranch: { type: String, default: 'main', trim: true },
+  // Результат задач отправляется сразу в основную ветку (иначе в ветку задачи task/<id>)
+  commitToBase: { type: Boolean, default: false },
   deadline: { type: Date, default: null },
   price: {
     amount: { type: Number, default: 0, min: 0 },

@@ -10,7 +10,7 @@ import { TRACKER_CLI } from './claudeTools.js';
 import { launchArgs } from './launchArgs.js';
 import { runClaude } from './claudeProcess.js';
 import { prepareWorktree } from './worktree.js';
-import { baseBranch } from '../services/projects/baseBranch.js';
+import { branchSettings } from '../services/projects/baseBranch.js';
 import { resolveOutcome } from './outcome.js';
 import { notifyRunFinished } from './notifyRun.js';
 
@@ -34,7 +34,8 @@ export async function runTask(taskId, { answer = null } = {}) {
   let outcome;
 
   try {
-    const startPoint = await prepareWorktree(repo, branch, wt, await baseBranch(task.project));
+    const { base, direct } = await branchSettings(task.project);
+    const startPoint = await prepareWorktree(repo, branch, wt, base);
     // Скриншоты задачи: если не удалось скачать, запуск идёт без них
     const screenshots = await materializeScreenshots(task, wt).catch((err) => {
       console.error('Скриншоты:', err.message);
@@ -76,6 +77,8 @@ export async function runTask(taskId, { answer = null } = {}) {
       wt,
       startPoint,
       branch,
+      base,
+      direct,
       log: `${res.stdout}\n${res.stderr}`.slice(-20000),
       costUsd: data?.total_cost_usd,
     });
@@ -88,7 +91,9 @@ export async function runTask(taskId, { answer = null } = {}) {
   }
 
   task.status = outcome.status;
-  task.branch = branch;
+  // Результат в основной ветке: показываем её, а diff строим по коммитам запуска
+  task.branch = outcome.branch ?? branch;
+  task.diffRange = outcome.diffRange ?? { from: '', to: '' };
   task.progress = '';
   if (outcome.status !== 'waiting') task.pendingQuestion = '';
   task.runs.push({

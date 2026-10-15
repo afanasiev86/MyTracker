@@ -45,6 +45,11 @@ const taskSchema = new mongoose.Schema({
   order: { type: Number, default: undefined },
   tags: { type: [String], default: [] },
   branch: { type: String, default: '' },
+  // Коммиты последнего запуска, отправленные прямо в основную ветку (для diff). Пусто, если результат в ветке задачи
+  diffRange: {
+    from: { type: String, default: '' },
+    to: { type: String, default: '' },
+  },
   // Сессия Claude Code, которую продолжаем после ответа на вопрос
   sessionId: { type: String, default: '' },
   // Вопрос, который Claude задал и который ждёт ответа

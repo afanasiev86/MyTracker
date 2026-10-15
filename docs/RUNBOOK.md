@@ -151,7 +151,7 @@ PASSWORD='пароль_из_шага_1' ./scripts/smoke.sh
 
 ## 7. Проверка, что всё под контролем
 
-- [ ] В main ничего не попало: `git -C /srv/repos/тестовый_проект log main --oneline -n 3`
+- [ ] В main ничего не попало (для проекта с выключенным флажком «Коммитить сразу в эту ветку»; с включённым результат сразу в основной ветке, а ветки `task/<id>` на GitHub не остаётся): `git -C /srv/repos/тестовый_проект log main --oneline -n 3`
 - [ ] Стоимость записана: `curl -s -H "Authorization: Bearer ТОКЕН" http://127.0.0.1:3001/api/stats/costs`
 - [ ] Бэкап работает: `sudo /srv/mytracker/deploy/backup-mongo.sh` (появился файл в `/srv/backups/mytracker`)
 - [ ] Вложения копируются: `sudo /srv/mytracker/deploy/backup-uploads.sh` (появился файл `uploads-*.tar.gz` в `/srv/backups/mytracker`; если вложений ещё не было, скрипт сообщит об этом)

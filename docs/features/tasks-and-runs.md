@@ -3,7 +3,7 @@
 Для изменения этой области начинай с этого файла, затем открой ссылки.
 
 ## Задачи
-Поля и статусы: `server/src/models/Task.js:L31-61#taskSchema`. Список статусов и переходы: `shared/statuses.js:L24-32#TRANSITIONS`. Создание и правка: `server/src/routes/tasks/patchTask.js:L6-13#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L14#Алгоритм`)).
+Поля и статусы: `server/src/models/Task.js:L31-66#taskSchema`. Список статусов и переходы: `shared/statuses.js:L24-32#TRANSITIONS`. Создание и правка: `server/src/routes/tasks/patchTask.js:L6-13#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L14#Алгоритм`)).
 
 **Тип задачи** (`kind`: баг, фича, рефакторинг, без типа). Выставляется выбором шаблона или полем «Тип задачи» в форме, значения в `shared/taskKinds.js`. Claude получает тип из `GET /tasks/:id` и выбирает порядок работы по разделу «Типы задач» в `.claude/skills/implement-task/SKILL.md`. В промпт запуска тип не передаётся: аргумент команды используется для ID.
 
@@ -34,7 +34,7 @@ Claude сохраняет вопрос через API: POST /question (`docs/fun
 cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и остановка процесса stopRun (`docs/functions/server/worker/stopRun.md:L13#Алгоритм`).
 
 ## Проверка и приём
-Статус «На проверке» ставит воркер, принятие: acceptTask (`docs/functions/server/runs/acceptTask.md:L13#Алгоритм`). Diff: `server/src/services/diff.js:L7-12#taskDiff`.
+Статус «На проверке» ставит воркер, принятие: acceptTask (`docs/functions/server/runs/acceptTask.md:L13#Алгоритм`). Diff: `server/src/services/diff.js:L8-15#taskDiff`.
 
 ## Стоимость
 Суммы по запускам: `client/src/lib/cost.js:L3-5#sumRunCosts`, формат: `client/src/lib/cost.js:L7-9#formatUsd`. Агрегат по всем задачам: `server/src/routes/stats.js`.

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, AutoComplete, Button, Card, Col, DatePicker, Flex, Form, Input, Row, Select, Typography, message } from 'antd';
+import { Alert, AutoComplete, Button, Card, Checkbox, Col, DatePicker, Flex, Form, Input, Row, Select, Typography, message } from 'antd';
 import dayjs from 'dayjs';
 import { createProject, updateProject, fetchClients, fetchGithubRepos, syncProjectGithub } from '../api.js';
 import { fieldSetter } from '../lib/fieldValue.js';
@@ -132,6 +132,18 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
             <Field label="Основная ветка" extra="При выборе репозитория подтянется из GitHub">
               <Input value={form.defaultBranch} onChange={set('defaultBranch')} />
             </Field>
+            <Checkbox
+              checked={form.commitToBase}
+              onChange={(e) => setForm((f) => ({ ...f, commitToBase: e.target.checked }))}
+              style={{ marginBottom: 16 }}
+            >
+              Коммитить сразу в эту ветку
+            </Checkbox>
+            <Typography.Paragraph type="secondary" style={{ marginTop: -8, fontSize: 13 }}>
+              {form.commitToBase
+                ? `Результат задач попадает прямо в «${form.defaultBranch.trim() || 'main'}», без отдельной ветки и без Pull request. Если ветку успели изменить, коммиты Claude ложатся поверх. При конфликте задача уходит в «Ошибку», а работа сохраняется в ветке task/<id>.`
+                : 'Выключено: результат каждой задачи лежит в отдельной ветке task/<id>, в основную ветку его нужно влить самому.'}
+            </Typography.Paragraph>
           </Col>
           <Col xs={24} md={12}>
             <Field label="Срок сдачи">

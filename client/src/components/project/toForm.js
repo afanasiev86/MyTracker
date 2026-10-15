@@ -3,7 +3,7 @@ export function toForm(project) {
   if (!project) {
     return {
       slug: '', name: '', client: '', description: '', status: 'active',
-      repoUrl: '', defaultBranch: 'main', deadline: '',
+      repoUrl: '', defaultBranch: 'main', commitToBase: false, deadline: '',
       priceAmount: 0, priceCurrency: 'RUB',
     };
   }
@@ -15,6 +15,7 @@ export function toForm(project) {
     status: project.status,
     repoUrl: project.repoUrl || '',
     defaultBranch: project.defaultBranch || 'main',
+    commitToBase: Boolean(project.commitToBase),
     deadline: project.deadline ? project.deadline.slice(0, 10) : '',
     priceAmount: project.price?.amount ?? 0,
     priceCurrency: project.price?.currency || 'RUB',

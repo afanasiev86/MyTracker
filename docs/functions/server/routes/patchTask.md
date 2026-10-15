@@ -15,7 +15,7 @@
 1. Валидирует тело и нормализует поля в маршруте: `server/src/routes/tasks/patchTask.js:L8@const patch = normalize(updateSchema.parse(req.body));`.
 2. Если меняется проект, проверяет, что он существует: `server/src/services/tasks/patchTask.js:L13@await assertProjectExists(patch.project);`.
 3. Статус `in_progress` вручную не ставится, это делает только запуск: `server/src/services/tasks/patchTask.js:L18@Статус «В работе» ставится только запуском задачи`.
-4. Остальные переходы проверяются таблицей: `server/src/services/tasks/patchTask.js:L20@if (!canTransition(task.status, patch.status))`. Правила: `docs/architecture/run-pipeline.md:L29#Состояния задачи`.
+4. Остальные переходы проверяются таблицей: `server/src/services/tasks/patchTask.js:L20@if (!canTransition(task.status, patch.status))`. Правила: `docs/architecture/run-pipeline.md:L32#Состояния задачи`.
 5. Сохраняет задачу и возвращает её: `server/src/services/tasks/patchTask.js:L25@Object.assign(task, patch);`.
 
 ## Ошибки и граничные случаи
@@ -24,4 +24,4 @@
 
 ## Связи
 - Клиент: ``client/src/api/tasks.js:L6-7#updateTask``.
-- Статусы: `docs/architecture/run-pipeline.md:L29#Состояния задачи`.
+- Статусы: `docs/architecture/run-pipeline.md:L32#Состояния задачи`.

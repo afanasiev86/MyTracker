@@ -12,7 +12,7 @@
 
 ## Алгоритм
 1. Без ветки отвечает, что её ещё нет: `server/src/bot/callbacks/showDiff.js:L8@Ветка ещё не создана.`.
-2. Получает diff через `server/src/services/diff.js:L7-12#taskDiff`.
+2. Получает diff через `server/src/services/diff.js:L8-15#taskDiff`.
 3. Обрезает до `MAX_DIFF_TEXT` и добавляет пометку: `server/src/bot/callbacks/showDiff.js:L13@Показана часть diff`.
 
 ## Связи

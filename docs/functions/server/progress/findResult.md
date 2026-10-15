@@ -16,7 +16,7 @@
 3. Возвращает первое найденное событие с `type: 'result'`: `server/src/worker/progress/findResult.js:L8@if (event?.type === 'result') return event;`.
 
 ## Ошибки и граничные случаи
-- Если процесс упал до итогового события, `findResult` вернёт `null`. Тогда `runTask` ориентируется на код выхода: `server/src/worker/outcome.js:L28@if (res.code !== 0 || data?.is_error) {`.
+- Если процесс упал до итогового события, `findResult` вернёт `null`. Тогда `runTask` ориентируется на код выхода: `server/src/worker/outcome.js:L31@if (res.code !== 0 || data?.is_error) {`.
 - Поиск с конца быстрый даже на длинном выводе, потому что обычно результат в последней строке.
 
 ## Связи
