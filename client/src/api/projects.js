@@ -11,3 +11,5 @@ export const syncProjectGithub = (id) => request(`/projects/${id}/sync-github`, 
 export const fetchProjectServer = (id) => request(`/projects/${id}/server`);
 // Собрать и запустить UAT-стенд проекта (сборка идёт в фоне)
 export const startProjectStand = (id) => request(`/projects/${id}/uat`, { method: 'POST' });
+// .env UAT-стенда (только владелец)
+export const fetchStandEnv = (id) => request(`/projects/${id}/uat/env`);

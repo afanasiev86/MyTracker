@@ -3,6 +3,7 @@ import { Alert, Button, Descriptions, Flex, Tag, Typography } from 'antd';
 import { CaretRightOutlined, ReloadOutlined } from '@ant-design/icons';
 import { fetchProjectServer, startProjectStand } from '../../api.js';
 import { formatBytes } from '../../lib/bytes.js';
+import StandEnvViewer from './StandEnvViewer.jsx';
 
 const BUILD_POLL_MS = 5000;
 
@@ -111,6 +112,7 @@ export default function ProjectServerCard({ projectId }) {
       </Flex>
       {error && <Alert type="error" showIcon message={error} />}
       {items.length > 0 && <Descriptions bordered size="small" column={1} items={items} />}
+      {stand?.enabled && stand.status !== 'none' && <StandEnvViewer projectId={projectId} />}
     </section>
   );
 }

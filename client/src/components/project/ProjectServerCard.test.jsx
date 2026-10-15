@@ -4,7 +4,7 @@ import ProjectServerCard from './ProjectServerCard.jsx';
 import { formatBytes } from '../../lib/bytes.js';
 import * as api from '../../api.js';
 
-vi.mock('../../api.js', () => ({ fetchProjectServer: vi.fn(), startProjectStand: vi.fn() }));
+vi.mock('../../api.js', () => ({ fetchProjectServer: vi.fn(), startProjectStand: vi.fn(), fetchStandEnv: vi.fn() }));
 
 const copy = { configured: true, path: '/srv/repos/modules', exists: true, sizeBytes: 512 * 1024 * 1024 };
 const stand = (over = {}) => ({ enabled: true, branch: 'uat', status: 'ready', url: 'https://modules.example.com', commit: 'abc1234', error: '', runtime: { containers: 2, running: 2, memoryBytes: 700 * 1024 * 1024 }, ...over });
