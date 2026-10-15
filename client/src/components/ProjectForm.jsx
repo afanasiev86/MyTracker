@@ -116,7 +116,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
               label="Репозиторий"
               extra={github.enabled
                 ? 'Выберите из своих репозиториев GitHub или вставьте ссылку. Без ссылки репозиторий создастся автоматически.'
-                : 'Ссылка git@github.com:владелец/имя.git или https://github.com/... Для приватного нужен ключ сервера.'}
+                : 'Ссылка git@github.com:владелец/имя.git или https://github.com/... Чтобы выбирать репозитории из списка и создавать их автоматически, подключите GitHub в «Настройках».'}
             >
               <AutoComplete
                 value={form.repoUrl}

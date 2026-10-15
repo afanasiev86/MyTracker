@@ -52,13 +52,26 @@ describe('запросы к GitHub', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('шлёт токен в заголовке и не возвращает его в ошибке', async () => {
+  it('шлёт токен в заголовке Authorization', async () => {
+    process.env.GITHUB_TOKEN = 'secret-token';
+    const fetchSpy = mockFetch(() => ({ body: { login: 'me' } }));
+    await githubRequest('GET', '/user');
+    expect(fetchSpy.mock.calls[0][1].headers.Authorization).toBe('Bearer secret-token');
+  });
+
+  it('401 означает «токен не принят» и не раскрывает токен', async () => {
     process.env.GITHUB_TOKEN = 'secret-token';
     mockFetch(() => ({ status: 401, body: { message: 'Bad credentials' } }));
-    const err = await githubRequest('GET', '/user/repos').catch((e) => e);
-    expect(err.code).toBe('unavailable');
-    expect(err.message).toBe('GitHub: Bad credentials');
+    const err = await githubRequest('GET', '/user').catch((e) => e);
+    expect(err.code).toBe('invalid');
+    expect(err.message).toMatch(/GitHub не принял токен/);
     expect(err.message).not.toContain('secret-token');
+  });
+
+  it('прочие ошибки GitHub — «недоступен», с его сообщением', async () => {
+    process.env.GITHUB_TOKEN = 't';
+    mockFetch(() => ({ status: 502, body: { message: 'Bad Gateway' } }));
+    await expect(githubRequest('GET', '/user')).rejects.toMatchObject({ code: 'unavailable', message: 'GitHub: Bad Gateway' });
   });
 
   it('404 превращает в not_found, 422 в conflict', async () => {

@@ -5,6 +5,7 @@ import { onTaskStatusChange } from './models/Task.js';
 import { notifyClientOfStatusChange } from './services/notify/client.js';
 import { registerBotHandlers, restartBot } from './bot/poller/botRunner.js';
 import { loadTelegramSettings } from './services/telegram/runtime.js';
+import { loadGithubSettings } from './services/github/index.js';
 import { telegramEnabled } from './services/telegram/api.js';
 import { startOpsMonitor } from './services/ops/monitor.js';
 import { reportPendingNotice } from './services/ops/notice.js';
@@ -27,6 +28,7 @@ try {
 
 await mongoose.connect(cfg.mongoUrl);
 await loadTelegramSettings();
+await loadGithubSettings();
 // Предупреждение про Telegram не нужно, если бот задан в настройках интерфейса
 for (const warning of warnings) {
   if (!(warning.startsWith('TELEGRAM_BOT_TOKEN') && telegramEnabled())) console.warn(`Предупреждение: ${warning}`);

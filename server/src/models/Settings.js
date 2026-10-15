@@ -12,6 +12,9 @@ const settingsSchema = new mongoose.Schema({
   telegramOwnerId: { type: String, default: '' },
   telegramMiniAppUrl: { type: String, default: '' },
   telegramBotUsername: { type: String, default: '' },
+  // GitHub, заданный в интерфейсе (ключ 'github'). Токен зашифрован так же, как токен бота
+  githubTokenEnc: { type: String, default: '' },
+  githubLogin: { type: String, default: '' },
 });
 
 export default mongoose.model('Settings', settingsSchema);

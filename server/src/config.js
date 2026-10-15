@@ -44,7 +44,7 @@ export function readConfig(env = process.env) {
       // Папка установки трекера на сервере: из неё работают docker compose, деплой и служебные файлы .ops/
       appDir: raw.OPS_APP_DIR || path.resolve(process.cwd(), '..'),
     },
-    // Токен GitHub для синхронизации проектов. Без него синхронизация отключена
+    // Токен GitHub из окружения. Токен из настроек интерфейса важнее, см. services/github/settings.js
     github: { token: raw.GITHUB_TOKEN },
     worker: {
       reposDir: raw.REPOS_DIR,
