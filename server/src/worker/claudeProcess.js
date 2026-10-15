@@ -12,7 +12,7 @@ const PROGRESS_THROTTLE_MS = 3000;
 // Запускает claude и собирает вывод. Прогресс передаётся через onProgress (с троттлингом).
 export function runClaude(bin, args, { cwd, env, taskId, timeoutMs, onProgress }) {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, args, { cwd, env });
+    const child = spawn(bin, args, { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });
     registerRun(taskId, child);
     const timer = setTimeout(() => stopRun(taskId, 'timeout'), timeoutMs);
 

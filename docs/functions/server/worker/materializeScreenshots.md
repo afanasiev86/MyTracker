@@ -16,7 +16,7 @@
 3. Пишет файлы с безопасными именами: `server/src/worker/screenshots/materializeScreenshots.js:L18@await fs.writeFile(path.join(wt, rel), file.buffer);`.
 
 ## Ошибки и граничные случаи
-- Сбой скачивания не останавливает запуск: `server/src/worker/runTask.js:L42@Скриншоты:`. Claude работает без картинок, а в логе видна причина.
+- Сбой скачивания не останавливает запуск: `server/src/worker/runTask.js:L44@Скриншоты:`. Claude работает без картинок, а в логе видна причина.
 - Не больше 10 файлов на запуск: `server/src/services/attachments/config.js:L10-10#MAX_SCREENSHOTS_PER_RUN`.
 - Исключение папки делается в общем каталоге git (`info/exclude`), поэтому видно во всех рабочих копиях. Это безопасно: папка только для скриншотов.
 

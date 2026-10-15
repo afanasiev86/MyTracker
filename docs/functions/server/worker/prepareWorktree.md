@@ -13,7 +13,7 @@
 ## Алгоритм
 1. Обновляет данные из origin: `server/src/worker/worktree.js:L17@await git(repo, ['fetch', 'origin']);`.
 2. Выбирает точку старта: если ветка уже есть в origin (продолжение после вопроса или доработки), продолжаем с неё: `server/src/worker/worktree.js:L19@const startPoint = remote ?`.
-3. Удаляет старую копию принудительно, включая файлы на диске и запись в git: `server/src/worker/runTask.js:L111@await git(repo, ['worktree', 'remove', '--force', wt])`.
+3. Удаляет старую копию принудительно, включая файлы на диске и запись в git: `server/src/worker/runTask.js:L113@await git(repo, ['worktree', 'remove', '--force', wt])`.
 4. Создаёт копию с веткой `-B`, то есть пересоздаёт ветку, если она уже была локально: `server/src/worker/worktree.js:L24@await git(repo, ['worktree', 'add', '-B', branch, wt, startPoint]);`.
 
 ## Ошибки и граничные случаи

@@ -57,6 +57,7 @@ if (mode === 'limit') {
   out({ type: 'result', subtype: 'success', is_error: true, result: 'Claude AI usage limit reached|1760000000' });
   process.exit(1);
 }
+if (process.env.FAKE_SEEN_FILE) fs.writeFileSync(process.env.FAKE_SEEN_FILE, String(fs.existsSync('.claude/skills/implement-task/SKILL.md')));
 fs.writeFileSync('logo.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
 execFileSync('git', ['add', 'logo.svg']);
 execFileSync('git', ['commit', '-q', '-m', 'task: add logo'], { stdio: 'inherit' });
@@ -133,6 +134,30 @@ describe('запуск задачи от кнопки до коммита на G
 
     expect(task.status).not.toBe('ready');
     expect(task.runs.at(-1).summary).not.toMatch(/Достигнут лимит Claude/);
+  });
+
+  it('инструкция /implement-task есть в рабочей копии проекта, но в коммит не попадает', async () => {
+    const task = await setup();
+    const seen = path.join(root, 'seen.txt');
+    process.env.FAKE_SEEN_FILE = seen;
+    await runTask(task._id);
+
+    expect(await fs.readFile(seen, 'utf8')).toBe('true');
+    expect(task.status).toBe('review');
+    expect(git(originDir, 'ls-tree', '-r', '--name-only', `task/${task._id}`)).not.toContain('.claude');
+  });
+
+  it('своя инструкция проекта не заменяется', async () => {
+    const task = await setup();
+    const seed = path.join(root, 'seed');
+    await fs.mkdir(path.join(seed, '.claude/skills/implement-task'), { recursive: true });
+    await fs.writeFile(path.join(seed, '.claude/skills/implement-task/SKILL.md'), 'своя');
+    git(seed, 'add', '.');
+    git(seed, '-c', 'user.name=s', '-c', 'user.email=s@e.st', 'commit', '-q', '-m', 'skill');
+    git(seed, 'push', '-q', 'origin', 'HEAD:init');
+    await runTask(task._id);
+
+    expect(git(originDir, 'show', `task/${task._id}:.claude/skills/implement-task/SKILL.md`)).toBe('своя');
   });
 
   it('режим «в основную ветку»: коммит дошёл до основной ветки', async () => {

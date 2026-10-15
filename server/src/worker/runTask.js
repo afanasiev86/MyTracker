@@ -10,6 +10,7 @@ import { TRACKER_CLI } from './claudeTools.js';
 import { launchArgs } from './launchArgs.js';
 import { runClaude } from './claudeProcess.js';
 import { prepareWorktree } from './worktree.js';
+import { installSkill } from './installSkill.js';
 import { branchSettings } from '../services/projects/baseBranch.js';
 import { resolveOutcome } from './outcome.js';
 import { notifyRunFinished } from './notifyRun.js';
@@ -37,6 +38,7 @@ export async function runTask(taskId, { answer = null } = {}) {
   try {
     const { base, direct } = await branchSettings(task.project);
     const startPoint = await prepareWorktree(repo, branch, wt, base);
+    await installSkill(wt);
     // Скриншоты задачи: если не удалось скачать, запуск идёт без них
     const screenshots = await materializeScreenshots(task, wt).catch((err) => {
       console.error('Скриншоты:', err.message);

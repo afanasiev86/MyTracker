@@ -11,7 +11,7 @@
 - Выход: `Promise<{ code, stdout, stderr, reason }>`. `reason` — `'cancelled'`, `'timeout'` или `null`.
 
 ## Алгоритм
-1. Запускает процесс и регистрирует его для отмены: `server/src/worker/claudeProcess.js:L15@const child = spawn(bin, args, { cwd, env });`, `server/src/worker/claudeProcess.js:L16@registerRun(taskId, child);`.
+1. Запускает процесс (stdin закрыт, иначе claude ждёт ввод) и регистрирует его для отмены: `server/src/worker/claudeProcess.js:L15@const child = spawn(bin, args, { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });`, `server/src/worker/claudeProcess.js:L16@registerRun(taskId, child);`.
 2. Ставит таймер таймаута: `server/src/worker/claudeProcess.js:L17@const timer = setTimeout(() => stopRun(taskId, 'timeout'), timeoutMs);`.
 3. На каждый кусок stdout накапливает строки через `LineSplitter` и разбирает их: `server/src/worker/claudeProcess.js:L41@handleLines(splitter.push(String(d)));`.
 4. Отправляет прогресс не чаще раза в 3 секунды, а последнее сообщение доотправляет при завершении: `server/src/worker/claudeProcess.js:L31@if (now - lastSent >= PROGRESS_THROTTLE_MS)`.

@@ -35,3 +35,5 @@
 
 ## Состояния задачи
 Таблица статусов и переходов: `shared/statuses.js:L24-32#TRANSITIONS`. Ручные переходы проверяет `server/src/routes/tasks/patchTask.js:L6-13#patchTask` (подробно (`docs/functions/server/routes/patchTask.md:L14#Алгоритм`)).
+
+Инструкция запуска `/implement-task` лежит в репозитории трекера (`.claude/skills/implement-task`), а задача идёт в репозитории проекта. Поэтому перед запуском Claude воркер копирует её в рабочую копию (`server/src/worker/installSkill.js`), если у проекта своей нет, и исключает из git: в коммит она не попадает. Без неё Claude не находил команду, работал без плана и не делал коммит. Процесс claude запускается с закрытым stdin.
