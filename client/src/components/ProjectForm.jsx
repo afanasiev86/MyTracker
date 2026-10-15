@@ -8,6 +8,7 @@ import { toForm } from './project/toForm.js';
 import { buildProjectBody } from './project/buildProjectBody.js';
 import SlugField from './project/SlugField.jsx';
 import PriceField from './project/PriceField.jsx';
+import ProjectServerCard from './project/ProjectServerCard.jsx';
 import Field from './Field.jsx';
 
 // Сообщение о результате синхронизации с GitHub (поле github в ответе сервера)
@@ -185,6 +186,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
         </Flex>
         {error && <Alert type="error" showIcon message={error} style={{ marginTop: 16 }} />}
       </Form>
+      {isEdit && <ProjectServerCard projectId={project._id} />}
     </Card>
   );
 }

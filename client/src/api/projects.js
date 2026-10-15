@@ -7,3 +7,5 @@ export const updateProject = (id, patch) =>
 export const deleteProject = (id) => request(`/projects/${id}`, { method: 'DELETE' });
 // Подтянуть из GitHub основную ветку и описание, отправить описание и статус
 export const syncProjectGithub = (id) => request(`/projects/${id}/sync-github`, { method: 'POST' });
+// Локальная копия проекта на сервере и состояние UAT-стенда
+export const fetchProjectServer = (id) => request(`/projects/${id}/server`);
