@@ -21,7 +21,12 @@ export async function resolveOutcome({ res, data, question, cfg, wt, startPoint,
       log,
     };
   }
-  if (isLimitError(res.stdout) || isLimitError(res.stderr)) {
+  // Лимит подписки: Claude Code завершается с ошибкой и пишет об этом в итоговом событии или в stderr.
+  // Целиком вывод не проверяем: успешный запуск, где Claude читал код со словами «rate limit», принимался бы за лимит
+  // и терял сделанные коммиты.
+  const runFailed = res.code !== 0 || Boolean(data?.is_error);
+  const errorText = [data?.is_error ? data.result : '', data ? '' : res.stdout.slice(-2000), res.stderr.slice(-2000)].join('\n');
+  if (runFailed && isLimitError(errorText)) {
     return {
       status: 'ready',
       summary: 'Достигнут лимит Claude. Задача возвращена в «Готово к работе», запустите её позже.',

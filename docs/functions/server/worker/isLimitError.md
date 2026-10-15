@@ -4,17 +4,17 @@
 Определяет по тексту вывода, что Claude упёрся в лимит подписки. В этом случае задача возвращается в «Готово к работе», а не помечается ошибкой.
 
 ## Где объявлено
-`server/src/worker/limits.js:L10-13#isLimitError`
+`server/src/worker/limits.js:L13-16#isLimitError`
 
 ## Вход и выход
 - Вход: `text` — stdout или stderr процесса.
 - Выход: `true`, если найден признак лимита.
 
 ## Алгоритм
-1. Пустой текст не содержит лимита: `server/src/worker/limits.js:L11@if (!text) return false;`.
-2. Проверяет список регулярных выражений: `server/src/worker/limits.js:L12@LIMIT_PATTERNS.some`.
+1. Пустой текст не содержит лимита: `server/src/worker/limits.js:L14@if (!text) return false;`.
+2. Проверяет список регулярных выражений: `server/src/worker/limits.js:L15@LIMIT_PATTERNS.some`.
 
-Признаки: `usage limit`, `rate limit`, `limit reached`, `лимит` (`server/src/worker/limits.js:L3@LIMIT_PATTERNS`).
+Признаки: `usage limit`, `rate limit`, `limit reached`, `лимит` (`server/src/worker/limits.js:L6@LIMIT_PATTERNS`).
 
 ## Ошибки и граничные случаи
 - Ложное срабатывание возможно: если Claude напишет в ответе слово «лимит» по другому поводу, задача вернётся в «Готово к работе» вместо проверки. Поэтому проверка идёт только после таймаута и отмены и до проверки кода выхода. Порядок важен, см. `docs/architecture/run-pipeline.md:L12#Исходы запуска`.
