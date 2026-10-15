@@ -4,8 +4,8 @@ import { githubEnabled, createRepo, getRepo, updateRepo, githubFullName } from '
 // Связь CRM и GitHub. Кто чем владеет:
 // - CRM → GitHub: при создании проекта без ссылки создаётся приватный репозиторий с кодом проекта
 //   (в проект записывается https-ссылка: клонирование и push идут с токеном из «Настроек»);
-//   описание и архивация (статус «Завершён») отправляются при каждом сохранении.
-// - GitHub → CRM: основная ветка и описание (если в CRM пусто) подтягиваются при смене ссылки
+//   архивация (статус «Завершён») отправляется при каждом сохранении.
+// - GitHub → CRM: основная ветка подтягивается при смене ссылки
 //   и по кнопке синхронизации.
 // Удаление проекта в CRM репозиторий на GitHub не трогает.
 // Ошибки GitHub не отменяют сохранение проекта: они возвращаются в поле github.
@@ -21,7 +21,7 @@ export async function syncWithGithub(project, { created = false, pull = false } 
   let current = project;
   try {
     if (created && !project.repoUrl) {
-      const repo = await gh.createRepo({ name: project.slug, description: project.description });
+      const repo = await gh.createRepo({ name: project.slug });
       current = await deps.save(project._id, { repoUrl: repo.httpsUrl, defaultBranch: repo.defaultBranch });
       return { project: current, github: { status: 'created', fullName: repo.fullName } };
     }
@@ -30,11 +30,9 @@ export async function syncWithGithub(project, { created = false, pull = false } 
 
     if (pull) {
       const repo = await gh.getRepo(fullName);
-      const patch = { defaultBranch: repo.defaultBranch };
-      if (!project.description && repo.description) patch.description = repo.description;
-      current = await deps.save(project._id, patch);
+      current = await deps.save(project._id, { defaultBranch: repo.defaultBranch });
     }
-    await gh.updateRepo(fullName, { description: current.description, archived: current.status === 'done' });
+    await gh.updateRepo(fullName, { archived: current.status === 'done' });
     return { project: current, github: { status: 'synced', fullName } };
   } catch (err) {
     return { project: current, github: { status: 'failed', error: err.message } };

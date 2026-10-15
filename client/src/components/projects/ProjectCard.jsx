@@ -4,7 +4,7 @@ import { formatUsd } from '../../lib/cost.js';
 
 const STATUS_COLORS = { active: 'green', paused: 'gold', done: 'default' };
 
-// Карточка проекта: название, статус, клиент, срок и затраты
+// Карточка проекта: название, статус, клиент и затраты
 export default function ProjectCard({ project, onOpen }) {
   const p = project;
   return (
@@ -23,8 +23,6 @@ export default function ProjectCard({ project, onOpen }) {
       </Flex>
       <Typography.Text type="secondary" style={{ display: 'block' }}>
         {p.client && `Клиент ${p.client.name}`}
-        {p.client && p.deadline && ' · '}
-        {p.deadline && `срок ${new Date(p.deadline).toLocaleDateString('ru-RU')}`}
       </Typography.Text>
       <Typography.Text type="secondary" style={{ display: 'block' }}>
         Задач: {p.stats.tasks}, открыто {p.stats.open} · затраты на Claude {formatUsd(p.stats.costUsd)}

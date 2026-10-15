@@ -9,7 +9,6 @@ export function toRepoInfo(r) {
   return {
     fullName: r.full_name,
     name: r.name,
-    description: r.description ?? '',
     private: Boolean(r.private),
     archived: Boolean(r.archived),
     defaultBranch: r.default_branch || 'main',
@@ -43,18 +42,17 @@ export async function getRepo(fullName) {
 }
 
 // Приватный репозиторий с веткой main (auto_init), иначе задачи не смогут создать рабочую ветку
-export async function createRepo({ name, description }) {
+export async function createRepo({ name }) {
   const repo = await githubRequest('POST', '/user/repos', {
     name,
-    description: description || undefined,
     private: true,
     auto_init: true,
   });
   return toRepoInfo(repo);
 }
 
-// Меняем только то, что CRM задаёт: описание и архивацию
-export async function updateRepo(fullName, { description, archived }) {
-  const repo = await githubRequest('PATCH', `/repos/${fullName}`, { description, archived });
+// Меняем только то, что CRM задаёт: архивацию
+export async function updateRepo(fullName, { archived }) {
+  const repo = await githubRequest('PATCH', `/repos/${fullName}`, { archived });
   return toRepoInfo(repo);
 }

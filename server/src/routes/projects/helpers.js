@@ -1,7 +1,6 @@
-// Дата из JSON приходит строкой: переводим в Date, пустую дату — в null
+// Пустой клиент из формы — это «без клиента» (null)
 export function normalize(data) {
   const out = { ...data };
-  if (out.deadline !== undefined) out.deadline = out.deadline ? new Date(out.deadline) : null;
   if (out.client === '') out.client = null;
   return out;
 }

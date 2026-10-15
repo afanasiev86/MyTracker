@@ -5,13 +5,10 @@ export function buildProjectBody(form) {
     ...(form.slug.trim() && { slug: form.slug.trim().toLowerCase() }),
     name: form.name.trim(),
     client: form.client || null,
-    description: form.description.trim(),
     status: form.status,
     repoUrl: form.repoUrl.trim(),
     defaultBranch: form.defaultBranch.trim() || 'main',
     commitToBase: Boolean(form.commitToBase),
     uatBranch: form.uatBranch.trim() || 'uat',
-    deadline: form.deadline || null,
-    price: { amount: Number(form.priceAmount) || 0, currency: form.priceCurrency },
   };
 }

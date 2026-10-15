@@ -36,9 +36,9 @@ describe('ссылка на репозиторий GitHub', () => {
 
 describe('поля репозитория', () => {
   it('берёт только нужное и подставляет значения по умолчанию', () => {
-    const info = toRepoInfo({ full_name: 'o/r', name: 'r', description: null, private: true, archived: false, default_branch: 'dev', pushed_at: '2026-10-01T00:00:00Z', clone_url: 'https://github.com/o/r.git', ssh_url: 'git@github.com:o/r.git', owner: { id: 1 } });
+    const info = toRepoInfo({ full_name: 'o/r', name: 'r', private: true, archived: false, default_branch: 'dev', pushed_at: '2026-10-01T00:00:00Z', clone_url: 'https://github.com/o/r.git', ssh_url: 'git@github.com:o/r.git', owner: { id: 1 } });
     expect(info).toEqual({
-      fullName: 'o/r', name: 'r', description: '', private: true, archived: false,
+      fullName: 'o/r', name: 'r', private: true, archived: false,
       defaultBranch: 'dev', pushedAt: '2026-10-01T00:00:00Z', httpsUrl: 'https://github.com/o/r.git', sshUrl: 'git@github.com:o/r.git',
     });
   });
@@ -93,10 +93,10 @@ describe('запросы к GitHub', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('создаёт приватный репозиторий с веткой main и без пустого описания', async () => {
+  it('создаёт приватный репозиторий с веткой main', async () => {
     process.env.GITHUB_TOKEN = 't';
     const fetchSpy = mockFetch(() => ({ body: { full_name: 'o/shop', name: 'shop', ssh_url: 'git@github.com:o/shop.git', default_branch: 'main' } }));
-    const repo = await createRepo({ name: 'shop', description: '' });
+    const repo = await createRepo({ name: 'shop' });
     const sent = JSON.parse(fetchSpy.mock.calls[0][1].body);
     expect(sent).toEqual({ name: 'shop', private: true, auto_init: true });
     expect(repo.sshUrl).toBe('git@github.com:o/shop.git');
@@ -104,7 +104,7 @@ describe('запросы к GitHub', () => {
 });
 
 describe('синхронизация проекта с GitHub', () => {
-  const base = { _id: 'id1', slug: 'shop', description: '', status: 'active', repoUrl: '' };
+  const base = { _id: 'id1', slug: 'shop', status: 'active', repoUrl: '' };
 
   function fakeDeps({ enabled = true, stored = base, ...overrides } = {}) {
     const calls = { save: [], updateRepo: [] };
@@ -115,7 +115,7 @@ describe('синхронизация проекта с GitHub', () => {
         enabled: () => enabled,
         fullName: githubFullName,
         createRepo: jest.fn(async () => ({ fullName: 'o/shop', httpsUrl: 'https://github.com/o/shop.git', sshUrl: 'git@github.com:o/shop.git', defaultBranch: 'main' })),
-        getRepo: jest.fn(async () => ({ fullName: 'o/x', description: 'из GitHub', defaultBranch: 'develop' })),
+        getRepo: jest.fn(async () => ({ fullName: 'o/x', defaultBranch: 'develop' })),
         updateRepo: jest.fn(async (full, patch) => { calls.updateRepo.push([full, patch]); return {}; }),
         ...overrides,
       },
@@ -133,25 +133,17 @@ describe('синхронизация проекта с GitHub', () => {
   it('новый проект без ссылки получает приватный репозиторий и ссылку на него', async () => {
     const { deps } = fakeDeps();
     const res = await syncWithGithub(base, { created: true }, deps);
-    expect(deps.github.createRepo).toHaveBeenCalledWith({ name: 'shop', description: '' });
+    expect(deps.github.createRepo).toHaveBeenCalledWith({ name: 'shop' });
     expect(res.project.repoUrl).toBe('https://github.com/o/shop.git');
     expect(res.github).toEqual({ status: 'created', fullName: 'o/shop' });
   });
 
-  it('при смене ссылки подтягивает основную ветку и пустое описание из GitHub', async () => {
+  it('при смене ссылки подтягивает основную ветку из GitHub', async () => {
     const { deps } = fakeDeps();
     const project = { ...base, repoUrl: 'git@github.com:o/x.git' };
     const res = await syncWithGithub(project, { pull: true }, deps);
     expect(res.project.defaultBranch).toBe('develop');
-    expect(res.project.description).toBe('из GitHub');
-  });
-
-  it('непустое описание в CRM не перезаписывается описанием из GitHub', async () => {
-    const project = { ...base, repoUrl: 'git@github.com:o/x.git', description: 'Своё' };
-    const { deps } = fakeDeps({ stored: project });
-    const res = await syncWithGithub(project, { pull: true }, deps);
-    expect(res.project.description).toBe('Своё');
-    expect(deps.github.updateRepo).toHaveBeenCalledWith('o/x', { description: 'Своё', archived: false });
+    expect(deps.github.updateRepo).toHaveBeenCalledWith('o/x', { archived: false });
   });
 
   it('статус «Завершён» архивирует репозиторий, другой статус снимает архивацию', async () => {

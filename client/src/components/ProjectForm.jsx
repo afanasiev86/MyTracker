@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Alert, AutoComplete, Button, Card, Checkbox, Col, DatePicker, Flex, Form, Input, Row, Select, Typography, message } from 'antd';
-import dayjs from 'dayjs';
+import { Alert, AutoComplete, Button, Card, Checkbox, Col, Flex, Form, Input, Row, Select, Typography, message } from 'antd';
 import { createProject, updateProject, fetchClients, fetchGithubRepos, syncProjectGithub } from '../api.js';
 import { fieldSetter } from '../lib/fieldValue.js';
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from '../../../shared/crm.js';
 import { toForm } from './project/toForm.js';
 import { buildProjectBody } from './project/buildProjectBody.js';
 import SlugField from './project/SlugField.jsx';
-import PriceField from './project/PriceField.jsx';
 import ProjectServerCard from './project/ProjectServerCard.jsx';
 import Field from './Field.jsx';
 
@@ -151,28 +149,7 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
               </Field>
             )}
           </Col>
-          <Col xs={24} md={12}>
-            <Field label="Срок сдачи">
-              <DatePicker
-                value={form.deadline ? dayjs(form.deadline) : null}
-                onChange={(date) => set('deadline')(date ? date.format('YYYY-MM-DD') : '')}
-                style={{ width: '100%' }}
-              />
-            </Field>
-          </Col>
-          <Col xs={24} md={12}>
-            <PriceField
-              amount={form.priceAmount}
-              currency={form.priceCurrency}
-              onAmount={set('priceAmount')}
-              onCurrency={set('priceCurrency')}
-            />
-          </Col>
         </Row>
-
-        <Field label="Описание" extra="Отправляется в описание репозитория на GitHub">
-          <Input.TextArea value={form.description} onChange={set('description')} rows={3} />
-        </Field>
 
         <Flex wrap gap={8}>
           <Button type="primary" htmlType="submit" loading={busy} disabled={!form.name.trim()}>

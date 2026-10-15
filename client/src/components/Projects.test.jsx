@@ -29,7 +29,6 @@ describe('Projects', () => {
         name: 'Магазин',
         status: 'paused',
         client: { _id: 'c1', name: 'Иван' },
-        deadline: null,
         stats: { tasks: 3, open: 2, costUsd: 0.4 },
       },
     ]);
