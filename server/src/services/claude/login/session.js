@@ -13,6 +13,7 @@ import { findLoginError, findLoginUrl, findToken } from './terminal.js';
 const LOGIN_TTL_MS = 10 * 60 * 1000;
 const URL_WAIT_MS = 30 * 1000;
 const TOKEN_WAIT_MS = 60 * 1000;
+const ENTER_DELAY_MS = 300;
 // Широкий терминал: ссылка и токен не переносятся по строкам
 const SHELL = 'stty cols 500 rows 50 2>/dev/null; exec "$MT_CLAUDE_BIN" setup-token';
 
@@ -100,7 +101,10 @@ export async function finishLogin(code) {
   const mask = (s) => JSON.stringify(String(s).replace(/sk-ant-oat\d*-[A-Za-z0-9_-]+/g, 'sk-ant-oat-***').split(code).join('<code>'));
   console.warn(`[login-diag] before code: len=${code.length} buf=${mask(login.buf)}`);
   login.buf = '';
-  login.child.stdin.write(`${code}\r`);
+  login.child.stdin.write(code);
+  // Код и Enter одним куском терминал принимает за вставку, и Enter не срабатывает как отправка
+  await new Promise((resolve) => setTimeout(resolve, ENTER_DELAY_MS));
+  login.child.stdin.write('\r');
 
   const result = await waitFor(login, (buf) => findToken(buf) || (findLoginError(buf) && 'error'), loginOptions.tokenWaitMs);
   console.warn(`[login-diag] result=${Object.keys(result)} exit=${login.child.exitCode} signal=${login.child.signalCode} buf=${mask(login.buf)}`);
