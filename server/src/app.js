@@ -8,6 +8,7 @@ import telegramRoutes from './routes/telegram.js';
 import opsRoutes from './routes/ops.js';
 import projectRoutes from './routes/projects.js';
 import githubRoutes from './routes/github.js';
+import claudeRoutes from './routes/claude.js';
 import { requireAuth } from './middleware/auth.js';
 import { requireOwner, requireClient } from './middleware/roles.js';
 import portalRoutes from './routes/portal.js';
@@ -39,6 +40,7 @@ export function createApp() {
   app.use('/api/projects', requireAuth, requireOwner, projectRoutes);
   app.use('/api/clients', requireAuth, requireOwner, clientRoutes);
   app.use('/api/github', requireAuth, requireOwner, githubRoutes);
+  app.use('/api/claude', requireAuth, requireOwner, claudeRoutes);
   app.use('/api/stats', requireAuth, requireOwner, statsRoutes);
   app.use('/api/telegram', requireAuth, requireOwner, telegramRoutes);
   app.use('/api/ops', requireAuth, requireOwner, opsRoutes);

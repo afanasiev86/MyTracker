@@ -20,12 +20,13 @@
 
 | Задача | Файл с обзором | Ключевые функции |
 |---|---|---|
-| Статусы, создание, правка задач | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L5#Задачи`) | PATCH /:id (`docs/functions/server/routes/patchTask.md:L3#Назначение`), статусы (`docs/architecture/run-pipeline.md:L36#Состояния задачи`) |
+| Статусы, создание, правка задач | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L5#Задачи`) | PATCH /:id (`docs/functions/server/routes/patchTask.md:L3#Назначение`), статусы (`docs/architecture/run-pipeline.md:L48#Состояния задачи`) |
 | Запуск Claude, очередь, исходы | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`) | startTask (`docs/functions/server/runs/startTask.md:L3#Назначение`), runTask (`docs/functions/server/worker/runTask.md:L3#Назначение`) |
 | Вопросы от Claude и ответы | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L27#Вопросы от Claude`) | postQuestion (`docs/functions/server/routes/postQuestion.md:L3#Назначение`), answerTask (`docs/functions/server/runs/answerTask.md:L3#Назначение`) |
-| Отмена и таймаут | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L30#Отмена и таймаут`) | cancelTask (`docs/functions/server/runs/cancelTask.md:L3#Назначение`), stopRun (`docs/functions/server/worker/stopRun.md:L3#Назначение`) |
+| Отмена и таймаут | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L42#Отмена и таймаут`) | cancelTask (`docs/functions/server/runs/cancelTask.md:L3#Назначение`), stopRun (`docs/functions/server/worker/stopRun.md:L3#Назначение`) |
 | Прогресс в карточке | architecture/stream-progress.md (`docs/architecture/stream-progress.md:L5#Разбор событий`) | progressFromEvent (`docs/functions/server/progress/progressFromEvent.md:L3#Назначение`), runClaude (`docs/functions/server/worker/runClaude.md:L3#Назначение`) |
 | Ограничение инструментов Claude | architecture/tool-restriction.md (`docs/architecture/tool-restriction.md:L5#Список инструментов`) | claudeTools (`docs/functions/server/worker/claudeTools.md:L3#Назначение`) |
+| Переключение аккаунта Claude (при лимите) | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L27#Аккаунт Claude`) | claudeEnv (`server/src/worker/env.js:L37-44#claudeEnv`), карточка `client/src/components/ClaudeSettings.jsx` |
 | Вход, токены, отзыв | architecture/auth-tokens.md (`docs/architecture/auth-tokens.md:L5#Вход по паролю`) | verifyToken (`docs/functions/server/auth/verifyToken.md:L3#Назначение`), revokeAllTokens (`docs/functions/server/auth/revokeAllTokens.md:L3#Назначение`) |
 | Подключение бота (токен, ID, Mini App) | features/telegram.md (`docs/features/telegram.md:L5#Подключение из интерфейса`) | `server/src/services/telegram/connect.js:L25-41#connectTelegram`, `server/src/services/telegram/runtime.js:L9-16#getTelegramConfig` |
 | Управление сервером (сервисы, журналы, обновление) | features/telegram.md (`docs/features/telegram.md:L12#Управление сервером`) | `server/src/services/ops/control.js:L24-44#controlService`, `deploy/update.sh`, `deploy/ops-setup.sh:L12@sudoers` |
@@ -38,7 +39,7 @@
 | Здоровье сервисов и запусков | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`), раздел «Здоровье» | getChecks (`server/src/services/health/getChecks.js:L11-28#getChecks`), getDetails (`server/src/services/health/details.js:L9-36#getDetails`), блок в интерфейсе `client/src/components/Health.jsx:L10-36#Health` |
 | Бэкапы и восстановление | `docs/RUNBOOK.md:L163#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-uploads.sh:L21@tar -czf` |
 | Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L33-164#TaskDetail`; доска: раздел «Доска» в `docs/features/tasks-and-runs.md` | главная кнопка Telegram: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton` |
-| Адреса страниц и форм (роутинг) | раздел «Адреса интерфейса» ниже | маршруты владельца `client/src/app/OwnerView.jsx:L18-53#OwnerView`, вход и роли `client/src/App.jsx:L12-95#App`, вкладки `client/src/app/SectionTabs.jsx:L6-19#SectionTabs` |
+| Адреса страниц и форм (роутинг) | раздел «Адреса интерфейса» ниже | маршруты владельца `client/src/app/OwnerView.jsx:L19-54#OwnerView`, вход и роли `client/src/App.jsx:L12-95#App`, вкладки `client/src/app/SectionTabs.jsx:L6-19#SectionTabs` |
 
 ## Адреса интерфейса
 Роутер: react-router-dom, `BrowserRouter` в `client/src/main.jsx:L3@BrowserRouter`. Каждая страница и каждая форма/карточка (панель поверх списка) имеет свой адрес. Прод-nginx отдаёт `index.html` на любой путь (`deploy/nginx.conf:L23@try_files`).
@@ -75,7 +76,7 @@
 - Дайджест: buildDigest (`docs/functions/server/digest/buildDigest.md:L3#Назначение`), moscowParts (`docs/functions/server/digest/moscowParts.md:L3#Назначение`), startDigestScheduler (`docs/functions/server/digest/startDigestScheduler.md:L3#Назначение`)
 
 ## Известные проблемы (проверено по коду)
-- Реестр процессов в памяти: после перезапуска запущенный процесс Claude не виден. Выполнявшиеся запуски помечаются ошибкой. Ждавшие в очереди возвращаются (см. `docs/architecture/run-pipeline.md:L27#Очередь`).
+- Реестр процессов в памяти: после перезапуска запущенный процесс Claude не виден. Выполнявшиеся запуски помечаются ошибкой. Ждавшие в очереди возвращаются (см. `docs/architecture/run-pipeline.md:L39#Очередь`).
 - Поток `stream-json` и итоговое событие `result` не проверены на реальном запуске `claude`.
 - Вложения: см. [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).
 

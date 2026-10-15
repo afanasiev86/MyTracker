@@ -8,6 +8,7 @@ import Health from '../components/Health.jsx';
 import Server from '../components/Server.jsx';
 import TelegramSettings from '../components/TelegramSettings.jsx';
 import GithubSettings from '../components/GithubSettings.jsx';
+import ClaudeSettings from '../components/ClaudeSettings.jsx';
 import { NewTaskRoute, TaskRoute } from '../components/board/TaskRoutes.jsx';
 import ProjectRoute from '../components/projects/ProjectRoute.jsx';
 import ClientRoute from '../components/clients/ClientRoute.jsx';
@@ -44,7 +45,7 @@ export default function OwnerView({ inTelegram, onLogout, onLogoutEverywhere }) 
             <Route path=":id" element={<ClientRoute />} />
           </Route>
           <Route path="/server" element={<Server />} />
-          <Route path="/settings" element={<><Health /><TelegramSettings /><GithubSettings /></>} />
+          <Route path="/settings" element={<><Health /><TelegramSettings /><GithubSettings /><ClaudeSettings /></>} />
           <Route path="*" element={<Navigate to="/tasks" replace />} />
         </Routes>
       </Layout.Content>

@@ -14,7 +14,7 @@ import { installSkill } from './installSkill.js';
 import { branchSettings } from '../services/projects/baseBranch.js';
 import { resolveOutcome } from './outcome.js';
 import { notifyRunFinished } from './notifyRun.js';
-import { childEnv, gitAccessHint } from './env.js';
+import { claudeEnv, gitAccessHint } from './env.js';
 
 // Один запуск задачи: рабочая копия, claude, исход, запись в задачу, уведомление.
 // options.answer — ответ владельца на вопрос Claude. Продолжаем ту же сессию.
@@ -45,7 +45,7 @@ export async function runTask(taskId, { answer = null } = {}) {
       return [];
     });
     const env = {
-      ...childEnv(),
+      ...claudeEnv(),
       TRACKER_API: cfg.apiUrl,
       TRACKER_TOKEN: await issueToken('worker', '2h'),
       TRACKER_CLI,

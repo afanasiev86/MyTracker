@@ -3,7 +3,7 @@
 Кратко: вход по паролю или через подпись Telegram Mini App, JWT с версией, отзыв через смену версии в базе.
 
 ## Вход по паролю
-Сравнение за постоянное время: checkPassword (`docs/functions/server/auth/checkPassword.md:L13#Алгоритм`). Выдача токена: issueToken (`docs/functions/server/auth/issueToken.md:L3#Назначение`). Маршрут: `server/src/routes/auth/login.js:L6-16#login`. Лимит попыток: `server/src/app.js:L19-25#loginLimiter`.
+Сравнение за постоянное время: checkPassword (`docs/functions/server/auth/checkPassword.md:L13#Алгоритм`). Выдача токена: issueToken (`docs/functions/server/auth/issueToken.md:L3#Назначение`). Маршрут: `server/src/routes/auth/login.js:L6-16#login`. Лимит попыток: `server/src/app.js:L20-26#loginLimiter`.
 
 ## Вход через Telegram
 Подпись `initData` проверяет `server/src/services/telegramAuth.js:L7-38#verifyInitData`. Маршрут `server/src/routes/auth/telegramLogin.js:L9-32#telegramLogin` дополнительно сверяет id с `TELEGRAM_OWNER_ID`.

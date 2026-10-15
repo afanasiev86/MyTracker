@@ -15,6 +15,11 @@ const settingsSchema = new mongoose.Schema({
   // GitHub, заданный в интерфейсе (ключ 'github'). Токен зашифрован так же, как токен бота
   githubTokenEnc: { type: String, default: '' },
   githubLogin: { type: String, default: '' },
+  // Аккаунт Claude, заданный в интерфейсе (ключ 'claude'): позволяет переключить запуски задач на другой аккаунт
+  // без доступа к серверу. Токен зашифрован так же, как токен бота и GitHub.
+  claudeTokenEnc: { type: String, default: '' },
+  claudeTokenType: { type: String, default: '' },
+  claudeAccountLabel: { type: String, default: '' },
 });
 
 export default mongoose.model('Settings', settingsSchema);

@@ -6,6 +6,7 @@ export * from './api/tasks.js';
 export * from './api/attachments.js';
 export * from './api/projects.js';
 export * from './api/github.js';
+export * from './api/claude.js';
 export * from './api/clients.js';
 export * from './api/stats.js';
 export * from './api/telegram.js';

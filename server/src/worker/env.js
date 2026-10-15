@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { getGithubToken } from '../services/github/settings.js';
+import { getClaudeCredential } from '../services/claude/settings.js';
 import { SECRET_ENV_KEYS } from '../config.js';
 
 // Скрипт, который отдаёт git токен GitHub (deploy/git-askpass.sh рядом с сервером)
@@ -26,6 +27,19 @@ const INTERNAL_KEYS = ['MT_GIT_TOKEN', 'MT_GIT_HOST', 'GIT_ASKPASS'];
 export function childEnv(base = process.env) {
   const env = { ...base };
   for (const key of [...SECRET_ENV_KEYS, ...INTERNAL_KEYS]) delete env[key];
+  return env;
+}
+
+// Окружение для процесса claude: если в «Настройках» задан свой ключ/токен, он заменяет аккаунт, залогиненный
+// на сервере (так можно переключиться на другой аккаунт при лимите без доступа к серверу). Без сохранённого
+// аккаунта окружение не меняется — claude работает как обычно, под аккаунтом сервера.
+const CLAUDE_TOKEN_ENV_KEY = { api_key: 'ANTHROPIC_API_KEY', oauth_token: 'CLAUDE_CODE_OAUTH_TOKEN' };
+export function claudeEnv(base = childEnv(), credential = getClaudeCredential()) {
+  const env = { ...base };
+  if (!credential) return env;
+  delete env.ANTHROPIC_API_KEY;
+  delete env.CLAUDE_CODE_OAUTH_TOKEN;
+  env[CLAUDE_TOKEN_ENV_KEY[credential.type]] = credential.token;
   return env;
 }
 
