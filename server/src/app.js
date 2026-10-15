@@ -14,6 +14,7 @@ import { requireOwner, requireClient } from './middleware/roles.js';
 import portalRoutes from './routes/portal.js';
 import accessRoutes from './routes/access.js';
 import healthRoutes from './routes/health.js';
+import uatGateRoutes from './routes/uatGate.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Попытки входа ограничены: 10 за 15 минут с одного адреса
@@ -35,6 +36,8 @@ export function createApp() {
   // Здоровье: публичная проверка и подробности только для владельца
   app.use('/api/health', healthRoutes);
   app.use('/api/auth', loginLimiter, authRoutes);
+  // Вход на UAT-стенды: nginx стенда обращается сюда без токена, доступ проверяется самим маршрутом
+  app.use('/api/uat-gate', uatGateRoutes);
   // Владельческий API: заказчик сюда не попадает
   app.use('/api/tasks', requireAuth, requireOwner, taskRoutes);
   app.use('/api/projects', requireAuth, requireOwner, projectRoutes);

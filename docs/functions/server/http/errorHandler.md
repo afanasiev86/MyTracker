@@ -23,5 +23,5 @@
 - Маршруты не формируют статусы для ошибок сервисов. Исключение: запуски (`startTask`, `answerTask`, `cancelTask`) возвращают объект `{ error }`, потому что его читает бот.
 
 ## Связи
-- Подключается последним в `server/src/app.js:L28-54#createApp`.
+- Подключается последним в `server/src/app.js:L29-57#createApp`.
 - Подход: `docs/features/crm-and-auth.md:L16#Ошибки API`.

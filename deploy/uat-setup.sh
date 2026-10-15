@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Разовая настройка сервера под UAT-стенды: <slug>.<домен> с HTTPS и общим логином.
+# Разовая настройка сервера под UAT-стенды: <slug>.<домен> с HTTPS и входом по паролю владельца трекера.
 # Запуск под root:  sudo bash deploy/uat-setup.sh <домен> <почта для Let's Encrypt>
 #   например: sudo bash deploy/uat-setup.sh afanasev.tech me@example.com
 # Перед запуском в DNS должна быть запись A "*" на IP сервера.
-# Скрипт можно запускать повторно (пароль не меняется, если файл уже есть). После обновления
+# Скрипт можно запускать повторно. После обновления
 # deploy/uat-expose.sh его нужно запустить снова, чтобы обновить копию в /usr/local/sbin.
 # Что он даёт пользователю API (по умолчанию claude-worker): sudo без пароля ТОЛЬКО на /usr/local/sbin/uat-expose.
 # Копия скрипта принадлежит root и недоступна воркеру для записи, иначе sudo на неё был бы общим sudo.
@@ -15,9 +15,10 @@ EMAIL="${2:-}"
 APP_DIR="${APP_DIR:-/srv/mytracker}"
 WORKER_USER="${WORKER_USER:-claude-worker}"
 UAT_DIR="${UAT_DIR:-/srv/uat}"
-UAT_LOGIN="${UAT_LOGIN:-uat}"
+# Порт API трекера: на него nginx стендов отправляет проверку входа
+TRACKER_PORT="${TRACKER_PORT:-$(grep -E '^PORT=' "$APP_DIR/server/.env" 2>/dev/null | head -1 | cut -d= -f2)}"
+TRACKER_PORT="${TRACKER_PORT:-3001}"
 CONF_FILE=/etc/mytracker-uat.conf
-HTPASSWD=/etc/nginx/uat.htpasswd
 EXPOSE_BIN=/usr/local/sbin/uat-expose
 NGINX_DEFAULT=/etc/nginx/conf.d/00-uat-default.conf
 SUDOERS_FILE=/etc/sudoers.d/mytracker-uat
@@ -26,21 +27,12 @@ SUDOERS_FILE=/etc/sudoers.d/mytracker-uat
 [[ $DOMAIN =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ && -n $EMAIL ]] || { echo "Использование: sudo bash $0 <домен> <почта>"; exit 1; }
 id "$WORKER_USER" >/dev/null 2>&1 || { echo "Нет пользователя $WORKER_USER. Сначала выполните deploy/bootstrap-vps.sh"; exit 1; }
 
-echo "==> Пакеты: htpasswd, certbot с плагином nginx"
-apt-get install -y apache2-utils certbot python3-certbot-nginx
+echo "==> Пакеты: certbot с плагином nginx"
+apt-get install -y certbot python3-certbot-nginx
 
 echo "==> Настройки: $CONF_FILE"
-printf 'DOMAIN=%s\nEMAIL=%s\n' "$DOMAIN" "$EMAIL" > "$CONF_FILE"
+printf 'DOMAIN=%s\nEMAIL=%s\nTRACKER_PORT=%s\n' "$DOMAIN" "$EMAIL" "$TRACKER_PORT" > "$CONF_FILE"
 chmod 644 "$CONF_FILE"
-
-echo "==> Общий логин для всех стендов: $HTPASSWD (пользователь $UAT_LOGIN)"
-if [[ -f $HTPASSWD ]]; then
-  echo "Файл уже есть, пароль не меняется. Сменить: sudo htpasswd $HTPASSWD $UAT_LOGIN"
-else
-  htpasswd -c "$HTPASSWD" "$UAT_LOGIN"
-fi
-chown root:www-data "$HTPASSWD"
-chmod 640 "$HTPASSWD"
 
 echo "==> nginx: чужие и неизвестные адреса получают отказ, поддержка WebSocket для стендов"
 cat > "$NGINX_DEFAULT" <<'EOF'
@@ -91,4 +83,5 @@ chown "$WORKER_USER:$WORKER_USER" "$UAT_DIR"
 echo
 echo "Готово. Осталось добавить в $APP_DIR/server/.env строку UAT_DOMAIN=$DOMAIN и перезапустить API:"
 echo "  sudo systemctl restart mytracker-api"
+echo "Вход на стенды: пароль владельца трекера (ADMIN_PASSWORD), отдельного логина больше нет."
 echo "Проверка DNS: dig +short любой-поддомен.$DOMAIN (должен вернуть IP этого сервера)"

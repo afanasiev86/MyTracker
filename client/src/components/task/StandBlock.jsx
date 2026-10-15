@@ -18,7 +18,7 @@ export default function StandBlock({ stand }) {
       {...common}
       type="success"
       message={<a href={stand.url} target="_blank" rel="noreferrer">Стенд UAT: {stand.url}</a>}
-      description={`Коммит ${stand.commit}${stand.builtAt ? `, собран ${TIME_FORMAT.format(new Date(stand.builtAt))}` : ''}. Логин и пароль общие для всех стендов.`}
+      description={`Коммит ${stand.commit}${stand.builtAt ? `, собран ${TIME_FORMAT.format(new Date(stand.builtAt))}` : ''}. Вход на стенд — пароль владельца трекера.`}
     />
   );
 }
