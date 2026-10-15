@@ -25,6 +25,12 @@ const schema = z.object({
   GITHUB_TOKEN: optional,
 });
 
+// Все переменные окружения, которые знает сервер, и среди них секреты. Секреты убираются из окружения
+// Claude, проверок проекта и git (см. worker/env.js). Новая переменная с токеном, паролем или секретом
+// должна попасть в SECRET_ENV_KEYS: это проверяет тест.
+export const CONFIG_ENV_KEYS = Object.keys(schema.shape);
+export const SECRET_ENV_KEYS = ['MONGO_URL', 'JWT_SECRET', 'ADMIN_PASSWORD', 'TELEGRAM_BOT_TOKEN', 'GITHUB_TOKEN'];
+
 // Разбирает окружение в именованные настройки. Значения по умолчанию задаются здесь же.
 export function readConfig(env = process.env) {
   const raw = schema.parse(env);

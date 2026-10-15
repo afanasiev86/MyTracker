@@ -1,14 +1,15 @@
 import { fileURLToPath } from 'node:url';
 import { getGithubToken } from '../services/github/settings.js';
+import { SECRET_ENV_KEYS } from '../config.js';
 
 // Скрипт, который отдаёт git токен GitHub (deploy/git-askpass.sh рядом с сервером)
 export const GIT_ASKPASS_SCRIPT = fileURLToPath(new URL('../../../deploy/git-askpass.sh', import.meta.url));
 
-// Окружение для процесса git. Запросы пароля в терминале отключены (на сервере его нет).
+// Окружение для процесса git: без секретов сервера (childEnv). Запросы пароля в терминале отключены (на сервере его нет).
 // Если токен GitHub задан (в «Настройках» или GITHUB_TOKEN), git получает его через GIT_ASKPASS для https://github.com:
 // так работают клонирование и push без SSH-ключа сервера. В адрес и в аргументы токен не попадает.
 // base, token, host можно подменить в тестах.
-export function gitEnv({ base = process.env, token = getGithubToken(), host = 'github.com' } = {}) {
+export function gitEnv({ base = childEnv(), token = getGithubToken(), host = 'github.com' } = {}) {
   const env = { ...base, GIT_TERMINAL_PROMPT: '0' };
   if (token) {
     env.GIT_ASKPASS = GIT_ASKPASS_SCRIPT;
@@ -18,12 +19,13 @@ export function gitEnv({ base = process.env, token = getGithubToken(), host = 'g
   return env;
 }
 
-// Окружение для Claude и для проверок проекта (npm test, lint): без токена GitHub.
-// Claude умеет читать файлы (в том числе /proc/self/environ), а проверки запускают код проекта.
-const SECRET_KEYS = ['GITHUB_TOKEN', 'MT_GIT_TOKEN', 'MT_GIT_HOST', 'GIT_ASKPASS'];
+// Окружение для Claude, проверок проекта (npm test, lint) и git: без секретов сервера (база, JWT, пароль входа,
+// токены Telegram и GitHub). Claude умеет читать файлы (в том числе /proc/self/environ), а проверки запускают код проекта.
+// Токен GitHub для git добавляет gitEnv отдельно, только процессу git.
+const INTERNAL_KEYS = ['MT_GIT_TOKEN', 'MT_GIT_HOST', 'GIT_ASKPASS'];
 export function childEnv(base = process.env) {
   const env = { ...base };
-  for (const key of SECRET_KEYS) delete env[key];
+  for (const key of [...SECRET_ENV_KEYS, ...INTERNAL_KEYS]) delete env[key];
   return env;
 }
 

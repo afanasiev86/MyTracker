@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { gitEnv, childEnv, gitAccessHint, GIT_ASKPASS_SCRIPT } from '../src/worker/env.js';
 import { git } from '../src/worker/git.js';
+import { CONFIG_ENV_KEYS, SECRET_ENV_KEYS } from '../src/config.js';
 
 const run = promisify(execFile);
 const TOKEN = 'github_pat_TEST_token_0123456789';
@@ -96,9 +97,36 @@ describe('окружение процессов', () => {
     expect(env).toEqual({ PATH: '/bin', GIT_TERMINAL_PROMPT: '0' });
   });
 
-  it('Claude и проверки проекта не получают токен GitHub', () => {
-    const env = childEnv({ PATH: '/bin', GITHUB_TOKEN: 'a', MT_GIT_TOKEN: 'b', MT_GIT_HOST: 'c', GIT_ASKPASS: 'd', HOME: '/h' });
-    expect(env).toEqual({ PATH: '/bin', HOME: '/h' });
+  it('Claude и проверки проекта не получают ни токен GitHub, ни секреты сервера', () => {
+    const base = { PATH: '/bin', HOME: '/h', MT_GIT_TOKEN: 'b', MT_GIT_HOST: 'c', GIT_ASKPASS: 'd' };
+    for (const key of SECRET_ENV_KEYS) base[key] = 'секрет';
+    expect(childEnv(base)).toEqual({ PATH: '/bin', HOME: '/h' });
+  });
+
+  it('несекретные настройки и вход Claude (HOME, PATH, ключ API) остаются', () => {
+    const base = { PATH: '/bin', HOME: '/h', ANTHROPIC_API_KEY: 'k', TRACKER_API_URL: 'http://x', ATTACHMENTS_DIR: '/u' };
+    expect(childEnv(base)).toEqual(base);
+  });
+
+  it('git тоже не получает секреты сервера, кроме токена GitHub для своих запросов', () => {
+    const saved = { ...process.env };
+    process.env.JWT_SECRET = 'jwt';
+    process.env.MONGO_URL = 'mongodb://u:p@h/db';
+    try {
+      const env = gitEnv({ token: TOKEN, host: 'github.com' });
+      expect(env.JWT_SECRET).toBeUndefined();
+      expect(env.MONGO_URL).toBeUndefined();
+      expect(env.MT_GIT_TOKEN).toBe(TOKEN);
+    } finally {
+      process.env = saved;
+    }
+  });
+
+  it('любая новая переменная конфигурации с токеном, секретом или паролем внесена в SECRET_ENV_KEYS', () => {
+    const risky = CONFIG_ENV_KEYS.filter((key) => /TOKEN|SECRET|PASSWORD|^MONGO/.test(key));
+    expect(risky.length).toBeGreaterThan(0);
+    expect(risky.filter((key) => !SECRET_ENV_KEYS.includes(key))).toEqual([]);
+    expect(SECRET_ENV_KEYS.filter((key) => !CONFIG_ENV_KEYS.includes(key))).toEqual([]);
   });
 });
 
