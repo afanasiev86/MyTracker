@@ -33,6 +33,7 @@ describe('Projects', () => {
         stats: { tasks: 3, open: 2, costUsd: 0.4 },
       },
     ]);
+    vi.mocked(api.fetchGithubRepos).mockResolvedValue({ enabled: false, repos: [] });
   });
 
   it('показывает проект со статусом, клиентом и счётчиками задач', async () => {
@@ -79,6 +80,32 @@ describe('Projects', () => {
     const field = await screen.findByLabelText('Код проекта');
     expect(field.value).toBe('shop-api');
     expect(field.disabled).toBe(true);
+  });
+
+  it('без токена GitHub не показывает кнопку синхронизации', async () => {
+    vi.mocked(api.fetchClients).mockResolvedValue([]);
+    vi.mocked(api.fetchProjects).mockResolvedValue([
+      { _id: 'p1', slug: 'shop-api', name: 'Магазин', status: 'active', repoUrl: 'git@github.com:o/shop.git', stats: { tasks: 0, open: 0, costUsd: 0 } },
+    ]);
+    renderAt('/projects/p1');
+
+    await screen.findByLabelText('Код проекта');
+    expect(screen.queryByRole('button', { name: 'Синхронизировать с GitHub' })).toBeNull();
+  });
+
+  it('с токеном GitHub у проекта со ссылкой есть кнопка синхронизации, она вызывает сервер', async () => {
+    vi.mocked(api.fetchClients).mockResolvedValue([]);
+    vi.mocked(api.fetchGithubRepos).mockResolvedValue({ enabled: true, repos: [] });
+    vi.mocked(api.syncProjectGithub).mockResolvedValue({ _id: 'p1', github: { status: 'synced' } });
+    vi.mocked(api.fetchProjects).mockResolvedValue([
+      { _id: 'p1', slug: 'shop-api', name: 'Магазин', status: 'active', repoUrl: 'git@github.com:o/shop.git', stats: { tasks: 0, open: 0, costUsd: 0 } },
+    ]);
+    renderAt('/projects/p1');
+
+    await screen.findByLabelText('Код проекта');
+    fireEvent.click(await screen.findByText('Синхронизировать с GitHub', {}, { timeout: 5000 }));
+
+    await waitFor(() => expect(api.syncProjectGithub).toHaveBeenCalledWith('p1'));
   });
 
   it('для неизвестного id сообщает, что проект не найден', async () => {

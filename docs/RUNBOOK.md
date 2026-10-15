@@ -108,6 +108,8 @@ sudo cat /home/claude-worker/.ssh/id_ed25519.pub
 
 Добавьте публичный ключ на GitHub одним из способов: в репозитории Settings → Deploy keys → Allow write access (ключ на один репозиторий) или в аккаунте Settings → SSH and GPG keys (доступ ко всем вашим репозиториям). В проекте указывайте ссылку вида `git@github.com:ВАШ_ЛОГИН/ВАШ_РЕПО.git`; для публичных репозиториев клонирование работает и по `https://github.com/...`, но для push всё равно нужен ключ.
 
+**Синхронизация с GitHub (необязательно).** Чтобы проекты создавали репозитории и подтягивали список из GitHub, создайте fine-grained personal access token (GitHub → Settings → Developer settings → Personal access tokens): доступ ко всем своим репозиториям, права Contents и Administration на чтение и запись, Metadata на чтение. Запишите его в `GITHUB_TOKEN` в `server/.env` и перезапустите сервер. Токен нужен только для API; клонирование и push по-прежнему идут через ключ сервера. Без токена всё работает как раньше.
+
 - [ ] После создания проекта на сервере появилась папка: `ls /srv/repos`
 - [ ] `sudo -u claude-worker git -C /srv/repos/<код проекта> fetch` проходит без ошибок
 - [ ] В репозитории есть `CLAUDE.md` или хотя бы `README`. Claude будет работать от этих правил

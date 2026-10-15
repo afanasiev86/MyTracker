@@ -22,6 +22,7 @@ const schema = z.object({
   TRACKER_API_URL: optional,
   RUN_TIMEOUT_MIN: optional,
   OPS_APP_DIR: optional,
+  GITHUB_TOKEN: optional,
 });
 
 // Разбирает окружение в именованные настройки. Значения по умолчанию задаются здесь же.
@@ -43,6 +44,8 @@ export function readConfig(env = process.env) {
       // Папка установки трекера на сервере: из неё работают docker compose, деплой и служебные файлы .ops/
       appDir: raw.OPS_APP_DIR || path.resolve(process.cwd(), '..'),
     },
+    // Токен GitHub для синхронизации проектов. Без него синхронизация отключена
+    github: { token: raw.GITHUB_TOKEN },
     worker: {
       reposDir: raw.REPOS_DIR,
       worktreesDir: raw.WORKTREES_DIR,

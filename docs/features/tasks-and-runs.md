@@ -41,5 +41,5 @@ cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и 
 - Загрузка: `POST /api/tasks/:id/attachments`, тело — сам файл. Маршрут: `server/src/routes/tasks.js:L28@'/:id/attachments'`. Логика: `server/src/services/attachments/saveAttachment.js:L6-14#saveAttachment`. Проверка типа и размера: `server/src/services/attachments/validate.js:L6-12#checkAttachment`.
 - Отдача: `GET /api/tasks/:id/attachments/:attachmentId` отдаёт поток файла с диска; прямой ссылки на папку нет, доступ только через API с токеном. Логика: `server/src/services/attachments/attachmentStream.js:L4-8#attachmentStream`.
 - Проверка здоровья: папка создаётся и доступна на запись, `server/src/services/health/storageCheck.js:L3-10#storageCheck`.
-- Бэкап: `deploy/backup-uploads.sh` (архив `uploads-*.tar.gz`), восстановление описано в `docs/RUNBOOK.md:L159#Восстановление после потери данных`.
+- Бэкап: `deploy/backup-uploads.sh` (архив `uploads-*.tar.gz`), восстановление описано в `docs/RUNBOOK.md:L161#Восстановление после потери данных`.
 - Передача Claude: перед запуском скриншоты копируются в `.tracker-attachments/` рабочей копии ([materializeScreenshots](docs/functions/server/worker/materializeScreenshots.md#Алгоритм)), а в промпт добавляется их список. Папка не попадает в коммиты.
