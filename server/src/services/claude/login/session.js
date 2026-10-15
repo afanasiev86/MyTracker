@@ -96,10 +96,14 @@ export async function startLogin() {
 export async function finishLogin(code) {
   const login = current;
   if (!login) throw domainError('invalid', 'Вход не начат или истёк. Нажмите «Войти через подписку» ещё раз.');
+  // TEMP-DIAG: убрать после выяснения причины
+  const mask = (s) => JSON.stringify(String(s).replace(/sk-ant-oat\d*-[A-Za-z0-9_-]+/g, 'sk-ant-oat-***').split(code).join('<code>'));
+  console.warn(`[login-diag] before code: len=${code.length} buf=${mask(login.buf)}`);
   login.buf = '';
   login.child.stdin.write(`${code}\r`);
 
   const result = await waitFor(login, (buf) => findToken(buf) || (findLoginError(buf) && 'error'), loginOptions.tokenWaitMs);
+  console.warn(`[login-diag] result=${Object.keys(result)} exit=${login.child.exitCode} signal=${login.child.signalCode} buf=${mask(login.buf)}`);
   if (result.found && result.found !== 'error') {
     await cancelLogin();
     return result.found;
