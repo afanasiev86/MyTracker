@@ -60,7 +60,7 @@ describe('слой данных: маршруты не импортируют м
 
 describe('конфигурация: process.env только в config.js и при передаче окружения процессу', () => {
   it('остальные файлы сервера не читают process.env', () => {
-    const allowed = new Set(['server/src/config.js', 'server/src/worker/runTask.js', 'server/src/worker/verify/runCommand.js', 'server/src/services/projects/repo.js']);
+    const allowed = new Set(['server/src/config.js', 'server/src/worker/runTask.js', 'server/src/worker/verify/runCommand.js', 'server/src/services/projects/repo.js', 'server/src/worker/env.js']);
     const offenders = walk(path.join(ROOT, 'server/src'))
       .map(rel)
       .filter((f) => !allowed.has(f) && read(path.join(ROOT, f)).includes('process.env'));

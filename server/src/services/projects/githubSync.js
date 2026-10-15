@@ -2,7 +2,8 @@ import { updateProject } from '../store/index.js';
 import { githubEnabled, createRepo, getRepo, updateRepo, githubFullName } from '../github/index.js';
 
 // Связь CRM и GitHub. Кто чем владеет:
-// - CRM → GitHub: при создании проекта без ссылки создаётся приватный репозиторий с кодом проекта;
+// - CRM → GitHub: при создании проекта без ссылки создаётся приватный репозиторий с кодом проекта
+//   (в проект записывается https-ссылка: клонирование и push идут с токеном из «Настроек»);
 //   описание и архивация (статус «Завершён») отправляются при каждом сохранении.
 // - GitHub → CRM: основная ветка и описание (если в CRM пусто) подтягиваются при смене ссылки
 //   и по кнопке синхронизации.
@@ -21,7 +22,7 @@ export async function syncWithGithub(project, { created = false, pull = false } 
   try {
     if (created && !project.repoUrl) {
       const repo = await gh.createRepo({ name: project.slug, description: project.description });
-      current = await deps.save(project._id, { repoUrl: repo.sshUrl, defaultBranch: repo.defaultBranch });
+      current = await deps.save(project._id, { repoUrl: repo.httpsUrl, defaultBranch: repo.defaultBranch });
       return { project: current, github: { status: 'created', fullName: repo.fullName } };
     }
     const fullName = gh.fullName(project.repoUrl);

@@ -90,7 +90,7 @@ npm run build
 3. Установите `deploy/mytracker-api.service` в systemd и включите его.
 4. Настройте `deploy/nginx.conf` и HTTPS через certbot.
 5. Добавьте `deploy/backup-mongo.sh` в cron.
-6. Для push веток задач настройте deploy key с доступом на запись только к нужным репозиториям.
+6. Для push веток задач проще всего ввести токен GitHub в «Настройках» → «GitHub» (работает для ссылок `https://github.com/…`). Запасной способ: deploy key с доступом на запись только к нужным репозиториям (для ссылок `git@github.com:…`).
 
 ## Ограничения текущей версии
 

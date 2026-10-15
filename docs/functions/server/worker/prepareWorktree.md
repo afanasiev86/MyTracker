@@ -13,12 +13,12 @@
 ## Алгоритм
 1. Обновляет данные из origin: `server/src/worker/worktree.js:L8@await git(repo, ['fetch', 'origin']);`.
 2. Выбирает точку старта: если ветка уже есть в origin (продолжение после вопроса или доработки), продолжаем с неё: `server/src/worker/worktree.js:L10@const startPoint = remote ?`.
-3. Удаляет старую копию принудительно, включая файлы на диске и запись в git: `server/src/worker/runTask.js:L110@await git(repo, ['worktree', 'remove', '--force', wt])`.
+3. Удаляет старую копию принудительно, включая файлы на диске и запись в git: `server/src/worker/runTask.js:L111@await git(repo, ['worktree', 'remove', '--force', wt])`.
 4. Создаёт копию с веткой `-B`, то есть пересоздаёт ветку, если она уже была локально: `server/src/worker/worktree.js:L15@await git(repo, ['worktree', 'add', '-B', branch, wt, startPoint]);`.
 
 ## Ошибки и граничные случаи
 - Если в origin ветки нет, работа начинается с базовой ветки. Если она есть, все коммиты предыдущих запусков сохраняются, и новые считаются от её текущего состояния.
-- `-B` сбрасывает локальную ветку на startPoint. Незакоммиченные изменения в копии при этом теряются вместе с ней. Поэтому перед вопросом Claude по инструкции skill делает WIP-коммит (`.claude/skills/implement-task/SKILL.md`), а воркер пушит уже сделанные коммиты: `server/src/worker/outcome.js:L41@if (await countNewCommits(wt, startPoint) > 0)`.
+- `-B` сбрасывает локальную ветку на startPoint. Незакоммиченные изменения в копии при этом теряются вместе с ней. Поэтому перед вопросом Claude по инструкции skill делает WIP-коммит (`.claude/skills/implement-task/SKILL.md`), а воркер пушит уже сделанные коммиты: `server/src/worker/outcome.js:L42@if (await countNewCommits(wt, startPoint) > 0)`.
 - Если клона проекта нет в `REPOS_DIR`, git упадёт, и задача получит статус `failed` с текстом ошибки воркера.
 
 ## Связи

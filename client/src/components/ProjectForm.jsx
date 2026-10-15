@@ -36,8 +36,8 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
   // Подсказки из GitHub; ссылку можно и просто ввести вручную
   const query = form.repoUrl.toLowerCase();
   const repoOptions = github.repos
-    .filter((r) => !query || r.fullName.toLowerCase().includes(query) || r.sshUrl === form.repoUrl)
-    .map((r) => ({ value: r.sshUrl, label: `${r.fullName}${r.private ? ' 🔒' : ''}` }));
+    .filter((r) => !query || r.fullName.toLowerCase().includes(query) || r.httpsUrl === form.repoUrl)
+    .map((r) => ({ value: r.httpsUrl, label: `${r.fullName}${r.private ? ' 🔒' : ''}` }));
 
   async function submit() {
     setBusy(true);

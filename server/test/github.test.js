@@ -36,10 +36,10 @@ describe('ссылка на репозиторий GitHub', () => {
 
 describe('поля репозитория', () => {
   it('берёт только нужное и подставляет значения по умолчанию', () => {
-    const info = toRepoInfo({ full_name: 'o/r', name: 'r', description: null, private: true, archived: false, default_branch: 'dev', pushed_at: '2026-10-01T00:00:00Z', ssh_url: 'git@github.com:o/r.git', owner: { id: 1 } });
+    const info = toRepoInfo({ full_name: 'o/r', name: 'r', description: null, private: true, archived: false, default_branch: 'dev', pushed_at: '2026-10-01T00:00:00Z', clone_url: 'https://github.com/o/r.git', ssh_url: 'git@github.com:o/r.git', owner: { id: 1 } });
     expect(info).toEqual({
       fullName: 'o/r', name: 'r', description: '', private: true, archived: false,
-      defaultBranch: 'dev', pushedAt: '2026-10-01T00:00:00Z', sshUrl: 'git@github.com:o/r.git',
+      defaultBranch: 'dev', pushedAt: '2026-10-01T00:00:00Z', httpsUrl: 'https://github.com/o/r.git', sshUrl: 'git@github.com:o/r.git',
     });
   });
 });
@@ -114,7 +114,7 @@ describe('синхронизация проекта с GitHub', () => {
       github: {
         enabled: () => enabled,
         fullName: githubFullName,
-        createRepo: jest.fn(async () => ({ fullName: 'o/shop', sshUrl: 'git@github.com:o/shop.git', defaultBranch: 'main' })),
+        createRepo: jest.fn(async () => ({ fullName: 'o/shop', httpsUrl: 'https://github.com/o/shop.git', sshUrl: 'git@github.com:o/shop.git', defaultBranch: 'main' })),
         getRepo: jest.fn(async () => ({ fullName: 'o/x', description: 'из GitHub', defaultBranch: 'develop' })),
         updateRepo: jest.fn(async (full, patch) => { calls.updateRepo.push([full, patch]); return {}; }),
         ...overrides,
@@ -134,7 +134,7 @@ describe('синхронизация проекта с GitHub', () => {
     const { deps } = fakeDeps();
     const res = await syncWithGithub(base, { created: true }, deps);
     expect(deps.github.createRepo).toHaveBeenCalledWith({ name: 'shop', description: '' });
-    expect(res.project.repoUrl).toBe('git@github.com:o/shop.git');
+    expect(res.project.repoUrl).toBe('https://github.com/o/shop.git');
     expect(res.github).toEqual({ status: 'created', fullName: 'o/shop' });
   });
 

@@ -3,6 +3,7 @@ import { isLimitError } from './limits.js';
 import { countNewCommits } from './worktree.js';
 import { runChecks } from './verify/runChecks.js';
 import { publishToBase } from './publish.js';
+import { gitAccessHint } from './env.js';
 
 // Итог запуска по результату claude. Порядок условий важен: первое совпавшее определяет статус.
 // Возвращает { status, summary, costUsd, log, checks?, branch?, diffRange? }.
@@ -54,7 +55,7 @@ export async function resolveOutcome({ res, data, question, cfg, wt, startPoint,
       const saved = published.notSaved
         ? 'Сохранить их в ветке задачи тоже не удалось.'
         : `Изменения сохранены в ветке ${branch}.`;
-      return { status: 'failed', summary: `Не удалось влить изменения в ветку ${base} (${why}): ${published.error}. ${saved}`, costUsd, log };
+      return { status: 'failed', summary: `Не удалось влить изменения в ветку ${base} (${why}): ${published.error}.${gitAccessHint(published.error)} ${saved}`, costUsd, log };
     }
   } else {
     await git(wt, ['push', '-u', 'origin', branch]);

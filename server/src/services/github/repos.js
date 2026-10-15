@@ -14,6 +14,8 @@ export function toRepoInfo(r) {
     archived: Boolean(r.archived),
     defaultBranch: r.default_branch || 'main',
     pushedAt: r.pushed_at ?? null,
+    // https работает с токеном из «Настроек», ssh требует ключ на сервере
+    httpsUrl: r.clone_url,
     sshUrl: r.ssh_url,
   };
 }

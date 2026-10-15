@@ -3,6 +3,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { getConfig } from '../../config.js';
+import { gitEnv, gitAccessHint } from '../../worker/env.js';
 
 const execFileAsync = promisify(execFile);
 // Меньше минуты: дольше nginx ответ API не ждёт
@@ -33,11 +34,8 @@ export async function ensureRepo(project) {
       ['-c', 'protocol.ext.allow=never', '-c', 'protocol.file.allow=never', 'clone', '--', project.repoUrl, target],
       {
         timeout: CLONE_TIMEOUT_MS,
-        env: {
-          ...process.env,
-          GIT_TERMINAL_PROMPT: '0',
-          GIT_SSH_COMMAND: 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new',
-        },
+        // Для https://github.com токен берётся из настроек (см. worker/env.js), для git@ нужен ключ сервера
+        env: { ...gitEnv(), GIT_SSH_COMMAND: 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new' },
       },
     );
     return { status: 'cloned' };
@@ -45,6 +43,6 @@ export async function ensureRepo(project) {
     await fs.rm(target, { recursive: true, force: true });
     if (err.killed) return { status: 'failed', error: 'Клонирование заняло больше минуты: склонируйте репозиторий в папку проекта вручную' };
     const lines = hideSecrets(err.stderr || err.message).split('\n').map((l) => l.trim()).filter(Boolean);
-    return { status: 'failed', error: lines.slice(-3).join(' ').slice(0, 300) };
+    return { status: 'failed', error: `${lines.slice(-3).join(' ').slice(0, 300)}${gitAccessHint(lines.join(' '))}` };
   }
 }

@@ -1,0 +1,36 @@
+import { fileURLToPath } from 'node:url';
+import { getGithubToken } from '../services/github/settings.js';
+
+// Скрипт, который отдаёт git токен GitHub (deploy/git-askpass.sh рядом с сервером)
+export const GIT_ASKPASS_SCRIPT = fileURLToPath(new URL('../../../deploy/git-askpass.sh', import.meta.url));
+
+// Окружение для процесса git. Запросы пароля в терминале отключены (на сервере его нет).
+// Если токен GitHub задан (в «Настройках» или GITHUB_TOKEN), git получает его через GIT_ASKPASS для https://github.com:
+// так работают клонирование и push без SSH-ключа сервера. В адрес и в аргументы токен не попадает.
+// base, token, host можно подменить в тестах.
+export function gitEnv({ base = process.env, token = getGithubToken(), host = 'github.com' } = {}) {
+  const env = { ...base, GIT_TERMINAL_PROMPT: '0' };
+  if (token) {
+    env.GIT_ASKPASS = GIT_ASKPASS_SCRIPT;
+    env.MT_GIT_TOKEN = token;
+    env.MT_GIT_HOST = host;
+  }
+  return env;
+}
+
+// Окружение для Claude и для проверок проекта (npm test, lint): без токена GitHub.
+// Claude умеет читать файлы (в том числе /proc/self/environ), а проверки запускают код проекта.
+const SECRET_KEYS = ['GITHUB_TOKEN', 'MT_GIT_TOKEN', 'MT_GIT_HOST', 'GIT_ASKPASS'];
+export function childEnv(base = process.env) {
+  const env = { ...base };
+  for (const key of SECRET_KEYS) delete env[key];
+  return env;
+}
+
+// Подсказка, если git не смог войти в GitHub: так владелец сразу видит, что чинить
+const ACCESS_ERROR = /could not read (Username|Password)|Authentication failed|terminal prompts disabled|Permission denied \(publickey\)|Invalid username or password|Write access to repository not granted|Support for password authentication was removed/i;
+export function gitAccessHint(text) {
+  return ACCESS_ERROR.test(String(text))
+    ? ' Нет доступа к GitHub: проверьте токен в «Настройках» → «GitHub» (нужны права Contents на запись) или ключ сервера для адреса git@github.com.'
+    : '';
+}

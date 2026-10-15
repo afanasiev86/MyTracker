@@ -16,7 +16,7 @@
 3. Если процесса нет, ставит «Ошибку» и системный комментарий: `server/src/services/runs/cancelTask.js:L14@Запуск отменён вручную.`.
 
 ## Ошибки и граничные случаи
-- При успешной остановке статус не меняется здесь. Его ставит воркер, когда процесс завершится и увидит причину `cancelled`: `server/src/worker/outcome.js:L12@if (res.reason === 'cancelled')`.
+- При успешной остановке статус не меняется здесь. Его ставит воркер, когда процесс завершится и увидит причину `cancelled`: `server/src/worker/outcome.js:L13@if (res.reason === 'cancelled')`.
 - Сигнал SIGTERM. Если процесс Claude его игнорирует, через 10 секунд отправляется SIGKILL: см. `docs/functions/server/worker/stopRun.md:L13#Алгоритм`.
 
 ## Связи

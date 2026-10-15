@@ -13,6 +13,7 @@ import { prepareWorktree } from './worktree.js';
 import { branchSettings } from '../services/projects/baseBranch.js';
 import { resolveOutcome } from './outcome.js';
 import { notifyRunFinished } from './notifyRun.js';
+import { childEnv, gitAccessHint } from './env.js';
 
 // Один запуск задачи: рабочая копия, claude, исход, запись в задачу, уведомление.
 // options.answer — ответ владельца на вопрос Claude. Продолжаем ту же сессию.
@@ -42,7 +43,7 @@ export async function runTask(taskId, { answer = null } = {}) {
       return [];
     });
     const env = {
-      ...process.env,
+      ...childEnv(),
       TRACKER_API: cfg.apiUrl,
       TRACKER_TOKEN: await issueToken('worker', '2h'),
       TRACKER_CLI,
@@ -85,7 +86,7 @@ export async function runTask(taskId, { answer = null } = {}) {
   } catch (err) {
     outcome = {
       status: 'failed',
-      summary: `Ошибка воркера: ${err.message}`.slice(0, 2000),
+      summary: `Ошибка воркера: ${err.message}${gitAccessHint(err.message)}`.slice(0, 2000),
       log: err.stack,
     };
   }
