@@ -1,7 +1,7 @@
 // Формат данных кнопок Telegram (callback_data до 64 байт).
 // Без зависимостей, чтобы его можно было импортировать и из воркера, и из бота.
 
-export const ACTIONS = ['diff', 'accept', 'rework'];
+export const ACTIONS = ['diff', 'accept', 'rework', 'fix'];
 
 export function encodeCallback(action, taskId) {
   return `${action}:${taskId}`;
@@ -24,4 +24,9 @@ export function reviewKeyboard(taskId) {
       ],
     ],
   };
+}
+
+// Кнопка под уведомлением об ошибке: попросить Claude исправить
+export function failedKeyboard(taskId) {
+  return { inline_keyboard: [[{ text: 'Исправить', callback_data: encodeCallback('fix', taskId) }]] };
 }

@@ -8,4 +8,4 @@ claudeTools (`docs/functions/server/worker/claudeTools.md:L13#Алгоритм`)
 ## Скрипт трекера
 `deploy/tracker-api.sh` использует переменные `TRACKER_API` и `TRACKER_TOKEN`, которые воркер передаёт в окружение: `server/src/worker/runTask.js:L9@TRACKER_CLI`. Инструкция для Claude: `.claude/skills/implement-task/SKILL.md`.
 
-Путь к скрипту передаётся Claude в самом сообщении запуска (`server/src/worker/launchArgs.js:L15-23#launchArgs`), и вызывать его нужно по полному пути. Правило `Bash(<путь> *)` сверяет текст команды, а не значение переменной, поэтому вызов через `$TRACKER_CLI` отклоняется (так запуск и упал в первый раз: Claude остановился без коммитов).
+Путь к скрипту передаётся Claude в самом сообщении запуска (`server/src/worker/launchArgs.js:L17-26#launchArgs`), и вызывать его нужно по полному пути. Правило `Bash(<путь> *)` сверяет текст команды, а не значение переменной, поэтому вызов через `$TRACKER_CLI` отклоняется (так запуск и упал в первый раз: Claude остановился без коммитов).

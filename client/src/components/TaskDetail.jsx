@@ -6,6 +6,7 @@ import {
   addComment,
   runTask,
   answerTask,
+  fixTask,
   cancelTask,
   fetchDiff,
   uploadAttachment,
@@ -17,6 +18,7 @@ import { mainLabel } from '../lib/mainButton.js';
 import TaskSpec from './task/TaskSpec.jsx';
 import ProgressBlock from './task/ProgressBlock.jsx';
 import QuestionBlock from './task/QuestionBlock.jsx';
+import FailureBlock from './task/FailureBlock.jsx';
 import TaskHeader from './task/TaskHeader.jsx';
 import TaskSidebar from './task/TaskSidebar.jsx';
 import DiffView from './task/DiffView.jsx';
@@ -101,6 +103,7 @@ export default function TaskDetail({ id, onChanged }) {
 
   // Ответ и комментарий: возвращают true при успехе, чтобы блок очистил поле
   const answerAndReload = (text) => perform(() => answerTask(id, text));
+  const fixAndReload = (text) => perform(() => fixTask(id, text));
   const addCommentAndReload = (text, visible) => perform(() => addComment(id, text, visible));
 
   const withCount = (label, count) => (
@@ -147,6 +150,7 @@ export default function TaskDetail({ id, onChanged }) {
         <div className="task-main">
           {task.status === 'in_progress' && <ProgressBlock task={task} />}
           {task.status === 'waiting' && <QuestionBlock task={task} busy={busy} onAnswer={answerAndReload} />}
+          {task.status === 'failed' && <FailureBlock task={task} busy={busy} onFix={fixAndReload} />}
           {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
 
           <TaskSpec task={task} />

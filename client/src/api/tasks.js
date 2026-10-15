@@ -10,6 +10,9 @@ export const addComment = (id, text, visibleToClient = false) =>
 export const runTask = (id) => request(`/tasks/${id}/run`, { method: 'POST' });
 export const answerTask = (id, text) =>
   request(`/tasks/${id}/answer`, { method: 'POST', body: { text } });
+// Попросить Claude исправить упавшую задачу; подсказка необязательна
+export const fixTask = (id, text = '') =>
+  request(`/tasks/${id}/fix`, { method: 'POST', body: { text } });
 export const cancelTask = (id) => request(`/tasks/${id}/cancel`, { method: 'POST' });
 
 // Diff ветки — обычный текст, а не JSON

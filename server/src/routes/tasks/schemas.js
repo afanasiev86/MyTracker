@@ -26,3 +26,5 @@ export const updateSchema = createSchema.partial().extend({
 
 export const commentSchema = z.object({ text: z.string().min(1), visibleToClient: z.boolean().optional() });
 export const textSchema = z.object({ text: z.string().trim().min(1, 'Текст не может быть пустым') });
+// Подсказка для исправления ошибки необязательна
+export const fixSchema = z.object({ text: z.string().trim().max(4000, 'Подсказка длиннее 4000 символов').optional() });

@@ -154,3 +154,68 @@ describe('POST /api/tasks/:id/answer', () => {
     expect(enqueueRun).not.toHaveBeenCalled();
   });
 });
+
+describe('POST /api/tasks/:id/fix', () => {
+  const failedRun = { summary: 'Ошибка воркера: git fetch', log: 'fatal: unable to access', costUsd: 0.1 };
+
+  it('без токена: 401', async () => {
+    const res = await request(createApp()).post('/api/tasks/task-1/fix').send({});
+    expect(res.status).toBe(401);
+  });
+
+  it('задачи нет: 404', async () => {
+    findTask.mockResolvedValue(null);
+    const res = await auth(request(createApp()).post('/api/tasks/nope/fix')).send({});
+    expect(res.status).toBe(404);
+    expect(Object.keys(res.body)).toEqual(['error']);
+  });
+
+  it('задача не в статусе «Ошибка»: 409 и запуск не ставится', async () => {
+    findTask.mockResolvedValue(makeTask('review', { runs: [] }));
+    const res = await auth(request(createApp()).post('/api/tasks/task-1/fix')).send({});
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/статусе «Ошибка»/);
+    expect(enqueueRun).not.toHaveBeenCalled();
+  });
+
+  it('упавшая задача уходит в работу; Claude получает причину, лог и подсказку', async () => {
+    const task = makeTask('failed', { runs: [failedRun] });
+    findTask.mockResolvedValue(task);
+    const res = await auth(request(createApp()).post('/api/tasks/task-1/fix')).send({ text: '  проверь доступ к git  ' });
+
+    expect(res.status).toBe(202);
+    expect(res.body.status).toBe('in_progress');
+    expect(task.queued).toBe(true);
+    expect(task.save).toHaveBeenCalled();
+    const [, message] = enqueueRun.mock.calls[0];
+    expect(message).toContain('Ошибка воркера: git fetch');
+    expect(message).toContain('fatal: unable to access');
+    expect(message).toContain('Подсказка владельца: проверь доступ к git');
+    expect(task.queuedAnswer).toBe(message);
+    expect(task.comments.at(-1)).toEqual({ author: 'owner', text: 'Исправить ошибку: проверь доступ к git' });
+  });
+
+  it('без подсказки и без тела тоже работает', async () => {
+    const task = makeTask('failed', { runs: [failedRun] });
+    findTask.mockResolvedValue(task);
+    const res = await auth(request(createApp()).post('/api/tasks/task-1/fix'));
+
+    expect(res.status).toBe(202);
+    expect(enqueueRun.mock.calls[0][1]).not.toContain('Подсказка владельца');
+    expect(task.comments.at(-1).text).toBe('Попросил Claude исправить ошибку.');
+  });
+
+  it('у задачи без запусков причина «не указана», запуск всё равно стартует', async () => {
+    findTask.mockResolvedValue(makeTask('failed', { runs: [] }));
+    const res = await auth(request(createApp()).post('/api/tasks/task-1/fix')).send({});
+    expect(res.status).toBe(202);
+    expect(enqueueRun.mock.calls[0][1]).toContain('не указана');
+  });
+
+  it('слишком длинная подсказка: 400', async () => {
+    findTask.mockResolvedValue(makeTask('failed', { runs: [failedRun] }));
+    const res = await auth(request(createApp()).post('/api/tasks/task-1/fix')).send({ text: 'я'.repeat(4001) });
+    expect(res.status).toBe(400);
+    expect(enqueueRun).not.toHaveBeenCalled();
+  });
+});

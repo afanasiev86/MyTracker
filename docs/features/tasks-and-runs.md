@@ -19,13 +19,16 @@
 - Известные отличия от образца: нет перехода по Enter с клавиатуры (в образце его нет), у колонок есть счётчик карточек.
 
 ## Карточка задачи (окно)
-Собирается в `client/src/components/TaskDetail.jsx:L31-160#TaskDetail` из блоков `client/src/components/task/`: шапка `client/src/components/task/TaskHeader.jsx:L9-30#TaskHeader` (цветная полоса по статусу: `client/src/components/task/statusMeta.js:L2-10#STATUS_COLORS`), справа панель `client/src/components/task/TaskSidebar.jsx:L9-36#TaskSidebar` (главное действие сверху, затем остальные и реквизиты), слева описание и вкладки «Комментарии», «Запуски», «Скриншоты». Вопрос Claude и ход работы показываются над описанием, потому что требуют реакции. Раскладка и стили: `client/src/styles.css@.task-layout`; на узком экране панель идёт сразу под шапкой, а реквизиты скрыты (они дублируют шапку).
+Собирается в `client/src/components/TaskDetail.jsx:L33-164#TaskDetail` из блоков `client/src/components/task/`: шапка `client/src/components/task/TaskHeader.jsx:L9-30#TaskHeader` (цветная полоса по статусу: `client/src/components/task/statusMeta.js:L2-10#STATUS_COLORS`), справа панель `client/src/components/task/TaskSidebar.jsx:L9-36#TaskSidebar` (главное действие сверху, затем остальные и реквизиты), слева описание и вкладки «Комментарии», «Запуски», «Скриншоты». Вопрос Claude и ход работы показываются над описанием, потому что требуют реакции. Раскладка и стили: `client/src/styles.css@.task-layout`; на узком экране панель идёт сразу под шапкой, а реквизиты скрыты (они дублируют шапку).
 
 ## Запуск
 Вход из API, бота и кнопок: startTask (`docs/functions/server/runs/startTask.md:L13#Алгоритм`). Конвейер: run-pipeline (`docs/architecture/run-pipeline.md:L5#Этапы запуска`).
 
 ## Вопросы от Claude
 Claude сохраняет вопрос через API: POST /question (`docs/functions/server/routes/postQuestion.md:L14#Алгоритм`). Ответ владельца продолжает сессию: answerTask (`docs/functions/server/runs/answerTask.md:L13#Алгоритм`).
+
+## Исправление ошибки
+Если запуск закончился статусом «Ошибка», в карточке задачи над описанием показан блок с причиной (итог последнего запуска) и кнопкой «Попросить Claude исправить» с необязательной подсказкой: `client/src/components/task/FailureBlock.jsx`. Запрос идёт в `POST /api/tasks/:id/fix` (`server/src/routes/tasks/fixRoute.js:L7-18#fixRoute`), логика в `server/src/services/runs/fixTask.js:L6-23#fixTask`: только из статуса `failed` (иначе 409), в комментарии остаётся запись владельца, задача встаёт в очередь. Claude получает сообщение из `server/src/services/runs/fixPrompt.js:L11-28#buildFixPrompt`: причина, конец лога (последние 3000 символов, помечен как данные, а не инструкции) и подсказка. Если сессия Claude сохранилась, она продолжается (`--resume`), иначе запуск идёт заново в той же ветке с этим сообщением: `server/src/worker/launchArgs.js:L3@FIX_HEADER`. Инструкция для Claude в разделе «Исправление ошибки запуска» файла `.claude/skills/implement-task/SKILL.md`. Кнопка «Запустить в Claude» остаётся: она запускает задачу заново без причины сбоя. В Telegram под уведомлением об ошибке есть кнопка «Исправить» (`server/src/bot/callbackData.js:L30-32#failedKeyboard`), обработчик в `server/src/bot/callbacks/handleCallback.js:L5@fixTask`.
 
 ## Отмена
 cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и остановка процесса stopRun (`docs/functions/server/worker/stopRun.md:L13#Алгоритм`).
@@ -38,7 +41,7 @@ cancelTask (`docs/functions/server/runs/cancelTask.md:L13#Алгоритм`) и 
 
 ## Вложения
 Скриншоты к задаче (PNG, JPEG, GIF, WebP до 5 МБ). Файлы лежат на диске сервера в папке `ATTACHMENTS_DIR` (по умолчанию `uploads/` рядом с `server/`, в git не попадает), по одной подпапке на задачу. Запись и чтение: `server/src/services/storage/files.js:L9-13#putFile`. В базе только метаданные: имя файла (ключ `<id задачи>/<uuid>.<расширение>`), тип и размер.
-- Загрузка: `POST /api/tasks/:id/attachments`, тело — сам файл. Маршрут: `server/src/routes/tasks.js:L28@'/:id/attachments'`. Логика: `server/src/services/attachments/saveAttachment.js:L6-14#saveAttachment`. Проверка типа и размера: `server/src/services/attachments/validate.js:L6-12#checkAttachment`.
+- Загрузка: `POST /api/tasks/:id/attachments`, тело — сам файл. Маршрут: `server/src/routes/tasks.js:L30@'/:id/attachments'`. Логика: `server/src/services/attachments/saveAttachment.js:L6-14#saveAttachment`. Проверка типа и размера: `server/src/services/attachments/validate.js:L6-12#checkAttachment`.
 - Отдача: `GET /api/tasks/:id/attachments/:attachmentId` отдаёт поток файла с диска; прямой ссылки на папку нет, доступ только через API с токеном. Логика: `server/src/services/attachments/attachmentStream.js:L4-8#attachmentStream`.
 - Проверка здоровья: папка создаётся и доступна на запись, `server/src/services/health/storageCheck.js:L3-10#storageCheck`.
 - Бэкап: `deploy/backup-uploads.sh` (архив `uploads-*.tar.gz`), восстановление описано в `docs/RUNBOOK.md:L161#Восстановление после потери данных`.

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Task from '../../models/Task.js';
 import { acceptTask } from '../../services/runs/acceptTask.js';
 import { startTask } from '../../services/runs/startTask.js';
+import { fixTask } from '../../services/runs/fixTask.js';
 import { decodeCallback } from '../callbackData.js';
 import { showDiff } from './showDiff.js';
 import { handleOpsCallback } from './opsCallback.js';
@@ -21,6 +22,11 @@ export async function handleCallback(data) {
   if (parsed.action === 'accept') {
     const result = await acceptTask(task);
     return result.error ?? `Задача ${task._id} принята.`;
+  }
+
+  if (parsed.action === 'fix') {
+    const result = await fixTask(task);
+    return result.error ?? `Задача ${task._id}: Claude исправляет ошибку.`;
   }
 
   // rework: та же логика, что у кнопки «Вернуть в работу» в интерфейсе

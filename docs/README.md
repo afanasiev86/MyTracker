@@ -34,10 +34,10 @@
 | Дайджест 09:00 | architecture/telegram-transport.md (`docs/architecture/telegram-transport.md:L11#Дайджест`) | buildDigest (`docs/functions/server/digest/buildDigest.md:L3#Назначение`), startDigestScheduler (`docs/functions/server/digest/startDigestScheduler.md:L3#Назначение`) |
 | Mini App | features/telegram.md (`docs/features/telegram.md:L33#Mini App`) | verifyInitData (`docs/functions/server/telegram/verifyInitData.md:L3#Назначение`) |
 | Клиенты и проекты (CRM) | features/crm-and-auth.md (`docs/features/crm-and-auth.md:L3#Клиенты и проекты`) | маршруты в `server/src/routes/clients.js`, `server/src/routes/projects.js` |
-| Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L36#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
+| Стоимость | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L39#Стоимость`) | `client/src/lib/cost.js:L3-5#sumRunCosts` |
 | Здоровье сервисов и запусков | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`), раздел «Здоровье» | getChecks (`server/src/services/health/getChecks.js:L11-28#getChecks`), getDetails (`server/src/services/health/details.js:L9-36#getDetails`), блок в интерфейсе `client/src/components/Health.jsx:L10-36#Health` |
 | Бэкапы и восстановление | `docs/RUNBOOK.md:L161#Восстановление после потери данных` | проверка архива: `deploy/restore-mongo.sh:L46@restore_into()`; копия вложений: `deploy/backup-uploads.sh:L21@tar -czf` |
-| Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L31-160#TaskDetail`; доска: раздел «Доска» в `docs/features/tasks-and-runs.md` | главная кнопка Telegram: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton` |
+| Экран задачи в интерфейсе | `client/src/components/TaskDetail.jsx:L33-164#TaskDetail`; доска: раздел «Доска» в `docs/features/tasks-and-runs.md` | главная кнопка Telegram: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton` |
 | Адреса страниц и форм (роутинг) | раздел «Адреса интерфейса» ниже | маршруты владельца `client/src/app/OwnerView.jsx:L18-53#OwnerView`, вход и роли `client/src/App.jsx:L12-95#App`, вкладки `client/src/app/SectionTabs.jsx:L6-19#SectionTabs` |
 
 ## Адреса интерфейса
