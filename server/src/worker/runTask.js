@@ -82,6 +82,7 @@ export async function runTask(taskId, { answer = null } = {}) {
       direct,
       log: `${res.stdout}\n${res.stderr}`.slice(-20000),
       costUsd: data?.total_cost_usd,
+      taskId: String(task._id),
     });
   } catch (err) {
     outcome = {

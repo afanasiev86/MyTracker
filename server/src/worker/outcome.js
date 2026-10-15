@@ -5,11 +5,26 @@ import { runChecks } from './verify/runChecks.js';
 import { publishToBase } from './publish.js';
 import { gitAccessHint } from './env.js';
 
+// Коммит этой задачи уже есть в истории ветки: значит, её уже выполнил прошлый запуск,
+// а текущий ничего не добавил намеренно, а не из-за сбоя.
+async function hasTaskCommit(wt, taskId) {
+  if (!taskId) return false;
+  const out = await git(wt, ['log', '--format=%s', '--grep', `^task(${taskId}):`, '-n', '1']);
+  return out.trim() !== '';
+}
+
+// Итог «На проверке»: автопроверка проекта плюс сводка. Статус от неё не меняется: решение за владельцем.
+async function reviewOutcome(wt, { costUsd, log, summary }) {
+  const checks = await runChecks(wt).catch((err) => [{ name: 'подготовка', ok: false, tail: err.message }]);
+  const checksLog = checks.map((c) => `\n=== ${c.name} ===\n${c.tail}`).join('');
+  return { status: 'review', summary, costUsd, log: log + checksLog, checks };
+}
+
 // Итог запуска по результату claude. Порядок условий важен: первое совпавшее определяет статус.
 // Возвращает { status, summary, costUsd, log, checks?, branch?, diffRange? }.
 // base и direct: основная ветка проекта и режим «коммитить сразу в неё». Тогда результат отправляется в base,
 // branch в итоге — это base, diffRange — коммиты запуска. Если отправить не удалось, итог failed, работа сохранена в ветке задачи.
-export async function resolveOutcome({ res, data, question, cfg, wt, startPoint, branch, base, direct = false, log, costUsd }) {
+export async function resolveOutcome({ res, data, question, cfg, wt, startPoint, branch, base, direct = false, log, costUsd, taskId }) {
   if (res.reason === 'cancelled') {
     return { status: 'failed', summary: 'Запуск остановлен вручную.', costUsd, log };
   }
@@ -50,7 +65,11 @@ export async function resolveOutcome({ res, data, question, cfg, wt, startPoint,
     return { status: 'waiting', summary: question, costUsd, log };
   }
   if (await countNewCommits(wt, startPoint) === 0) {
-    return { status: 'failed', summary: 'Claude не создал коммитов.', costUsd, log };
+    if (!(await hasTaskCommit(wt, taskId))) {
+      return { status: 'failed', summary: 'Claude не создал коммитов.', costUsd, log };
+    }
+    // Задача уже была выполнена и закоммичена в прошлом запуске: новых изменений по делу не требовалось
+    return reviewOutcome(wt, { costUsd, log, summary: data?.result || 'Новых изменений не потребовалось: задача уже выполнена в предыдущем запуске.' });
   }
   let published = null;
   if (direct) {
@@ -66,9 +85,7 @@ export async function resolveOutcome({ res, data, question, cfg, wt, startPoint,
     await git(wt, ['push', '-u', 'origin', branch]);
   }
   // Автопроверка не меняет статус: владелец видит результат и решает сам
-  const checks = await runChecks(wt).catch((err) => [{ name: 'подготовка', ok: false, tail: err.message }]);
-  const checksLog = checks.map((c) => `\n=== ${c.name} ===\n${c.tail}`).join('');
-  const outcome = { status: 'review', summary: data?.result || 'Готово к проверке', costUsd, log: log + checksLog, checks };
+  const outcome = await reviewOutcome(wt, { costUsd, log, summary: data?.result || 'Готово к проверке' });
   if (published) {
     outcome.summary = `Изменения отправлены в ветку ${base} (коммитов: ${published.commits}).\n${outcome.summary}`;
     outcome.branch = base;

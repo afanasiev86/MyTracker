@@ -4,7 +4,7 @@
 Главная функция воркера: готовит рабочую копию, запускает Claude, разбирает результат и выставляет итоговый статус задачи. Именно здесь собирается весь жизненный цикл запуска.
 
 ## Где объявлено
-`server/src/worker/runTask.js:L20-113#runTask`
+`server/src/worker/runTask.js:L20-114#runTask`
 
 ## Вход и выход
 - Вход: `taskId`; `{ answer }` — ответ владельца, если запуск продолжает вопрос.
@@ -25,18 +25,19 @@
 
 | Условие | Статус | Строка |
 |---|---|---|
-| отмена вручную | `failed` | `server/src/worker/outcome.js:L13@if (res.reason === 'cancelled')` |
-| превышен таймаут | `failed` | `server/src/worker/outcome.js:L16@if (res.reason === 'timeout') {` |
-| лимит подписки (запуск упал, и в итоговом событии или stderr есть признак лимита; весь вывод не проверяется) | `ready` | `server/src/worker/outcome.js:L29@if (runFailed && isLimitError(errorText)) {` |
-| ненулевой код или `is_error` | `failed` | `server/src/worker/outcome.js:L37@if (res.code !== 0 || data?.is_error) {` |
-| есть сохранённый вопрос | `waiting` | `server/src/worker/outcome.js:L45@if (question) {` |
-| нет новых коммитов | `failed` | `server/src/worker/outcome.js:L53@Claude не создал коммитов.` |
-| есть коммиты | `review` | `server/src/worker/outcome.js:L71@const outcome = { status: 'review'` (в режиме «в основную ветку» перед этим `publishToBase`; не удалось влить: `failed`) |
+| отмена вручную | `failed` | `server/src/worker/outcome.js:L28@if (res.reason === 'cancelled')` |
+| превышен таймаут | `failed` | `server/src/worker/outcome.js:L31@if (res.reason === 'timeout') {` |
+| лимит подписки (запуск упал, и в итоговом событии или stderr есть признак лимита; весь вывод не проверяется) | `ready` | `server/src/worker/outcome.js:L44@if (runFailed && isLimitError(errorText)) {` |
+| ненулевой код или `is_error` | `failed` | `server/src/worker/outcome.js:L52@if (res.code !== 0 || data?.is_error) {` |
+| есть сохранённый вопрос | `waiting` | `server/src/worker/outcome.js:L60@if (question) {` |
+| нет новых коммитов, и коммита этой задачи нет в истории ветки | `failed` | `server/src/worker/outcome.js:L69@Claude не создал коммитов.` |
+| нет новых коммитов, но коммит этой задачи уже есть в истории (прошлый запуск уже всё сделал) | `review` | `server/src/worker/outcome.js:L71@Задача уже была выполнена` (проверка: `server/src/worker/outcome.js:L10-14#hasTaskCommit`) |
+| есть коммиты | `review` | `server/src/worker/outcome.js:L88@'Готово к проверке'` (в режиме «в основную ветку» перед этим `publishToBase`; не удалось влить: `failed`) |
 
 ## Ошибки и граничные случаи
-- Любое исключение (например, сбой git) попадает в общий `catch` и даёт статус `failed` с текстом «Ошибка воркера»: `server/src/worker/runTask.js:L89@Ошибка воркера`.
+- Любое исключение (например, сбой git) попадает в общий `catch` и даёт статус `failed` с текстом «Ошибка воркера»: `server/src/worker/runTask.js:L90@Ошибка воркера`.
 - Задача может быть удалена во время запуска. Тогда `task.save()` упадёт, и это будет видно только в логах. Удаление задач в процессе запуска сейчас запрещено на уровне интерфейса, поэтому риск низкий.
-- Рабочая копия удаляется после сохранения, даже при ошибке: `server/src/worker/runTask.js:L111@await git(repo, ['worktree', 'remove'`. Если удаление упало, копия остаётся до следующего запуска (`prepareWorktree` удаляет её принудительно).
+- Рабочая копия удаляется после сохранения, даже при ошибке: `server/src/worker/runTask.js:L112@await git(repo, ['worktree', 'remove'`. Если удаление упало, копия остаётся до следующего запуска (`prepareWorktree` удаляет её принудительно).
 
 ## Связи
 - Конвейер целиком: `docs/architecture/run-pipeline.md:L5#Этапы запуска`.
