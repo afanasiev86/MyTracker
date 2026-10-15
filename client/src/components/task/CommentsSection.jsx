@@ -23,34 +23,7 @@ export default function CommentsSection({ comments, busy, onAdd }) {
 
   return (
     <>
-      {comments.length === 0 ? (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="Комментариев пока нет. Claude читает их при следующем запуске, поэтому здесь можно написать доработку."
-        />
-      ) : (
-        <ol className="task-comments">
-          {comments.map((c, i) => (
-            <li key={i}>
-              <Avatar size={28} style={{ background: AUTHOR_COLORS[c.author] ?? '#8c8c8c', flexShrink: 0 }}>
-                {(COMMENT_AUTHORS[c.author] ?? c.author ?? '?').charAt(0)}
-              </Avatar>
-              <div>
-                <Flex wrap align="baseline" gap={8}>
-                  <Typography.Text strong>{COMMENT_AUTHORS[c.author] ?? c.author}</Typography.Text>
-                  {c.createdAt && <Typography.Text type="secondary">{formatTime(c.createdAt)}</Typography.Text>}
-                  {c.visibleToClient && c.author !== 'client' && (
-                    <Typography.Text type="secondary">видно заказчику</Typography.Text>
-                  )}
-                </Flex>
-                <Typography.Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{c.text}</Typography.Paragraph>
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
-
-      <Form layout="vertical" style={{ marginTop: 16 }} onFinish={submit}>
+      <Form layout="vertical" onFinish={submit}>
         <Field label="Новый комментарий">
           <Input.TextArea
             value={comment}
@@ -74,6 +47,37 @@ export default function CommentsSection({ comments, busy, onAdd }) {
           </Button>
         </Flex>
       </Form>
+
+      {comments.length === 0 ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Комментариев пока нет. Claude читает их при следующем запуске, поэтому здесь можно написать доработку."
+          style={{ marginTop: 16 }}
+        />
+      ) : (
+        <ol className="task-comments" style={{ marginTop: 16 }}>
+          {comments
+            .slice()
+            .reverse()
+            .map((c, i) => (
+              <li key={comments.length - 1 - i}>
+                <Avatar size={28} style={{ background: AUTHOR_COLORS[c.author] ?? '#8c8c8c', flexShrink: 0 }}>
+                  {(COMMENT_AUTHORS[c.author] ?? c.author ?? '?').charAt(0)}
+                </Avatar>
+                <div>
+                  <Flex wrap align="baseline" gap={8}>
+                    <Typography.Text strong>{COMMENT_AUTHORS[c.author] ?? c.author}</Typography.Text>
+                    {c.createdAt && <Typography.Text type="secondary">{formatTime(c.createdAt)}</Typography.Text>}
+                    {c.visibleToClient && c.author !== 'client' && (
+                      <Typography.Text type="secondary">видно заказчику</Typography.Text>
+                    )}
+                  </Flex>
+                  <Typography.Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{c.text}</Typography.Paragraph>
+                </div>
+              </li>
+            ))}
+        </ol>
+      )}
     </>
   );
 }
