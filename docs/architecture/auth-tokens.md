@@ -9,7 +9,7 @@
 Подпись `initData` проверяет `server/src/services/telegramAuth.js:L7-38#verifyInitData`. Маршрут `server/src/routes/auth/telegramLogin.js:L9-32#telegramLogin` дополнительно сверяет id с `TELEGRAM_OWNER_ID`.
 
 ## Выпуск токенов
-Токен содержит `sub` и `tv` (версия). Срок: 30 дней для владельца, 2 часа для воркера (`server/src/worker/runTask.js:L49@TRACKER_TOKEN`).
+Токен содержит `sub` и `tv` (версия). Срок: 30 дней для владельца, 2 часа для воркера (`server/src/worker/runTask.js:L52@TRACKER_TOKEN`).
 
 ## Проверка токена
 verifyToken (`docs/functions/server/auth/verifyToken.md:L13#Алгоритм`) сверяет подпись, срок и версию. Middleware requireAuth (`docs/functions/server/auth/requireAuth.md:L13#Алгоритм`) отвечает 401.

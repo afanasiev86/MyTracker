@@ -23,6 +23,7 @@ const schema = z.object({
   OPS_APP_DIR: optional,
   GITHUB_TOKEN: optional,
   UAT_DOMAIN: optional,
+  UAT_DIR: optional,
 });
 
 // Все переменные окружения, которые знает сервер, и среди них секреты. Секреты убираются из окружения
@@ -53,7 +54,7 @@ export function readConfig(env = process.env) {
     // Токен GitHub из окружения. Токен из настроек интерфейса важнее, см. services/github/settings.js
     github: { token: raw.GITHUB_TOKEN },
     // Домен UAT-стендов (<slug>.<домен>). Без него стенды выключены, см. services/uat
-    uat: { domain: raw.UAT_DOMAIN },
+    uat: { domain: raw.UAT_DOMAIN, dir: raw.UAT_DIR || '/srv/uat' },
     worker: {
       reposDir: raw.REPOS_DIR,
       defaultBranch: raw.DEFAULT_BRANCH || 'main',

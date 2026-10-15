@@ -13,6 +13,7 @@ import { installSkill } from './installSkill.js';
 import { branchSettings } from '../services/projects/baseBranch.js';
 import { resolveOutcome } from './outcome.js';
 import { notifyRunFinished } from './notifyRun.js';
+import { requestDeploy } from '../services/uat/requestDeploy.js';
 import { claudeEnv, gitAccessHint } from './env.js';
 
 // Один запуск задачи: рабочая копия, claude, исход, запись в задачу, уведомление.
@@ -32,10 +33,12 @@ export async function runTask(taskId, { answer = null } = {}) {
   const repo = path.join(cfg.reposDir, task.project);
   const startedAt = new Date();
   let outcome;
+  let standNeeded = false;
 
   try {
     const { base, direct, uat } = await branchSettings(task.project);
     const target = direct ? base : uat;
+    standNeeded = !direct;
     const startPoint = await prepareWorkdir(repo, branch, target, base);
     await installSkill(repo);
     // Скриншоты задачи: если не удалось скачать, запуск идёт без них
@@ -110,4 +113,6 @@ export async function runTask(taskId, { answer = null } = {}) {
   await task.save();
 
   await notifyRunFinished(task, outcome, checksText);
+  // Результат лежит в UAT: стенд пересобирается из ветки UAT
+  if (outcome.status === 'review' && standNeeded) requestDeploy(task.project);
 }

@@ -19,6 +19,7 @@ import TaskSpec from './task/TaskSpec.jsx';
 import ProgressBlock from './task/ProgressBlock.jsx';
 import QuestionBlock from './task/QuestionBlock.jsx';
 import FailureBlock from './task/FailureBlock.jsx';
+import StandBlock from './task/StandBlock.jsx';
 import TaskHeader from './task/TaskHeader.jsx';
 import TaskSidebar from './task/TaskSidebar.jsx';
 import DiffView from './task/DiffView.jsx';
@@ -57,8 +58,8 @@ export default function TaskDetail({ id, onChanged }) {
     return setMainButton(mainText, () => onMainRef.current());
   }, [mainText]);
 
-  // Пока задача в работе, подгружаем текущий шаг Claude
-  const inProgress = task?.status === 'in_progress';
+  // Пока задача в работе или собирается стенд, подгружаем состояние
+  const inProgress = task?.status === 'in_progress' || task?.stand?.status === 'building';
   useEffect(() => {
     if (!inProgress) return undefined;
     const timer = setInterval(() => {
@@ -152,6 +153,7 @@ export default function TaskDetail({ id, onChanged }) {
           {task.status === 'waiting' && <QuestionBlock task={task} busy={busy} onAnswer={answerAndReload} />}
           {task.status === 'failed' && <FailureBlock task={task} busy={busy} onFix={fixAndReload} />}
           {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
+          <StandBlock stand={task.stand} />
 
           <TaskSpec task={task} />
           {diff !== null && <DiffView diff={diff} />}

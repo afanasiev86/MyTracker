@@ -16,6 +16,7 @@ import { handleCallback } from './bot/callbacks/handleCallback.js';
 import { handleGuest } from './bot/guest.js';
 import { startDigestScheduler } from './services/digestScheduler/startDigestScheduler.js';
 import { recoverRuns } from './services/runs/recoverRuns.js';
+import { failInterruptedDeploys } from './services/uat/requestDeploy.js';
 import { getConfig, assertStartupConfig } from './config.js';
 
 const cfg = getConfig();
@@ -39,6 +40,7 @@ for (const warning of warnings) {
 // Запуски, которые были в работе при остановке: ждавшие в очереди ставим обратно, выполнявшиеся помечаем ошибкой
 const recovered = await recoverRuns();
 console.log(`Восстановлено запусков: в очередь ${recovered.resumed}, с ошибкой ${recovered.failed}`);
+await failInterruptedDeploys();
 
 createApp().listen(cfg.port, () => {
   console.log(`API запущен на порту ${cfg.port}`);

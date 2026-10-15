@@ -19,7 +19,7 @@
 ## Ошибки и граничные случаи
 - Вызывается самим Claude через `deploy/tracker-api.sh` по инструкции из skill `implement-task`: `.claude/skills/implement-task/SKILL.md`.
 - Сам статус здесь не меняется. Перевод в «Нужен ответ» делает воркер в `server/src/worker/outcome.js:L50@return { status: 'waiting'`, иначе задача могла бы стать «ожидающей» без процесса.
-- Если Claude задал вопрос, а потом упал, `pendingQuestion` очищается в `server/src/worker/runTask.js:L100@if (outcome.status !== 'waiting') task.pendingQuestion = ''`.
+- Если Claude задал вопрос, а потом упал, `pendingQuestion` очищается в `server/src/worker/runTask.js:L103@if (outcome.status !== 'waiting') task.pendingQuestion = ''`.
 
 ## Связи
 - Поток вопросов: `docs/features/tasks-and-runs.md:L27#Вопросы от Claude`.

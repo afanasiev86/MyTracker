@@ -32,6 +32,20 @@ export function saveStandPort(slug, port) {
   return Project.updateOne({ slug }, { uatPort: port });
 }
 
+// Данные проекта для сборки стенда
+export function findStandProject(slug) {
+  return Project.findOne({ slug }).select('slug repoUrl uatBranch commitToBase uatPort uatStatus uatCommit uatBuiltAt uatError').lean();
+}
+
+export function saveStandState(slug, state) {
+  return Project.updateOne({ slug }, state);
+}
+
+// Стенды, сборка которых оборвалась вместе с сервером
+export function failInterruptedStands(error) {
+  return Project.updateMany({ uatStatus: 'building' }, { uatStatus: 'failed', uatError: error });
+}
+
 export function projectExists(slug) {
   return Project.exists({ slug });
 }

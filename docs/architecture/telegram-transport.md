@@ -12,4 +12,4 @@ telegramApi (`docs/functions/server/telegram/telegramApi.md:L3#Назначен�
 Раз в минуту проверяется московское время, в 09:00 отправляется один раз за день: startDigestScheduler (`docs/functions/server/digest/startDigestScheduler.md:L12#Алгоритм`). Текст собирает buildDigest (`docs/functions/server/digest/buildDigest.md:L3#Назначение`), дни считает moscowParts (`docs/functions/server/digest/moscowParts.md:L3#Назначение`).
 
 ## Mini App
-Главная кнопка и вибрация: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton`, `client/src/lib/telegram/haptic.js:L4-10#haptic`. Экран задачи: `client/src/components/TaskDetail.jsx:L33-164#TaskDetail`.
+Главная кнопка и вибрация: `client/src/lib/telegram/mainButton.js:L5-19#setMainButton`, `client/src/lib/telegram/haptic.js:L4-10#haptic`. Экран задачи: `client/src/components/TaskDetail.jsx:L34-166#TaskDetail`.

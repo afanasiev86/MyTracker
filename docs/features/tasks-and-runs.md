@@ -19,7 +19,7 @@
 - Известные отличия от образца: нет перехода по Enter с клавиатуры (в образце его нет), у колонок есть счётчик карточек.
 
 ## Карточка задачи (окно)
-Собирается в `client/src/components/TaskDetail.jsx:L33-164#TaskDetail` из блоков `client/src/components/task/`: шапка `client/src/components/task/TaskHeader.jsx:L9-30#TaskHeader` (цветная полоса по статусу: `client/src/components/task/statusMeta.js:L2-10#STATUS_COLORS`), справа панель `client/src/components/task/TaskSidebar.jsx:L9-36#TaskSidebar` (главное действие сверху, затем остальные и реквизиты), слева описание и вкладки «Комментарии», «Запуски», «Скриншоты». Вопрос Claude и ход работы показываются над описанием, потому что требуют реакции. Раскладка и стили: `client/src/styles.css@.task-layout`; на узком экране панель идёт сразу под шапкой, а реквизиты скрыты (они дублируют шапку).
+Собирается в `client/src/components/TaskDetail.jsx:L34-166#TaskDetail` из блоков `client/src/components/task/`: шапка `client/src/components/task/TaskHeader.jsx:L9-30#TaskHeader` (цветная полоса по статусу: `client/src/components/task/statusMeta.js:L2-10#STATUS_COLORS`), справа панель `client/src/components/task/TaskSidebar.jsx:L9-36#TaskSidebar` (главное действие сверху, затем остальные и реквизиты), слева описание и вкладки «Комментарии», «Запуски», «Скриншоты». Вопрос Claude и ход работы показываются над описанием, потому что требуют реакции. Раскладка и стили: `client/src/styles.css@.task-layout`; на узком экране панель идёт сразу под шапкой, а реквизиты скрыты (они дублируют шапку).
 
 ## Запуск
 Вход из API, бота и кнопок: startTask (`docs/functions/server/runs/startTask.md:L13#Алгоритм`). Конвейер: run-pipeline (`docs/architecture/run-pipeline.md:L5#Этапы запуска`).

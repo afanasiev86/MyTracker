@@ -21,6 +21,11 @@ const projectSchema = new mongoose.Schema({
   uatBranch: { type: String, default: 'uat', trim: true },
   // Локальный порт UAT-стенда (проксируется nginx). Выдаётся один раз и больше не меняется, см. services/uat/ensureStand.js
   uatPort: { type: Number, default: null },
+  // Состояние стенда: что собрано и чем закончилась последняя сборка (подробный журнал лежит в папке стенда)
+  uatStatus: { type: String, enum: ['none', 'building', 'ready', 'failed'], default: 'none' },
+  uatCommit: { type: String, default: '' },
+  uatBuiltAt: { type: Date, default: null },
+  uatError: { type: String, default: '' },
   deadline: { type: Date, default: null },
   price: {
     amount: { type: Number, default: 0, min: 0 },
