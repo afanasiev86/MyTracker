@@ -23,5 +23,5 @@
 
 ## Связи
 - Используется в `docs/functions/server/runs/startTask.md:L13#Алгоритм` и `docs/functions/server/runs/answerTask.md:L13#Алгоритм`.
-- Подход: `docs/architecture/run-pipeline.md:L39#Очередь`.
+- Подход: `docs/architecture/run-pipeline.md:L52#Очередь`.
 - Тесты: `server/test/queue.test.js:L18@describe('очередь с приоритетом'`.

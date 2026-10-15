@@ -21,4 +21,4 @@
 
 ## Связи
 - Реестр: `docs/functions/server/worker/registerRun.md:L3#Назначение`.
-- Отмена и таймаут: `docs/architecture/run-pipeline.md:L42#Отмена и таймаут`.
+- Отмена и таймаут: `docs/architecture/run-pipeline.md:L55#Отмена и таймаут`.

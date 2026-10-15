@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Alert, Button, Card, Flex, Form, Input, Select, Tag } from 'antd';
+import { Alert, Button, Card, Divider, Flex, Form, Input, Select, Tag } from 'antd';
 import { confirmAction } from '../lib/telegram/confirm.js';
 import Field from './Field.jsx';
 import Loading from './Loading.jsx';
 import { useClaudeSettings } from './claude/useClaudeSettings.js';
+import ClaudeLogin from './claude/ClaudeLogin.jsx';
 
 const TYPE_OPTIONS = [
   { value: 'api_key', label: 'API-ключ (console.anthropic.com)' },
@@ -13,16 +14,17 @@ const TYPE_OPTIONS = [
 // Подключение аккаунта Claude: если на одном аккаунте закончился лимит, можно переключить задачи на другой —
 // ключ или токен вводится здесь, запрос к Anthropic при сохранении не делается (нет общего «whoami»).
 export default function ClaudeSettings() {
-  const { state, error, busy, connect, disconnect } = useClaudeSettings();
+  const claude = useClaudeSettings();
+  const { state, error } = claude;
 
   if (!state) {
     return error ? <Alert type="error" showIcon message={error} /> : <Loading text="Загрузка…" />;
   }
 
-  return <ClaudeForm state={state} error={error} busy={busy} connect={connect} disconnect={disconnect} />;
+  return <ClaudeForm {...claude} />;
 }
 
-function ClaudeForm({ state, error, busy, connect, disconnect }) {
+function ClaudeForm({ state, error, busy, connect, disconnect, loginUrl, startLogin, finishLogin, cancelLogin }) {
   const [label, setLabel] = useState('');
   const [type, setType] = useState('api_key');
   const [token, setToken] = useState('');
@@ -49,6 +51,10 @@ function ClaudeForm({ state, error, busy, connect, disconnect }) {
         ? <Tag color="green">{`Подключён: ${state.label}`}</Tag>
         : <Tag>Аккаунт сервера</Tag>}
     >
+      <ClaudeLogin loginUrl={loginUrl} busy={busy} onStart={startLogin} onFinish={finishLogin} onCancel={cancelLogin} />
+
+      <Divider plain>или вставьте ключ вручную</Divider>
+
       <Form layout="vertical" onFinish={submit}>
         <Field label="Метка аккаунта" extra="Любое имя, чтобы отличать аккаунты между собой">
           <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Например, «Второй аккаунт»" />

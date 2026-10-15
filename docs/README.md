@@ -20,10 +20,10 @@
 
 | Задача | Файл с обзором | Ключевые функции |
 |---|---|---|
-| Статусы, создание, правка задач | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L5#Задачи`) | PATCH /:id (`docs/functions/server/routes/patchTask.md:L3#Назначение`), статусы (`docs/architecture/run-pipeline.md:L48#Состояния задачи`) |
+| Статусы, создание, правка задач | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L5#Задачи`) | PATCH /:id (`docs/functions/server/routes/patchTask.md:L3#Назначение`), статусы (`docs/architecture/run-pipeline.md:L61#Состояния задачи`) |
 | Запуск Claude, очередь, исходы | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L5#Этапы запуска`) | startTask (`docs/functions/server/runs/startTask.md:L3#Назначение`), runTask (`docs/functions/server/worker/runTask.md:L3#Назначение`) |
 | Вопросы от Claude и ответы | features/tasks-and-runs.md (`docs/features/tasks-and-runs.md:L27#Вопросы от Claude`) | postQuestion (`docs/functions/server/routes/postQuestion.md:L3#Назначение`), answerTask (`docs/functions/server/runs/answerTask.md:L3#Назначение`) |
-| Отмена и таймаут | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L42#Отмена и таймаут`) | cancelTask (`docs/functions/server/runs/cancelTask.md:L3#Назначение`), stopRun (`docs/functions/server/worker/stopRun.md:L3#Назначение`) |
+| Отмена и таймаут | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L55#Отмена и таймаут`) | cancelTask (`docs/functions/server/runs/cancelTask.md:L3#Назначение`), stopRun (`docs/functions/server/worker/stopRun.md:L3#Назначение`) |
 | Прогресс в карточке | architecture/stream-progress.md (`docs/architecture/stream-progress.md:L5#Разбор событий`) | progressFromEvent (`docs/functions/server/progress/progressFromEvent.md:L3#Назначение`), runClaude (`docs/functions/server/worker/runClaude.md:L3#Назначение`) |
 | Ограничение инструментов Claude | architecture/tool-restriction.md (`docs/architecture/tool-restriction.md:L5#Список инструментов`) | claudeTools (`docs/functions/server/worker/claudeTools.md:L3#Назначение`) |
 | Переключение аккаунта Claude (при лимите) | architecture/run-pipeline.md (`docs/architecture/run-pipeline.md:L27#Аккаунт Claude`) | claudeEnv (`server/src/worker/env.js:L37-44#claudeEnv`), карточка `client/src/components/ClaudeSettings.jsx` |
@@ -76,7 +76,7 @@
 - Дайджест: buildDigest (`docs/functions/server/digest/buildDigest.md:L3#Назначение`), moscowParts (`docs/functions/server/digest/moscowParts.md:L3#Назначение`), startDigestScheduler (`docs/functions/server/digest/startDigestScheduler.md:L3#Назначение`)
 
 ## Известные проблемы (проверено по коду)
-- Реестр процессов в памяти: после перезапуска запущенный процесс Claude не виден. Выполнявшиеся запуски помечаются ошибкой. Ждавшие в очереди возвращаются (см. `docs/architecture/run-pipeline.md:L39#Очередь`).
+- Реестр процессов в памяти: после перезапуска запущенный процесс Claude не виден. Выполнявшиеся запуски помечаются ошибкой. Ждавшие в очереди возвращаются (см. `docs/architecture/run-pipeline.md:L52#Очередь`).
 - Поток `stream-json` и итоговое событие `result` не проверены на реальном запуске `claude`.
 - Вложения: см. [tasks-and-runs](docs/features/tasks-and-runs.md#Вложения).
 
