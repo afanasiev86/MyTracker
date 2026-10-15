@@ -10,6 +10,7 @@ export function buildProjectBody(form) {
     repoUrl: form.repoUrl.trim(),
     defaultBranch: form.defaultBranch.trim() || 'main',
     commitToBase: Boolean(form.commitToBase),
+    uatBranch: form.uatBranch.trim() || 'uat',
     deadline: form.deadline || null,
     price: { amount: Number(form.priceAmount) || 0, currency: form.priceCurrency },
   };

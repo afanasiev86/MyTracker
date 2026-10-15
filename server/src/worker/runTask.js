@@ -1,7 +1,6 @@
 import path from 'node:path';
 import Task from '../models/Task.js';
 import { issueToken } from '../services/auth/tokens.js';
-import { git } from './git.js';
 import { materializeScreenshots } from './screenshots/materializeScreenshots.js';
 import { formatChecks } from './verify/formatChecks.js';
 import { findResult } from './progress/findResult.js';
@@ -9,7 +8,7 @@ import { workerConfig } from './config.js';
 import { TRACKER_CLI } from './claudeTools.js';
 import { launchArgs } from './launchArgs.js';
 import { runClaude } from './claudeProcess.js';
-import { prepareWorktree } from './worktree.js';
+import { prepareWorkdir } from './worktree.js';
 import { installSkill } from './installSkill.js';
 import { branchSettings } from '../services/projects/baseBranch.js';
 import { resolveOutcome } from './outcome.js';
@@ -31,16 +30,16 @@ export async function runTask(taskId, { answer = null } = {}) {
 
   const branch = `task/${task._id}`;
   const repo = path.join(cfg.reposDir, task.project);
-  const wt = path.join(cfg.worktreesDir, String(task._id));
   const startedAt = new Date();
   let outcome;
 
   try {
-    const { base, direct } = await branchSettings(task.project);
-    const startPoint = await prepareWorktree(repo, branch, wt, base);
-    await installSkill(wt);
+    const { base, direct, uat } = await branchSettings(task.project);
+    const target = direct ? base : uat;
+    const startPoint = await prepareWorkdir(repo, branch, target, base);
+    await installSkill(repo);
     // Скриншоты задачи: если не удалось скачать, запуск идёт без них
-    const screenshots = await materializeScreenshots(task, wt).catch((err) => {
+    const screenshots = await materializeScreenshots(task, repo).catch((err) => {
       console.error('Скриншоты:', err.message);
       return [];
     });
@@ -59,7 +58,7 @@ export async function runTask(taskId, { answer = null } = {}) {
     };
 
     const res = await runClaude(cfg.claudeBin, args, {
-      cwd: wt,
+      cwd: repo,
       env,
       taskId: task._id,
       timeoutMs: cfg.timeoutMin * 60 * 1000,
@@ -77,11 +76,10 @@ export async function runTask(taskId, { answer = null } = {}) {
       data,
       question: fresh?.pendingQuestion || '',
       cfg,
-      wt,
+      wt: repo,
       startPoint,
       branch,
-      base,
-      direct,
+      base: target,
       log: `${res.stdout}\n${res.stderr}`.slice(-20000),
       costUsd: data?.total_cost_usd,
     });
@@ -94,9 +92,10 @@ export async function runTask(taskId, { answer = null } = {}) {
   }
 
   task.status = outcome.status;
-  // Результат в основной ветке: показываем её, а diff строим по коммитам запуска
+  // Результат в целевой ветке: показываем её, а diff строим по коммитам запуска
   task.branch = outcome.branch ?? branch;
   task.diffRange = outcome.diffRange ?? { from: '', to: '' };
+  if (outcome.commits) task.commits = [...(task.commits ?? []), ...outcome.commits];
   task.progress = '';
   if (outcome.status !== 'waiting') task.pendingQuestion = '';
   task.runs.push({
@@ -110,6 +109,5 @@ export async function runTask(taskId, { answer = null } = {}) {
   if (checksText) task.comments.push({ author: 'system', text: `Автопроверка: ${checksText}` });
   await task.save();
 
-  await git(repo, ['worktree', 'remove', '--force', wt]).catch(() => {});
   await notifyRunFinished(task, outcome, checksText);
 }

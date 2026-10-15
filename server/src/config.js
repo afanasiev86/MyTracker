@@ -16,13 +16,13 @@ const schema = z.object({
   TELEGRAM_MINIAPP_URL: optional,
   ATTACHMENTS_DIR: optional,
   REPOS_DIR: optional,
-  WORKTREES_DIR: optional,
   DEFAULT_BRANCH: optional,
   CLAUDE_BIN: optional,
   TRACKER_API_URL: optional,
   RUN_TIMEOUT_MIN: optional,
   OPS_APP_DIR: optional,
   GITHUB_TOKEN: optional,
+  UAT_DOMAIN: optional,
 });
 
 // Все переменные окружения, которые знает сервер, и среди них секреты. Секреты убираются из окружения
@@ -52,9 +52,10 @@ export function readConfig(env = process.env) {
     },
     // Токен GitHub из окружения. Токен из настроек интерфейса важнее, см. services/github/settings.js
     github: { token: raw.GITHUB_TOKEN },
+    // Домен UAT-стендов (<slug>.<домен>). Без него стенды выключены, см. services/uat
+    uat: { domain: raw.UAT_DOMAIN },
     worker: {
       reposDir: raw.REPOS_DIR,
-      worktreesDir: raw.WORKTREES_DIR,
       defaultBranch: raw.DEFAULT_BRANCH || 'main',
       claudeBin: raw.CLAUDE_BIN || 'claude',
       apiUrl: raw.TRACKER_API_URL || `http://localhost:${port}/api`,

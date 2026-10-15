@@ -2,6 +2,7 @@ import { canTransition } from '../../../../shared/statuses.js';
 import { findTask } from '../store/tasks.js';
 import { assertProjectExists } from './assertProjectExists.js';
 import { domainError } from '../errors.js';
+import { acceptTask } from '../runs/acceptTask.js';
 
 // Правка полей задачи и ручной переход статуса. Статус «В работе» ставится только запуском.
 // Возвращает задачу; ошибки — DomainError (404, 409).
@@ -22,7 +23,15 @@ export async function patchTask(id, patch) {
     }
   }
 
-  Object.assign(task, patch);
+  // Приёмка из интерфейса идёт тем же путём, что и из Telegram: результат из UAT переносится в основную ветку
+  const changes = { ...patch };
+  if (patch.status === 'done' && task.status === 'review') {
+    const accepted = await acceptTask(task);
+    if (accepted.error) throw domainError('conflict', accepted.error);
+    delete changes.status;
+  }
+
+  Object.assign(task, changes);
   await task.save();
   return task.toObject();
 }

@@ -34,7 +34,7 @@ class FakeTask {
   }
 }
 
-const branching = { base: 'init', direct: false };
+const branching = { base: 'init', direct: false, uat: 'uat' };
 const notifyRunFinished = jest.fn(async () => {});
 jest.unstable_mockModule('../src/models/Task.js', () => ({ default: FakeTask, onTaskStatusChange: () => {} }));
 jest.unstable_mockModule('../src/services/auth/tokenVersion.js', () => ({ currentTokenVersion: async () => 1, revokeAllTokens: async () => 2 }));
@@ -89,8 +89,7 @@ describe('запуск задачи от кнопки до коммита на G
     }
     const bin = path.join(root, 'claude');
     await fs.writeFile(bin, FAKE_CLAUDE, { mode: 0o755 });
-    Object.assign(process.env, { REPOS_DIR: reposDir, WORKTREES_DIR: path.join(root, 'worktrees'), CLAUDE_BIN: bin });
-    await fs.mkdir(process.env.WORKTREES_DIR);
+    Object.assign(process.env, { REPOS_DIR: reposDir, CLAUDE_BIN: bin });
 
     if (!identity) {
       // Как на свежем сервере: у пользователя нет ни глобального, ни системного git-имени, угадывать запрещено
@@ -118,14 +117,18 @@ describe('запуск задачи от кнопки до коммита на G
 
   const originHas = (branch) => git(originDir, 'branch', '--list', branch).trim() !== '';
 
-  it('успешный запуск: коммит дошёл до ветки задачи на GitHub, статус «На проверке»', async () => {
+  it('успешный запуск: коммит дошёл до ветки UAT, основная не тронута, статус «На проверке»', async () => {
     const task = await setup();
     await runTask(task._id);
 
-    expect(task.runs.at(-1).summary).toBe('Готово: логотип добавлен (лимит запросов не менялся)');
+    expect(task.runs.at(-1).summary).toBe('Изменения отправлены в ветку uat (коммитов: 1).\nГотово: логотип добавлен (лимит запросов не менялся)');
     expect(task.status).toBe('review');
-    expect(originHas(`task/${task._id}`)).toBe(true);
-    expect(git(originDir, 'log', `task/${task._id}`, '--format=%s')).toContain('task: add logo');
+    expect(originHas('uat')).toBe(true);
+    expect(originHas(`task/${task._id}`)).toBe(false);
+    expect(task.branch).toBe('uat');
+    expect(task.commits).toHaveLength(1);
+    expect(git(originDir, 'log', 'uat', '--format=%s')).toContain('task: add logo');
+    expect(git(originDir, 'log', 'init', '--format=%s')).not.toContain('task: add logo');
   });
 
   it('слова про лимит в том, что Claude прочитал или написал, не считаются исчерпанным лимитом', async () => {
@@ -144,7 +147,7 @@ describe('запуск задачи от кнопки до коммита на G
 
     expect(await fs.readFile(seen, 'utf8')).toBe('true');
     expect(task.status).toBe('review');
-    expect(git(originDir, 'ls-tree', '-r', '--name-only', `task/${task._id}`)).not.toContain('.claude');
+    expect(git(originDir, 'ls-tree', '-r', '--name-only', 'uat')).not.toContain('.claude');
   });
 
   it('своя инструкция проекта не заменяется', async () => {
@@ -157,7 +160,7 @@ describe('запуск задачи от кнопки до коммита на G
     git(seed, 'push', '-q', 'origin', 'HEAD:init');
     await runTask(task._id);
 
-    expect(git(originDir, 'show', `task/${task._id}:.claude/skills/implement-task/SKILL.md`)).toBe('своя');
+    expect(git(originDir, 'show', 'uat:.claude/skills/implement-task/SKILL.md')).toBe('своя');
   });
 
   it('режим «в основную ветку»: коммит дошёл до основной ветки', async () => {
@@ -186,6 +189,6 @@ describe('запуск задачи от кнопки до коммита на G
 
     expect(task.runs.at(-1).log).not.toMatch(/Committer identity unknown|unable to auto-detect|tell me who you are/i);
     expect(task.status).toBe('review');
-    expect(git(originDir, 'log', `task/${task._id}`, '--format=%s')).toContain('task: add logo');
+    expect(git(originDir, 'log', 'uat', '--format=%s')).toContain('task: add logo');
   });
 });

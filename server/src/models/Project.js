@@ -16,8 +16,11 @@ const projectSchema = new mongoose.Schema({
   status: { type: String, enum: PROJECT_STATUSES, default: 'active' },
   repoUrl: { type: String, default: '', trim: true },
   defaultBranch: { type: String, default: 'main', trim: true },
-  // Результат задач отправляется сразу в основную ветку (иначе в ветку задачи task/<id>)
+  // Результат задач отправляется сразу в основную ветку («в ПРОД»). Иначе он уходит в ветку UAT и вливается в основную при приёмке
   commitToBase: { type: Boolean, default: false },
+  uatBranch: { type: String, default: 'uat', trim: true },
+  // Локальный порт UAT-стенда (проксируется nginx). Выдаётся один раз и больше не меняется, см. services/uat/ensureStand.js
+  uatPort: { type: Number, default: null },
   deadline: { type: Date, default: null },
   price: {
     amount: { type: Number, default: 0, min: 0 },

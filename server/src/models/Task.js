@@ -44,12 +44,15 @@ const taskSchema = new mongoose.Schema({
   // Ручная позиция на доске (меньше — выше). Не задана — порядок по updatedAt, см. shared/taskOrder.js
   order: { type: Number, default: undefined },
   tags: { type: [String], default: [] },
+  // Ветка, в которой лежит результат: UAT или основная (если проект коммитит сразу в ПРОД)
   branch: { type: String, default: '' },
-  // Коммиты последнего запуска, отправленные прямо в основную ветку (для diff). Пусто, если результат в ветке задачи
+  // Коммиты последнего запуска в этой ветке (для diff)
   diffRange: {
     from: { type: String, default: '' },
     to: { type: String, default: '' },
   },
+  // Коммиты всех запусков задачи в порядке создания: по ним результат переносится из UAT в основную ветку при приёмке
+  commits: { type: [String], default: [] },
   // Сессия Claude Code, которую продолжаем после ответа на вопрос
   sessionId: { type: String, default: '' },
   // Вопрос, который Claude задал и который ждёт ответа

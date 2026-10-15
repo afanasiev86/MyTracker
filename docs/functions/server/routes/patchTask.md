@@ -5,7 +5,7 @@
 
 ## Где объявлено
 Маршрут (тонкий, только HTTP): `server/src/routes/tasks/patchTask.js:L6-13#patchTask`.
-Правила: `server/src/services/tasks/patchTask.js:L8-28#patchTask`.
+Правила: `server/src/services/tasks/patchTask.js:L9-37#patchTask`.
 
 ## Вход и выход
 - Вход: тело запроса по схеме `updateSchema` (`server/src/routes/tasks/schemas.js:L21-25#updateSchema`).
@@ -13,10 +13,11 @@
 
 ## Алгоритм
 1. Валидирует тело и нормализует поля в маршруте: `server/src/routes/tasks/patchTask.js:L8@const patch = normalize(updateSchema.parse(req.body));`.
-2. Если меняется проект, проверяет, что он существует: `server/src/services/tasks/patchTask.js:L13@await assertProjectExists(patch.project);`.
-3. Статус `in_progress` вручную не ставится, это делает только запуск: `server/src/services/tasks/patchTask.js:L18@Статус «В работе» ставится только запуском задачи`.
-4. Остальные переходы проверяются таблицей: `server/src/services/tasks/patchTask.js:L20@if (!canTransition(task.status, patch.status))`. Правила: `docs/architecture/run-pipeline.md:L62#Состояния задачи`.
-5. Сохраняет задачу и возвращает её: `server/src/services/tasks/patchTask.js:L25@Object.assign(task, patch);`.
+2. Если меняется проект, проверяет, что он существует: `server/src/services/tasks/patchTask.js:L14@await assertProjectExists(patch.project);`.
+3. Статус `in_progress` вручную не ставится, это делает только запуск: `server/src/services/tasks/patchTask.js:L19@Статус «В работе» ставится только запуском задачи`.
+4. Остальные переходы проверяются таблицей: `server/src/services/tasks/patchTask.js:L21@if (!canTransition(task.status, patch.status))`. Правила: `docs/architecture/run-pipeline.md:L68#Состояния задачи`.
+5. Переход «На проверке» → «Принято» идёт через `acceptTask`: результат из UAT переносится в основную ветку, при ошибке ответ `409` с причиной (`docs/architecture/run-pipeline.md:L29#Приёмка: из UAT в основную ветку`).
+6. Сохраняет задачу и возвращает её: `server/src/services/tasks/patchTask.js:L34@Object.assign(task, changes);`.
 
 ## Ошибки и граничные случаи
 - Проверка перехода и сохранение не атомарны: между ними задачу может изменить воркер. Для ручных статусов это не опасно, потому что воркер не ставит `review` вручную, но это место для оптимистичной блокировки, если понадобится.
@@ -24,4 +25,4 @@
 
 ## Связи
 - Клиент: ``client/src/api/tasks.js:L6-7#updateTask``.
-- Статусы: `docs/architecture/run-pipeline.md:L62#Состояния задачи`.
+- Статусы: `docs/architecture/run-pipeline.md:L68#Состояния задачи`.

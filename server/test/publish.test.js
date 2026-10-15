@@ -3,8 +3,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { prepareWorktree } from '../src/worker/worktree.js';
+import { prepareWorkdir } from '../src/worker/worktree.js';
 import { publishToBase } from '../src/worker/publish.js';
+import { promoteToBase } from '../src/worker/promote.js';
 import { resolveOutcome } from '../src/worker/outcome.js';
 import { taskDiff } from '../src/services/diff.js';
 
@@ -45,8 +46,8 @@ describe('отправка результата задачи в основную
     git(other, 'config', 'user.name', 'owner');
     git(other, 'config', 'user.email', 'owner@example.com');
 
-    wt = path.join(root, 'wt');
-    await prepareWorktree(repo, 'task/1', wt, 'init');
+    wt = repo;
+    await prepareWorkdir(repo, 'task/1', 'init', 'init');
   });
 
   afterEach(() => fs.rm(root, { recursive: true, force: true }));
@@ -121,9 +122,9 @@ describe('отправка результата задачи в основную
     const run = { code: 0, stdout: '', stderr: '', reason: null };
     const common = { res: run, data: { result: 'Готово: добавил b' }, question: '', cfg: { timeoutMin: 30 }, log: '', costUsd: 0.2 };
 
-    it('в режиме «в основную ветку»: статус «На проверке», ветка — основная, diff по коммитам запуска', async () => {
+    it('результат в основной ветке: статус «На проверке», ветка — основная, diff по коммитам запуска', async () => {
       await commitIn(wt, 'b.txt', 'two\n', 'task: add b');
-      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init', direct: true });
+      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init' });
 
       expect(outcome.status).toBe('review');
       expect(outcome.summary).toMatch(/^Изменения отправлены в ветку init \(коммитов: 1\)\./);
@@ -139,12 +140,12 @@ describe('отправка результата задачи в основную
       delete process.env.REPOS_DIR;
     });
 
-    it('в режиме «в основную ветку» при конфликте: «Ошибка», причина и ветка с сохранённой работой названы в итоге', async () => {
+    it('при конфликте с целевой веткой: «Ошибка», причина и ветка с сохранённой работой названы в итоге', async () => {
       await commitIn(wt, 'a.txt', 'mine\n', 'task: edit a');
       await commitIn(other, 'a.txt', 'theirs\n', 'owner: edit a');
       git(other, 'push', '-q', 'origin', 'HEAD:init');
 
-      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init', direct: true });
+      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init' });
 
       expect(outcome.status).toBe('failed');
       expect(outcome.summary).toMatch(/Не удалось влить изменения в ветку init \(конфликт с новыми коммитами\)/);
@@ -152,22 +153,58 @@ describe('отправка результата задачи в основную
       expect(outcome.branch).toBeUndefined();
     });
 
-    it('без режима поведение прежнее: коммиты в ветке задачи, основная ветка не меняется', async () => {
+    it('результат в UAT: ветка создаётся от основной, основная не меняется, хеши коммитов возвращаются', async () => {
+      await prepareWorkdir(repo, 'task/2', 'uat', 'init');
+      expect(originHas(root, 'uat')).toBe(true);
       await commitIn(wt, 'b.txt', 'two\n', 'task: add b');
-      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init' });
+      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/uat', branch: 'task/2', base: 'uat' });
 
       expect(outcome.status).toBe('review');
-      expect(outcome.branch).toBeUndefined();
-      expect(outcome.diffRange).toBeUndefined();
+      expect(outcome.branch).toBe('uat');
+      expect(outcome.commits).toHaveLength(1);
+      expect(originLog(root, 'uat')).toContain('task: add b');
       expect(originLog(root)).not.toContain('task: add b');
-      expect(originLog(root, 'task/1')).toContain('task: add b');
+      expect(originHas(root, 'task/2')).toBe(false);
     });
 
-    it('без новых коммитов запуск — ошибка в обоих режимах', async () => {
-      for (const direct of [true, false]) {
-        const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init', direct });
-        expect(outcome).toMatchObject({ status: 'failed', summary: 'Claude не создал коммитов.' });
-      }
+    it('без новых коммитов запуск — ошибка', async () => {
+      const outcome = await resolveOutcome({ ...common, wt, startPoint: 'origin/init', branch: 'task/1', base: 'init' });
+      expect(outcome).toMatchObject({ status: 'failed', summary: 'Claude не создал коммитов.' });
+    });
+  });
+
+  describe('приёмка: перенос коммитов из UAT в основную ветку', () => {
+    async function publishToUat(branch, file, message) {
+      await prepareWorkdir(repo, branch, 'uat', 'init');
+      await commitIn(wt, file, `${file}\n`, message);
+      return (await publishToBase(wt, { branch, base: 'uat' })).shas;
+    }
+
+    it('в основную уходят только коммиты принятой задачи, другие задачи в UAT остаются', async () => {
+      await publishToUat('task/2', 'b.txt', 'task: add b');
+      const second = await publishToUat('task/3', 'c.txt', 'task: add c');
+
+      const res = await promoteToBase(repo, { base: 'init', commits: second });
+
+      expect(res).toEqual({ ok: true });
+      expect(originLog(root)).toContain('task: add c');
+      expect(originLog(root)).not.toContain('task: add b');
+      expect(originLog(root, 'uat')).toContain('task: add b');
+      expect(git(repo, 'worktree', 'list').trim().split('\n')).toHaveLength(1);
+    });
+
+    it('при конфликте основная ветка не меняется, временная копия убрана', async () => {
+      await prepareWorkdir(repo, 'task/2', 'uat', 'init');
+      await commitIn(wt, 'a.txt', 'uat version\n', 'task: edit a in uat');
+      const { shas } = await publishToBase(wt, { branch: 'task/2', base: 'uat' });
+      await commitIn(other, 'a.txt', 'theirs\n', 'owner: edit a');
+      git(other, 'push', '-q', 'origin', 'HEAD:init');
+
+      const res = await promoteToBase(repo, { base: 'init', commits: shas });
+
+      expect(res).toMatchObject({ ok: false, reason: 'conflict' });
+      expect(originLog(root)).not.toContain('task: edit a in uat');
+      expect(git(repo, 'worktree', 'list').trim().split('\n')).toHaveLength(1);
     });
   });
 });

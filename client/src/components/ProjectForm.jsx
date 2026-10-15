@@ -137,13 +137,18 @@ export default function ProjectForm({ project, onSaved, onCancel, onDelete }) {
               onChange={(e) => setForm((f) => ({ ...f, commitToBase: e.target.checked }))}
               style={{ marginBottom: 16 }}
             >
-              Коммитить сразу в эту ветку
+              Пушить сразу в ПРОД
             </Checkbox>
             <Typography.Paragraph type="secondary" style={{ marginTop: -8, fontSize: 13 }}>
               {form.commitToBase
-                ? `Результат задач попадает прямо в «${form.defaultBranch.trim() || 'main'}», без отдельной ветки и без Pull request. Если ветку успели изменить, коммиты Claude ложатся поверх. При конфликте задача уходит в «Ошибку», а работа сохраняется в ветке task/<id>.`
-                : 'Выключено: результат каждой задачи лежит в отдельной ветке task/<id>, в основную ветку его нужно влить самому.'}
+                ? `Результат задач попадает прямо в «${form.defaultBranch.trim() || 'main'}», без проверки в UAT и без Pull request. Если ветку успели изменить, коммиты Claude ложатся поверх. При конфликте задача уходит в «Ошибку», а работа сохраняется в ветке task/<id>.`
+                : `Выключено: результат задач попадает в ветку «${form.uatBranch.trim() || 'uat'}», а в «${form.defaultBranch.trim() || 'main'}» вливается, когда вы примете задачу.`}
             </Typography.Paragraph>
+            {!form.commitToBase && (
+              <Field label="Ветка UAT" extra="Если её нет в репозитории, создастся от основной ветки при первом запуске">
+                <Input value={form.uatBranch} onChange={set('uatBranch')} />
+              </Field>
+            )}
           </Col>
           <Col xs={24} md={12}>
             <Field label="Срок сдачи">

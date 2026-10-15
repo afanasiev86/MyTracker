@@ -108,23 +108,25 @@ describe('Projects', () => {
     await waitFor(() => expect(api.syncProjectGithub).toHaveBeenCalledWith('p1'));
   });
 
-  it('флажок «Коммитить сразу в эту ветку» по умолчанию выключен и уходит в запросе, когда включён', async () => {
+  it('флажок «Пушить сразу в ПРОД» по умолчанию выключен и уходит в запросе, когда включён', async () => {
     vi.mocked(api.fetchClients).mockResolvedValue([]);
     vi.mocked(api.createProject).mockResolvedValue({ _id: 'p3', slug: 'x', repo: { status: 'none' } });
     renderAt('/projects/new');
 
     await screen.findByText('Новый проект', { selector: 'h4' });
-    const checkbox = screen.getByLabelText('Коммитить сразу в эту ветку');
+    const checkbox = screen.getByLabelText('Пушить сразу в ПРОД');
     expect(checkbox.checked).toBe(false);
-    expect(screen.getByText(/отдельной ветке task\/<id>/)).toBeTruthy();
+    expect(screen.getByText(/попадает в ветку «uat»/)).toBeTruthy();
+    expect(screen.getByLabelText('Ветка UAT').value).toBe('uat');
 
     fireEvent.click(checkbox);
     expect(screen.getByText(/прямо в «main»/)).toBeTruthy();
+    expect(screen.queryByLabelText('Ветка UAT')).toBeNull();
     fireEvent.change(screen.getByLabelText(/Название/), { target: { value: 'Новый' } });
     fireEvent.click(screen.getByRole('button', { name: 'Создать проект' }));
 
     await waitFor(() => expect(api.createProject).toHaveBeenCalled());
-    expect(vi.mocked(api.createProject).mock.calls[0][0]).toMatchObject({ commitToBase: true, defaultBranch: 'main' });
+    expect(vi.mocked(api.createProject).mock.calls[0][0]).toMatchObject({ commitToBase: true, defaultBranch: 'main', uatBranch: 'uat' });
   });
 
   it('у существующего проекта с включённым режимом флажок отмечен', async () => {
@@ -135,7 +137,7 @@ describe('Projects', () => {
     renderAt('/projects/p1');
 
     await screen.findByLabelText('Код проекта');
-    expect(screen.getByLabelText('Коммитить сразу в эту ветку').checked).toBe(true);
+    expect(screen.getByLabelText('Пушить сразу в ПРОД').checked).toBe(true);
     expect(screen.getByText(/прямо в «init»/)).toBeTruthy();
   });
 

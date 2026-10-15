@@ -11,7 +11,6 @@ BRANCH="${BRANCH:-init}"
 APP_DIR="/srv/mytracker"
 WORKER_USER="claude-worker"
 REPOS_DIR="/srv/repos"
-WORKTREES_DIR="/srv/worktrees"
 BACKUP_DIR="/srv/backups/mytracker"
 
 log() { echo -e "\n==> $*"; }
@@ -42,8 +41,8 @@ fi
 log "Пользователь воркера"
 id "$WORKER_USER" >/dev/null 2>&1 || useradd -m -s /bin/bash "$WORKER_USER"
 usermod -aG docker "$WORKER_USER"
-mkdir -p "$REPOS_DIR" "$WORKTREES_DIR" "$BACKUP_DIR"
-chown -R "$WORKER_USER:$WORKER_USER" "$REPOS_DIR" "$WORKTREES_DIR" "$BACKUP_DIR"
+mkdir -p "$REPOS_DIR" "$BACKUP_DIR"
+chown -R "$WORKER_USER:$WORKER_USER" "$REPOS_DIR" "$BACKUP_DIR"
 
 log "Код трекера"
 if [[ ! -d "$APP_DIR/.git" ]]; then

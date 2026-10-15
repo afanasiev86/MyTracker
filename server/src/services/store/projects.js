@@ -23,6 +23,15 @@ export function createProject(data) {
   return Project.create(data);
 }
 
+// Код и порт стенда всех проектов: порт новому стенду выбирается среди свободных
+export function listStandPorts() {
+  return Project.find().select('slug uatPort').lean();
+}
+
+export function saveStandPort(slug, port) {
+  return Project.updateOne({ slug }, { uatPort: port });
+}
+
 export function projectExists(slug) {
   return Project.exists({ slug });
 }
