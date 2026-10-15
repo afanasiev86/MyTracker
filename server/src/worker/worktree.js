@@ -12,6 +12,13 @@ export async function ensureGitIdentity(repo) {
 
 const remoteHas = async (repo, name) => (await git(repo, ['ls-remote', '--heads', 'origin', name])).trim() !== '';
 
+// Создаёт ветку name в origin от основной ветки base, если её там ещё нет. Данные origin в клоне должны быть свежими (после fetch).
+export async function ensureRemoteBranch(repo, name, base) {
+  if (await remoteHas(repo, name)) return;
+  await git(repo, ['push', 'origin', `refs/remotes/origin/${base}:refs/heads/${name}`]);
+  await git(repo, ['fetch', 'origin', name]);
+}
+
 // Готовит клон проекта под задачу: Claude работает прямо в нём, чтобы node_modules жили между запусками.
 // target: ветка, куда пойдёт результат (UAT или основная). Если её ещё нет в origin, создаётся от основной ветки base.
 // Если рабочая ветка branch уже есть в origin (продолжение после вопроса), продолжаем с неё, иначе начинаем от target.
@@ -20,10 +27,7 @@ const remoteHas = async (repo, name) => (await git(repo, ['ls-remote', '--heads'
 export async function prepareWorkdir(repo, branch, target, base) {
   await ensureGitIdentity(repo);
   await git(repo, ['fetch', 'origin']);
-  if (!(await remoteHas(repo, target))) {
-    await git(repo, ['push', 'origin', `refs/remotes/origin/${base}:refs/heads/${target}`]);
-    await git(repo, ['fetch', 'origin', target]);
-  }
+  await ensureRemoteBranch(repo, target, base);
   const startPoint = (await remoteHas(repo, branch)) ? `origin/${branch}` : `origin/${target}`;
 
   await git(repo, ['rebase', '--abort']).catch(() => {});

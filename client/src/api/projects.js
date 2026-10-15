@@ -9,3 +9,5 @@ export const deleteProject = (id) => request(`/projects/${id}`, { method: 'DELET
 export const syncProjectGithub = (id) => request(`/projects/${id}/sync-github`, { method: 'POST' });
 // Локальная копия проекта на сервере и состояние UAT-стенда
 export const fetchProjectServer = (id) => request(`/projects/${id}/server`);
+// Собрать и запустить UAT-стенд проекта (сборка идёт в фоне)
+export const startProjectStand = (id) => request(`/projects/${id}/uat`, { method: 'POST' });

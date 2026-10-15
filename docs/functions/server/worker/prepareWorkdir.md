@@ -4,18 +4,18 @@
 Готовит клон проекта в `REPOS_DIR/<slug>` под задачу: локальная ветка `task/<id>` от целевой ветки (UAT или основной). Claude работает прямо в клоне, поэтому `node_modules` и другие игнорируемые файлы переживают запуски. Одновременных запусков в одном проекте нет (очередь по проекту), так что клон занят одной задачей.
 
 ## Где объявлено
-`server/src/worker/worktree.js:L20-39#prepareWorkdir`
+`server/src/worker/worktree.js:L27-43#prepareWorkdir`
 
 ## Вход и выход
 - Вход: `repo` (путь к клону проекта), `branch` (`task/<id>`), `target` (ветка, куда пойдёт результат: UAT или основная, см. `server/src/services/projects/baseBranch.js:L7-14#branchSettings`), `base` (основная ветка проекта, без значения общая `DEFAULT_BRANCH`).
 - Выход: `startPoint` — точка, от которой считаются новые коммиты (`origin/task/<id>` или `origin/<target>`).
 
 ## Алгоритм
-1. Обновляет данные из origin: `server/src/worker/worktree.js:L22@await git(repo, ['fetch', 'origin']);`.
+1. Обновляет данные из origin: `server/src/worker/worktree.js:L29@await git(repo, ['fetch', 'origin']);`.
 2. Если целевой ветки нет в origin (первый запуск проекта с UAT), создаёт её пушем от `origin/<base>`.
-3. Выбирает точку старта: если ветка уже есть в origin (продолжение после вопроса или доработки), продолжаем с неё: `server/src/worker/worktree.js:L27@const startPoint = (await remoteHas`.
+3. Выбирает точку старта: если ветка уже есть в origin (продолжение после вопроса или доработки), продолжаем с неё: `server/src/worker/worktree.js:L31@const startPoint = (await remoteHas`.
 4. Прерывает незавершённый `rebase` (остался после перезапуска сервера) и чистит записи о пропавших worktree.
-5. Переключается принудительно с пересозданием ветки: `server/src/worker/worktree.js:L31@'checkout', '-f', '-B'`.
+5. Переключается принудительно с пересозданием ветки: `server/src/worker/worktree.js:L35@'checkout', '-f', '-B'`.
 6. Удаляет локальные ветки `task/*` прошлых запусков (работа ожидающих ответа задач лежит в origin).
 7. Удаляет неотслеживаемые файлы (`git clean -fd`), игнорируемые остаются. Отдельно стирает служебное трекера: скриншоты и копию инструкции `/implement-task`, иначе она устарела бы вместе с трекером.
 

@@ -14,6 +14,7 @@ export async function projectServerInfo(project) {
     stand: {
       enabled,
       status: project.uatStatus || 'none',
+      branch: project.uatBranch || 'uat',
       url: enabled ? `https://${standHost(project.slug, domain)}` : '',
       commit: project.uatCommit || '',
       builtAt: project.uatBuiltAt || null,

@@ -13,8 +13,8 @@
 ## Сборка стенда
 Запускается из воркера, когда запуск закончился статусом «На проверке» и проект не пушит сразу в ПРОД: `server/src/worker/runTask.js:L117@requestDeploy(task.project)`.
 1. `server/src/services/uat/requestDeploy.js:L37-42#requestDeploy` ставит проект в очередь. Сборки идут по одной (память сервера общая). Проект, запрошенный повторно, пока ждёт или собирается, собирается ещё раз после текущей. Статус и итог пишутся в `Project.uatStatus` (`building`, `ready`, `failed`), `uatCommit`, `uatBuiltAt`, `uatError`; владельцу уходит сообщение в Telegram. После перезапуска сервера зависшая сборка помечается ошибкой: `server/src/index.js:L19@failInterruptedDeploys`.
-2. `server/src/services/uat/deployStand.js:L53-95#deployStand` по шагам:
-   - ветка UAT забирается в `<UAT_DIR>/<код>/repo` (отдельный клон, не тот, где работает Claude): `server/src/services/uat/syncStandRepo.js:L7-19#syncStandRepo`;
+2. `server/src/services/uat/deployStand.js:L54-96#deployStand` по шагам:
+   - ветка UAT забирается в `<UAT_DIR>/<код>/repo` (отдельный клон, не тот, где работает Claude): `server/src/services/uat/syncStandRepo.js:L9-22#syncStandRepo`;
    - в `.env` рядом пишутся `UAT_PORT`, `STAND_HOST`, `STAND_URL` и три пароля `STAND_SECRET_A/B/C` (создаются один раз и не меняются, потому что база уже хранит старые): `server/src/services/uat/standFiles.js:L45-56#writeStandEnv`;
    - если рецепта нет, его пишет Claude (см. ниже);
    - рецепт проверяется: `docker compose config --no-env-resolution --format json` и правила безопасности `server/src/services/uat/validateCompose.js:L19-67#validateCompose`;
@@ -39,10 +39,11 @@ Compose-файл пишет Claude по репозиторию проекта, �
 `GET /api/tasks/:id` отдаёт поле `stand` (`server/src/services/uat/standInfo.js:L7-19#standInfo`), блок `client/src/components/task/StandBlock.jsx:L7-24#StandBlock` показывает «Стенд UAT: ссылка» с коммитом, «собирается» или причину ошибки. Пока стенд собирается, карточка сама обновляется.
 
 ## В карточке проекта
-Блок «На сервере» (`client/src/components/project/ProjectServerCard.jsx:L17-84#ProjectServerCard`, только при редактировании) берёт данные из `GET /api/projects/:id/server` (`server/src/routes/projects/serverInfo.js:L7-16#serverInfo`, сводка `server/src/services/projects/serverInfo.js:L8-24#projectServerInfo`):
+Блок «На сервере» (`client/src/components/project/ProjectServerCard.jsx:L19-116#ProjectServerCard`, только при редактировании) берёт данные из `GET /api/projects/:id/server` (`server/src/routes/projects/serverInfo.js:L7-16#serverInfo`, сводка `server/src/services/projects/serverInfo.js:L8-25#projectServerInfo`):
 - локальная копия: есть ли папка `REPOS_DIR/<код>`, путь и размер (`du -sb`, вместе с `node_modules`): `server/src/services/projects/localCopy.js:L9-19#localCopy`;
 - статус стенда: итог последней сборки из проекта плюс то, что реально запущено (`docker ps` по метке проекта compose `uat-<код>`): запущен, остановлен, собирается, ошибка сборки, не запускался;
 - память стенда: сумма `docker stats --no-stream` по запущенным контейнерам, показывается, только если стенд запущен: `server/src/services/uat/standRuntime.js:L15-28#standRuntime`.
+Кнопка «Запустить UAT» показывается, пока стенд ни разу не собирался: `POST /api/projects/:id/uat` (`server/src/routes/projects/startStand.js:L7-17#startStand`, сервис `server/src/services/uat/startStand.js:L10-19#startStand`) ставит статус «собирается» и запускает ту же сборку в фоне (ответ 202). Ветки UAT к этому моменту может не быть: `syncStandRepo` создаёт её от основной (`server/src/worker/worktree.js:L16-20#ensureRemoteBranch`, нужен токен GitHub с правом записи). Пока стенд собирается, блок обновляется сам раз в 5 секунд.
 У проекта, который пушит сразу в ПРОД, стенда нет. Вне Linux-сервера размер и docker недоступны (поля пустые).
 
 ## Ошибки и граничные случаи
@@ -54,4 +55,4 @@ Compose-файл пишет Claude по репозиторию проекта, �
 - Лимиты Let's Encrypt на число сертификатов для одного домена достаточны для десятков проектов (точное число в этом документе не проверялось).
 
 ## Тесты
-`server/test/uatStand.test.js` (адрес, порты, `ensureStand`), `server/test/validateCompose.test.js` (правила), `server/test/deployStand.test.js` (порядок шагов, рецепт, seed один раз), `server/test/requestDeploy.test.js` (очередь), `server/test/projectServer.test.js` (копия, память, сводка), `client/src/components/task/StandBlock.test.jsx`, `client/src/components/project/ProjectServerCard.test.jsx`. Скрипты проверены в контейнерах: проверка аргументов, генерация правила, `nginx -t`; реальный выпуск сертификата и sudo проверены на VPS. Реальная сборка стенда `docker compose` и запуск Claude по skill в тестах подменены.
+`server/test/uatStand.test.js` (адрес, порты, `ensureStand`), `server/test/validateCompose.test.js` (правила), `server/test/deployStand.test.js` (порядок шагов, рецепт, seed один раз), `server/test/requestDeploy.test.js` (очередь), `server/test/projectServer.test.js` (копия, память, сводка), `server/test/startStand.test.js` (кнопка и забор ветки), `client/src/components/task/StandBlock.test.jsx`, `client/src/components/project/ProjectServerCard.test.jsx`. Скрипты проверены в контейнерах: проверка аргументов, генерация правила, `nginx -t`; реальный выпуск сертификата и sudo проверены на VPS. Реальная сборка стенда `docker compose` и запуск Claude по skill в тестах подменены.

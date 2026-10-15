@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { getConfig } from '../../config.js';
 import { findStandProject } from '../store/projects.js';
 import { ensureStand } from './ensureStand.js';
 import { syncStandRepo } from './syncStandRepo.js';
@@ -58,7 +59,7 @@ export async function deployStand(slug) {
   await fs.mkdir(dir, { recursive: true });
   const log = await openLog(dir);
 
-  const commit = await syncStandRepo(dir, project);
+  const commit = await syncStandRepo(dir, { ...project, base: project.defaultBranch || getConfig().worker.defaultBranch });
   await log(`Ветка ${project.uatBranch || 'uat'}, коммит ${commit}`);
   await writeStandEnv(dir, { port, host });
 

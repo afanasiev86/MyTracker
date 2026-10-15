@@ -34,7 +34,7 @@ export function saveStandPort(slug, port) {
 
 // Данные проекта для сборки стенда
 export function findStandProject(slug) {
-  return Project.findOne({ slug }).select('slug repoUrl uatBranch commitToBase uatPort uatStatus uatCommit uatBuiltAt uatError').lean();
+  return Project.findOne({ slug }).select('slug repoUrl defaultBranch uatBranch commitToBase uatPort uatStatus uatCommit uatBuiltAt uatError').lean();
 }
 
 export function saveStandState(slug, state) {

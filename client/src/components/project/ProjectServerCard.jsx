@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Button, Descriptions, Flex, Tag, Typography } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
-import { fetchProjectServer } from '../../api.js';
+import { CaretRightOutlined, ReloadOutlined } from '@ant-design/icons';
+import { fetchProjectServer, startProjectStand } from '../../api.js';
 import { formatBytes } from '../../lib/bytes.js';
+
+const BUILD_POLL_MS = 5000;
 
 // Как показать стенд: сначала то, что реально запущено, затем итог последней сборки
 function standState(stand) {
@@ -18,6 +20,7 @@ export default function ProjectServerCard({ projectId }) {
   const [info, setInfo] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [starting, setStarting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,6 +37,27 @@ export default function ProjectServerCard({ projectId }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Пока стенд собирается, состояние подтягивается само
+  const building = info?.stand?.status === 'building';
+  useEffect(() => {
+    if (!building) return undefined;
+    const timer = setInterval(load, BUILD_POLL_MS);
+    return () => clearInterval(timer);
+  }, [building, load]);
+
+  async function start() {
+    setStarting(true);
+    setError('');
+    try {
+      await startProjectStand(projectId);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setStarting(false);
+    }
+  }
 
   const copy = info?.localCopy;
   const stand = info?.stand;
@@ -63,6 +87,14 @@ export default function ProjectServerCard({ projectId }) {
             {stand.commit && <Typography.Text type="secondary">Коммит {stand.commit}</Typography.Text>}
             {stand.status === 'failed' && stand.error && <Typography.Text type="danger">{stand.error}</Typography.Text>}
             {stand.runtime?.error && <Typography.Text type="danger">Docker: {stand.runtime.error}</Typography.Text>}
+            {stand.status === 'none' && (
+              <div>
+                <Button type="primary" size="small" icon={<CaretRightOutlined />} loading={starting} onClick={start}>Запустить UAT</Button>
+                <Typography.Paragraph type="secondary" style={{ margin: '4px 0 0', fontSize: 13 }}>
+                  Создаст ветку {stand.branch} от основной, если её нет, и соберёт стенд. Первая сборка занимает несколько минут.
+                </Typography.Paragraph>
+              </div>
+            )}
           </Flex>
         ),
     });
