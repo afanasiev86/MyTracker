@@ -3,6 +3,7 @@ import { opsAvailable } from '../../services/ops/platform.js';
 import { getOpsStatus } from '../../services/ops/status.js';
 import { formatStatus } from '../../services/ops/format.js';
 import { readLogs, DEFAULT_LINES } from '../../services/ops/logs.js';
+import { unbanSsh } from '../../services/ops/unbanSsh.js';
 import { confirmKeyboard } from '../opsCallbackData.js';
 
 const TELEGRAM_LIMIT = 3800;
@@ -34,6 +35,17 @@ export function serviceCommand(args) {
   if (!svc.actions.includes(action)) return `Для «${svc.label}» действие недоступно.`;
   if (!opsAvailable()) return 'Управление сервисами доступно только на Linux-сервере.';
   return { text: `${VERBS[action]} «${svc.label}»?`, reply_markup: confirmKeyboard(action, id) };
+}
+
+// /unban: снять блокировки fail2ban. Без подтверждения: действие безвредное, а нужно оно, когда вход на сервер закрыт
+export async function unbanCommand() {
+  if (!opsAvailable()) return 'Снятие блокировок доступно только на Linux-сервере.';
+  try {
+    const count = await unbanSsh();
+    return count ? `Блокировки fail2ban сняты, адресов: ${count}.` : 'Блокировок fail2ban нет.';
+  } catch (err) {
+    return `Не удалось снять блокировки: ${err.message}`;
+  }
 }
 
 // /deploy: обновление MyTracker, с подтверждением

@@ -4,12 +4,16 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 const controlService = jest.fn();
 const startDeploy = jest.fn();
 const readLogs = jest.fn();
+const unbanSsh = jest.fn();
+jest.unstable_mockModule('../src/services/ops/unbanSsh.js', () => ({ unbanSsh }));
 jest.unstable_mockModule('../src/services/ops/control.js', () => ({ controlService, stoppedOnPurpose: new Set() }));
 jest.unstable_mockModule('../src/services/ops/deploy.js', () => ({ startDeploy, deployInfo: jest.fn() }));
 jest.unstable_mockModule('../src/services/ops/logs.js', () => ({ readLogs, DEFAULT_LINES: 50 }));
 jest.unstable_mockModule('../src/services/ops/platform.js', () => ({ opsAvailable: () => true, assertOpsAvailable: () => {} }));
 
-const { serviceCommand, deployCommand, logsCommand } = await import('../src/bot/commands/opsCommand.js');
+const { serviceCommand, deployCommand, logsCommand, unbanCommand } = await import('../src/bot/commands/opsCommand.js');
+const { handleCommand } = await import('../src/bot/commands/handleCommand.js');
+const { HELP } = await import('../src/bot/commands/help.js');
 const { handleOpsCallback } = await import('../src/bot/callbacks/opsCallback.js');
 const { decodeOpsCallback, encodeOpsCallback } = await import('../src/bot/opsCallbackData.js');
 
@@ -17,6 +21,31 @@ beforeEach(() => {
   controlService.mockReset();
   startDeploy.mockReset();
   readLogs.mockReset();
+  unbanSsh.mockReset();
+});
+
+describe('/unban', () => {
+  it('сразу снимает блокировки и сообщает, сколько адресов освобождено', async () => {
+    unbanSsh.mockResolvedValue(2);
+    expect(await unbanCommand()).toBe('Блокировки fail2ban сняты, адресов: 2.');
+    expect(unbanSsh).toHaveBeenCalledTimes(1);
+  });
+
+  it('если блокировок не было, так и пишет', async () => {
+    unbanSsh.mockResolvedValue(0);
+    expect(await unbanCommand()).toBe('Блокировок fail2ban нет.');
+  });
+
+  it('причину сбоя показывает владельцу, а не падает', async () => {
+    unbanSsh.mockRejectedValue(new Error('нет прав или скрипта: выполните на сервере deploy/ops-setup.sh'));
+    expect(await unbanCommand()).toMatch(/Не удалось снять блокировки: нет прав/);
+  });
+
+  it('доступна как команда бота и описана в справке', async () => {
+    unbanSsh.mockResolvedValue(1);
+    expect(await handleCommand('/unban')).toMatch(/адресов: 1/);
+    expect(HELP).toMatch(/\/unban/);
+  });
 });
 
 describe('/service и /deploy', () => {

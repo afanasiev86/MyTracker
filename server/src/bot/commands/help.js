@@ -14,6 +14,7 @@ export const HELP = [
   '/logs <сервис> [строк]: журнал сервиса',
   '/service <restart|start|stop> <сервис>: управление сервисом',
   '/deploy: обновить MyTracker с GitHub',
+  '/unban: снять блокировки fail2ban (если закрыт вход по SSH)',
   '',
   'Чтобы ответить на вопрос Claude, просто ответьте на его сообщение.',
 ].join('\n');

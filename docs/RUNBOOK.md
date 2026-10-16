@@ -81,13 +81,13 @@ Mini App открывается только по HTTPS-адресу, IP и http
 
 ## 3c. Управление сервером из Telegram и интерфейса (≈2 минуты)
 
-Раздел «Сервер» и команды `/server`, `/logs`, `/service`, `/deploy` работают после разовой настройки прав:
+Раздел «Сервер» и команды `/server`, `/logs`, `/service`, `/deploy`, `/unban` работают после разовой настройки прав:
 
 ```bash
 sudo bash /srv/mytracker/deploy/ops-setup.sh
 ```
 
-Скрипт добавляет `claude-worker` в группу `systemd-journal` (чтение журналов) и разрешает ему `sudo` без пароля только на перезапуск `mytracker-api`, `restart/start/stop nginx` и запуск `deploy/update.sh`. Файл правил: `/etc/sudoers.d/mytracker-ops`. Затем перезапускает API.
+Скрипт добавляет `claude-worker` в группу `systemd-journal` (чтение журналов) и разрешает ему `sudo` без пароля только на перезапуск `mytracker-api`, `restart/start/stop nginx`, запуск `deploy/update.sh` и скрипт `/usr/local/sbin/f2b-reset` (ставится из `deploy/f2b-reset.sh`, снимает все блокировки fail2ban, команда бота `/unban`; нужен установленный fail2ban). Файл правил: `/etc/sudoers.d/mytracker-ops`. Затем перезапускает API.
 
 - [ ] Вкладка «Сервер»: видны ресурсы и состояние сервисов
 - [ ] Боту `/server`: пришла сводка

@@ -13,12 +13,16 @@ SUDOERS_FILE="/etc/sudoers.d/mytracker-ops"
 SYSTEMCTL=/usr/bin/systemctl
 SYSTEMD_RUN=/usr/bin/systemd-run
 BASH_BIN=/usr/bin/bash
+F2B_RESET=/usr/local/sbin/f2b-reset
 
 [[ $EUID -eq 0 ]] || { echo "Запустите от root: sudo bash $0"; exit 1; }
 id "$WORKER_USER" >/dev/null 2>&1 || { echo "Нет пользователя $WORKER_USER. Сначала выполните deploy/bootstrap-vps.sh"; exit 1; }
 
 echo "==> Журналы: $WORKER_USER в группе systemd-journal"
 usermod -aG systemd-journal "$WORKER_USER"
+
+echo "==> Скрипт снятия блокировок fail2ban (/unban): $F2B_RESET"
+install -m 755 -o root -g root "$APP_DIR/deploy/f2b-reset.sh" "$F2B_RESET"
 
 echo "==> sudo на конкретные команды: $SUDOERS_FILE"
 TMP="$(mktemp)"
@@ -29,6 +33,7 @@ $WORKER_USER ALL=(root) NOPASSWD: $SYSTEMCTL restart nginx
 $WORKER_USER ALL=(root) NOPASSWD: $SYSTEMCTL start nginx
 $WORKER_USER ALL=(root) NOPASSWD: $SYSTEMCTL stop nginx
 $WORKER_USER ALL=(root) NOPASSWD: $SYSTEMD_RUN --unit=mytracker-deploy --uid=$WORKER_USER --collect $BASH_BIN $APP_DIR/deploy/update.sh
+$WORKER_USER ALL=(root) NOPASSWD: $F2B_RESET
 EOF
 visudo -cf "$TMP"
 install -m 440 -o root -g root "$TMP" "$SUDOERS_FILE"
