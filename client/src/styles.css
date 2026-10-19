@@ -4,7 +4,7 @@ body { margin: 0; }
 .app-layout { min-height: 100vh; }
 .app-content { padding: 16px 20px; }
 .app-header { margin-bottom: 16px; }
-.app-logo { font-size: 24px; color: #1677ff; }
+.app-logo { font-size: 24px; color: #52c41a; }
 .section-tabs { margin-bottom: 16px; background: transparent; }
 
 .diff {
