@@ -21,6 +21,7 @@ const schema = z.object({
   TRACKER_API_URL: optional,
   RUN_TIMEOUT_MIN: optional,
   OPS_APP_DIR: optional,
+  CODEX_RELEASE_SHA: optional,
   GITHUB_TOKEN: optional,
   UAT_DOMAIN: optional,
   UAT_DIR: optional,
@@ -47,6 +48,7 @@ export function readConfig(env = process.env) {
       ownerId: raw.TELEGRAM_OWNER_ID,
       miniAppUrl: raw.TELEGRAM_MINIAPP_URL,
     },
+    release: raw.CODEX_RELEASE_SHA,
     ops: {
       // Папка установки трекера на сервере: из неё работают docker compose, деплой и служебные файлы .ops/
       appDir: raw.OPS_APP_DIR || path.resolve(process.cwd(), '..'),
