@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { createApp } from '../src/app.js';
@@ -30,7 +31,7 @@ describeDb('портал заказчика с базой', () => {
 
   beforeEach(async () => {
     await mongoose.connection.db.dropDatabase();
-    clientDoc = await Client.create({ name: 'Анна' });
+    clientDoc = await Client.create({ name: 'Анна', portalApproved: true });
     await Project.create({ slug: 'shop', name: 'Магазин', client: clientDoc._id });
     await Project.create({ slug: 'other', name: 'Чужой' });
     await Task.create({ project: 'shop', title: 'Своя', status: 'ready' });
@@ -62,7 +63,12 @@ describeDb('портал заказчика с базой', () => {
   it('после подтверждения запрос становится доступом, после закрытия — нет', async () => {
     await Client.updateOne({ _id: clientDoc._id }, { $unset: { telegramId: 1 }, $set: { portalApproved: false } });
     const req = await AccessRequest.create({ telegramId: '555', name: 'Анна' });
-    expect(await approveAccessRequest(req._id, clientDoc._id)).toEqual({ ok: true });
+    const telegram = jest.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ ok: true }));
+    try {
+      await approveAccessRequest(req._id, clientDoc._id);
+    } finally {
+      telegram.mockRestore();
+    }
     const approved = await Client.findById(clientDoc._id).lean();
     expect(approved.portalApproved).toBe(true);
     expect(approved.telegramId).toBe('555');
