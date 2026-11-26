@@ -131,8 +131,11 @@ jobs:
               --force-with-lease="refs/heads/$TARGET:$BASE" origin "$CANDIDATE:refs/heads/$TARGET"
           fi
       - name: Publish release
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || 'afanasev.tech' }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
         run: |
           set -euo pipefail
           ssh -T -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
-            -o UserKnownHostsFile="$RUNNER_TEMP/deploy-known-hosts" -i "$RUNNER_TEMP/deploy-key" \
-            codexdeploy-mytracker@afanasev.tech "$CANDIDATE" < "$RUNNER_TEMP/codex-release/release.tar.gz"
+            -p "$DEPLOY_PORT" -o UserKnownHostsFile="$RUNNER_TEMP/deploy-known-hosts" -i "$RUNNER_TEMP/deploy-key" \
+            codexdeploy-mytracker@"$DEPLOY_HOST" "$CANDIDATE" < "$RUNNER_TEMP/codex-release/release.tar.gz"
