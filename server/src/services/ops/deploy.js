@@ -32,11 +32,11 @@ async function isRunning() {
 
 // Версия на сервере, идёт ли обновление и чем закончилось прошлое
 export async function deployInfo() {
-  const appDir = getConfig().ops.appDir;
-  const git = await run('git', ['-C', appDir, 'rev-parse', '--short', 'HEAD']);
+  const { ops: { appDir }, release } = getConfig();
+  const git = release ? null : await run('git', ['-C', appDir, 'rev-parse', '--short', 'HEAD']);
   const last = await readJson('deploy-result.json');
   return {
-    commit: git.ok ? git.stdout.trim() : null,
+    commit: release?.slice(0, 7) || (git?.ok ? git.stdout.trim() : null),
     running: await isRunning(),
     last: last && { ok: last.ok, message: last.message, from: last.from, to: last.to, finishedAt: last.finishedAt },
   };
@@ -69,6 +69,7 @@ export async function resumeDeployReporting() {
 // Запускает deploy/update.sh вне процесса API (systemd-run): перезапуск API его не прервёт.
 // Команда разрешена в sudoers точно в таком виде, см. deploy/ops-setup.sh.
 export async function startDeploy() {
+  if (getConfig().release) throw domainError('unavailable', 'Для выпуска MyTracker откройте раздел «Деплои» в Codex Web.');
   assertOpsAvailable();
   if (await isRunning()) throw domainError('conflict', 'Обновление уже идёт');
 

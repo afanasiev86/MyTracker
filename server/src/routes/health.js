@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getConfig } from '../config.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireOwner } from '../middleware/roles.js';
 import { getPublicHealth } from '../services/health/publicHealth.js';
@@ -10,7 +11,8 @@ const router = Router();
 router.get('/', async (_req, res, next) => {
   try {
     const health = await getPublicHealth();
-    res.status(health.ok ? 200 : 503).json(health);
+    const { release } = getConfig();
+    res.status(health.ok ? 200 : 503).json({ ...health, ...(release && { release }) });
   } catch (err) {
     next(err);
   }

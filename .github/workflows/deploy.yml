@@ -1,0 +1,141 @@
+name: Deploy
+run-name: >-
+  ${{ github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository
+      && format('Deploy {0} from {1}', github.event.workflow_run.head_sha, github.event.workflow_run.head_branch)
+      || 'Ignored release trigger' }}
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: ['codex/chat-*']
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository && 'codex-production' || github.run_id }}
+  cancel-in-progress: false
+
+env:
+  TARGET: init
+  CANDIDATE: ${{ github.event.workflow_run.head_sha }}
+  CHAT_BRANCH: ${{ github.event.workflow_run.head_branch }}
+
+jobs:
+  build:
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      base: ${{ steps.verify.outputs.base }}
+    steps:
+      - name: Check CI
+        env:
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: test "$CONCLUSION" = success
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify release candidate
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          uuid='[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}'
+          [[ "$CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CHAT_BRANCH" =~ ^codex/chat-$uuid-${CANDIDATE:0:12}$ ]]
+          test "$(git rev-parse HEAD)" = "$CANDIDATE"
+          base="$(git rev-parse HEAD^)"
+          test "$(git rev-list --parents -n 1 HEAD)" = "$CANDIDATE $base"
+          target="$(git rev-parse "refs/remotes/origin/$TARGET")"
+          test "$target" = "$base" || test "$target" = "$CANDIDATE"
+          export BASE="$base"
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+
+          fields = subprocess.check_output([
+              "git", "diff", "--raw", "--no-renames", "-z", os.environ["BASE"], "HEAD",
+          ]).split(b"\x00")
+          paths = [b'client/src/', b'client/public/', b'client/index.html', b'server/src/', b'shared/', b'docs/']
+          if len(fields) < 3:
+              raise SystemExit("Empty deployment")
+          for metadata, path in zip(fields[0:-1:2], fields[1:-1:2], strict=True):
+              if not re.match(rb":(?:000000|100644|100755) (?:000000|100644|100755) ", metadata):
+                  raise SystemExit("Unexpected file mode in deployment")
+              if not any(path.startswith(rule) if rule.endswith(b"/") else path == rule for rule in paths):
+                  raise SystemExit("Deployment contains changes outside the allowed paths")
+          PY
+          printf 'base=%s\n' "$base" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build MyTracker
+        run: npm run build
+      - run: npm prune --omit=dev
+      - name: Package MyTracker
+        run: |
+          files=(package.json client/dist server/package.json server/src shared node_modules)
+          if [[ -d server/node_modules ]]; then files+=(server/node_modules); fi
+          tar -czf "$RUNNER_TEMP/release.tar.gz" "${files[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-release
+          path: ${{ runner.temp }}/release.tar.gz
+          if-no-files-found: error
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: codex-release
+          path: ${{ runner.temp }}/codex-release
+      - name: Configure delivery
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          KNOWN_HOST: ${{ secrets.KNOWN_HOST }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOST"
+          umask 077
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/deploy-key"
+          printf '%s\n' "$KNOWN_HOST" > "$RUNNER_TEMP/deploy-known-hosts"
+      - name: Promote chat changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ needs.build.outputs.base }}
+        run: |
+          set -euo pipefail
+          git init -q
+          git remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -c 'credential.helper=!gh auth git-credential' fetch --no-tags origin \
+            "refs/heads/$TARGET:refs/remotes/origin/target" \
+            "refs/heads/$CHAT_BRANCH:refs/remotes/origin/candidate"
+          test "$(git rev-parse refs/remotes/origin/candidate)" = "$CANDIDATE"
+          current="$(git rev-parse refs/remotes/origin/target)"
+          if [[ "$current" != "$CANDIDATE" ]]; then
+            test "$current" = "$BASE"
+            test "$(git rev-list --parents -n 1 "$CANDIDATE")" = "$CANDIDATE $BASE"
+            git -c 'credential.helper=!gh auth git-credential' push \
+              --force-with-lease="refs/heads/$TARGET:$BASE" origin "$CANDIDATE:refs/heads/$TARGET"
+          fi
+      - name: Publish release
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || 'afanasev.tech' }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          ssh -T -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
+            -p "$DEPLOY_PORT" -o UserKnownHostsFile="$RUNNER_TEMP/deploy-known-hosts" -i "$RUNNER_TEMP/deploy-key" \
+            codexdeploy-mytracker@"$DEPLOY_HOST" "$CANDIDATE" < "$RUNNER_TEMP/codex-release/release.tar.gz"

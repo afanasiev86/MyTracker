@@ -2,6 +2,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { createApp } from '../src/app.js';
 import { issueToken } from '../src/services/auth/tokens.js';
+import Project from '../src/models/Project.js';
 
 // Запускается, только если задан MONGO_URL_TEST (в CI поднимается сервис MongoDB)
 const MONGO_URL_TEST = process.env.MONGO_URL_TEST;
@@ -20,6 +21,7 @@ describeDb('CRM: клиенты и проекты', () => {
 
   beforeEach(async () => {
     await mongoose.connection.db.dropDatabase();
+    await Project.createIndexes();
   });
 
   afterAll(async () => {
