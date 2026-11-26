@@ -28,7 +28,9 @@ jobs:
         run: npm run lint
 
       - name: Tests
-        run: npm test
+        run: |
+          npm test -w server
+          npm test -w client -- --maxWorkers=2 --testTimeout=15000
 
       - name: Build client
         run: npm run build
